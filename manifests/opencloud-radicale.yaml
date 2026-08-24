@@ -20,7 +20,7 @@ x-fjord:
     description: A simple CalDAV (calendar) and CardDAV (contact) server.
     category: Utilities
     class: service
-    icon: /catalog/icons/opencloud-radicale.svg
+    icon: https://api.iconify.design/mdi:apps.svg?color=%23cbd5e1
     upstream_url: https://github.com/daemonless/opencloud-radicale
     web_url: https://radicale.org/
   variables:

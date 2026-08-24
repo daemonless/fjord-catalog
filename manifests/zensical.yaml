@@ -26,7 +26,6 @@ x-fjord:
     web_url: https://zensical.org
     only_for_archs:
       - amd64
-      - aarch64
   variables:
     - name: WEB_PORT
       label: Web UI

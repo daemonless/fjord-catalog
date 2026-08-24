@@ -10,10 +10,10 @@ services:
       - PKG_CACHE_SIZE=${PKG_CACHE_SIZE}
       - ENABLE_STATS=${ENABLE_STATS}
       - SKIP_CHOWN=${SKIP_CHOWN}
-      - PKG_LOG_MAX_SIZE=${PKG_LOG_MAX_SIZE}
     volumes:
       - "${CONFIG_DATA}:/config"
       - "${CACHE_PATH}:/cache"
+      - "${RESOLV.CONF_PATH}:/etc/resolv.conf:ro"
     ports:
       - "${WEB_PORT}:80"
       - "${PORT_7890}:7890"
@@ -53,6 +53,10 @@ x-fjord:
       label: Package cache storage (proxy_cache). Size to match max_size in nginx.conf (default 50G; 10G is fine for light use).
       type: path
       default: ""
+    - name: RESOLV.CONF_PATH
+      label: Host DNS resolver config. Optional but recommended so upstream pkg resolution matches the host.
+      type: path
+      default: ""
     - name: TZ
       label: Timezone for the container
       type: string
@@ -73,11 +77,7 @@ x-fjord:
       label: Skip the startup recursive chown of /config and /cache once ownership is recorded in /config/.chown_done (default true). Set false to force a chown on every start. The marker lives in /config, so /config must be a persistent volume for the skip to take effect across restarts.
       type: string
       default: "true"
-    - name: PKG_LOG_MAX_SIZE
-      label: Size cap for each on-disk log in /config/log (access.log, error.log, goaccess.log), e.g. 10m, 50m, 1g. A log past this is rotated away so /config can't fill; GoAccess keeps full history in its persisted db regardless.
-      type: string
-      default: 50m
   variants:
     - id: latest
-      label: daemonless Appliance
+      label: Upstream binary
       default: true

@@ -1,0 +1,84 @@
+name: immich-server
+services:
+  immich-server:
+    image: ghcr.io/daemonless/immich-server:latest
+    container_name: immich-server
+    restart: unless-stopped
+    environment:
+      - DB_HOSTNAME=${DB_HOSTNAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - REDIS_HOSTNAME=${REDIS_HOSTNAME}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${DATA_PATH}:/data"
+    ports:
+      - "${WEB_PORT}:2283"
+x-fjord:
+  version: "0.1"
+  info:
+    id: immich-server
+    name: Immich Server
+    description: Self-hosted photo and video backup and management server with web UI, mobile sync, and shared albums.
+    category: Photos & Media
+    class: service
+    icon: /catalog/icons/immich-server.svg
+    upstream_url: https://github.com/immich-app/immich
+    web_url: https://immich.app/
+  variables:
+    - name: WEB_PORT
+      label: Web UI/API
+      type: port
+      default: "2283"
+    - name: CONFIG_DATA
+      label: Holds the startup ownership marker (.chown_done). Mount as a persistent volume so the chown is skipped on later starts.
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: DATA_PATH
+      label: Media storage (photos, videos, thumbnails)
+      type: path
+      default: ""
+    - name: DB_HOSTNAME
+      label: Postgres database hostname
+      type: string
+      default: immich-postgres
+    - name: DB_USERNAME
+      label: Postgres database user
+      type: string
+      default: postgres
+    - name: DB_PASSWORD
+      label: Postgres database password
+      type: secret
+      default: postgres
+    - name: DB_DATABASE_NAME
+      label: Postgres database name
+      type: string
+      default: immich
+    - name: REDIS_HOSTNAME
+      label: Redis hostname
+      type: string
+      default: immich-redis
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-24T21:11:28Z",
+  "generated": "2026-08-24T21:17:01Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -28,7 +28,7 @@
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/adguardhome:pkg",
-          "version": "0.107.77_3"
+          "version": "0.107.77_4"
         },
         {
           "id": "pkg-latest",
@@ -184,7 +184,7 @@
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/caddy:pkg",
-          "version": "2.11.4_2"
+          "version": "2.11.4_3"
         },
         {
           "id": "pkg-latest",
@@ -205,14 +205,14 @@
       "web_url": "https://developers.cloudflare.com/cloudflare-one/connections/connect-apps",
       "image": "ghcr.io/daemonless/cloudflared",
       "manifest_url": "/catalog/manifests/cloudflared.yaml",
-      "version": "2026.2.0_6",
+      "version": "2026.2.0_7",
       "variants": [
         {
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "default": true,
           "image": "ghcr.io/daemonless/cloudflared:pkg",
-          "version": "2026.2.0_6"
+          "version": "2026.2.0_7"
         },
         {
           "id": "pkg-latest",
@@ -237,7 +237,7 @@
       "variants": [
         {
           "id": "latest",
-          "label": "daemonless Appliance",
+          "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/pkg-cache:latest",
           "version": "1.3"
@@ -336,13 +336,13 @@
       "web_url": "https://forgejo.org/",
       "image": "ghcr.io/daemonless/forgejo",
       "manifest_url": "/catalog/manifests/forgejo.yaml",
-      "version": "15.0.6",
+      "version": "15.0.7",
       "variants": [
         {
           "id": "15",
           "label": "Built from latest upstream source release of the v15 branch.",
           "image": "ghcr.io/daemonless/forgejo:15",
-          "version": "15.0.6"
+          "version": "15.0.7"
         },
         {
           "id": "15-latest",
@@ -354,12 +354,13 @@
           "id": "15-pkg-latest",
           "label": "15-pkg-latest",
           "image": "ghcr.io/daemonless/forgejo:15-pkg-latest",
-          "version": "15.0.5"
+          "version": "15.0.6_2"
         },
         {
           "id": "16",
           "label": "Built from latest upstream source release of the v16 branch.",
-          "image": "ghcr.io/daemonless/forgejo:16"
+          "image": "ghcr.io/daemonless/forgejo:16",
+          "version": "16.0.3"
         },
         {
           "id": "16-latest",
@@ -369,7 +370,8 @@
         {
           "id": "16-pkg-latest",
           "label": "16-pkg-latest",
-          "image": "ghcr.io/daemonless/forgejo:16-pkg-latest"
+          "image": "ghcr.io/daemonless/forgejo:16-pkg-latest",
+          "version": "16.0.2_2"
         }
       ]
     },
@@ -418,14 +420,14 @@
       "web_url": "https://grafana.com/grafana/",
       "image": "ghcr.io/daemonless/grafana",
       "manifest_url": "/catalog/manifests/grafana.yaml",
-      "version": "13.1.1_1",
+      "version": "13.1.1_2",
       "variants": [
         {
           "id": "pkg",
           "label": "Installed from the FreeBSD quarterly package repository.",
           "default": true,
           "image": "ghcr.io/daemonless/grafana:pkg",
-          "version": "13.1.1_1"
+          "version": "13.1.1_2"
         },
         {
           "id": "pkg-latest",
@@ -577,7 +579,7 @@
           "id": "pkg",
           "label": "Installed from the FreeBSD quarterly package repository.",
           "image": "ghcr.io/daemonless/headscale:pkg",
-          "version": "0.27.1_8"
+          "version": "0.27.1_9"
         },
         {
           "id": "pkg-latest",
@@ -620,14 +622,14 @@
       "web_url": "https://www.home-assistant.io/",
       "image": "ghcr.io/daemonless/home-assistant",
       "manifest_url": "/catalog/manifests/home-assistant.yaml",
-      "version": "2026.6.4",
+      "version": "2026.8.3",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/home-assistant:latest",
-          "version": "2026.6.4"
+          "version": "2026.8.3"
         }
       ]
     },
@@ -689,7 +691,7 @@
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/hugo:pkg",
-          "version": "0.163.3_2_1"
+          "version": "0.163.3_3_1"
         },
         {
           "id": "pkg-latest",
@@ -721,6 +723,28 @@
       ]
     },
     {
+      "id": "immich-ml",
+      "name": "Immich Machine Learning",
+      "category": "Photos \u0026 Media",
+      "class": "service",
+      "icon": "/catalog/icons/immich-ml.svg",
+      "description": "Machine learning service for Immich — handles facial recognition, image classification, and semantic search using ONNX models.",
+      "upstream_url": "https://github.com/immich-app/immich",
+      "web_url": "https://immich.app/",
+      "image": "ghcr.io/daemonless/immich-ml",
+      "manifest_url": "/catalog/manifests/immich-ml.yaml",
+      "version": "v3.1.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/immich-ml:latest",
+          "version": "v3.1.0"
+        }
+      ]
+    },
+    {
       "id": "immich-public-proxy",
       "name": "Immich Public Proxy",
       "category": "Photos \u0026 Media",
@@ -739,6 +763,28 @@
           "default": true,
           "image": "ghcr.io/daemonless/immich-public-proxy:latest",
           "version": "v3.0.1"
+        }
+      ]
+    },
+    {
+      "id": "immich-server",
+      "name": "Immich Server",
+      "category": "Photos \u0026 Media",
+      "class": "service",
+      "icon": "/catalog/icons/immich-server.svg",
+      "description": "Self-hosted photo and video backup and management server with web UI, mobile sync, and shared albums.",
+      "upstream_url": "https://github.com/immich-app/immich",
+      "web_url": "https://immich.app/",
+      "image": "ghcr.io/daemonless/immich-server",
+      "manifest_url": "/catalog/manifests/immich-server.yaml",
+      "version": "v3.1.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/immich-server:latest",
+          "version": "v3.1.0"
         }
       ]
     },
@@ -893,14 +939,14 @@
       "web_url": "https://mealie.io/",
       "image": "ghcr.io/daemonless/mealie",
       "manifest_url": "/catalog/manifests/mealie.yaml",
-      "version": "v3.23.1",
+      "version": "v3.24.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/mealie:latest",
-          "version": "v3.23.1"
+          "version": "v3.24.0"
         }
       ]
     },
@@ -943,14 +989,14 @@
       "web_url": "https://www.navidrome.org/",
       "image": "ghcr.io/daemonless/navidrome",
       "manifest_url": "/catalog/manifests/navidrome.yaml",
-      "version": "0.62.0_2",
+      "version": "0.62.0_3",
       "variants": [
         {
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "default": true,
           "image": "ghcr.io/daemonless/navidrome:pkg",
-          "version": "0.62.0_2"
+          "version": "0.62.0_3"
         },
         {
           "id": "pkg-latest",
@@ -1021,13 +1067,14 @@
       "web_url": "https://opencloud.eu/",
       "image": "ghcr.io/daemonless/opencloud",
       "manifest_url": "/catalog/manifests/opencloud.yaml",
-      "version": "",
+      "version": "7.4.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
-          "image": "ghcr.io/daemonless/opencloud:latest"
+          "image": "ghcr.io/daemonless/opencloud:latest",
+          "version": "7.4.0"
         }
       ]
     },
@@ -1036,7 +1083,7 @@
       "name": "OpenCloud-Radicale",
       "category": "Utilities",
       "class": "service",
-      "icon": "/catalog/icons/opencloud-radicale.svg",
+      "icon": "https://api.iconify.design/mdi:apps.svg?color=%23cbd5e1",
       "description": "A simple CalDAV (calendar) and CardDAV (contact) server.",
       "upstream_url": "https://github.com/daemonless/opencloud-radicale",
       "web_url": "https://radicale.org/",
@@ -1174,13 +1221,13 @@
       "web_url": "https://www.postgresql.org/",
       "image": "ghcr.io/daemonless/postgres",
       "manifest_url": "/catalog/manifests/postgres.yaml",
-      "version": "18.4",
+      "version": "18.6",
       "variants": [
         {
           "id": "14",
           "label": "14",
           "image": "ghcr.io/daemonless/postgres:14",
-          "version": "14.23"
+          "version": "14.24"
         },
         {
           "id": "14-pkg-latest",
@@ -1192,7 +1239,7 @@
           "id": "15",
           "label": "15",
           "image": "ghcr.io/daemonless/postgres:15",
-          "version": "15.18"
+          "version": "15.19"
         },
         {
           "id": "15-pkg-latest",
@@ -1204,7 +1251,7 @@
           "id": "16",
           "label": "16",
           "image": "ghcr.io/daemonless/postgres:16",
-          "version": "16.14"
+          "version": "16.15"
         },
         {
           "id": "16-pkg-latest",
@@ -1216,7 +1263,7 @@
           "id": "17",
           "label": "17",
           "image": "ghcr.io/daemonless/postgres:17",
-          "version": "17.10"
+          "version": "17.11"
         },
         {
           "id": "17-pkg-latest",
@@ -1229,7 +1276,7 @@
           "label": "18",
           "default": true,
           "image": "ghcr.io/daemonless/postgres:18",
-          "version": "18.4"
+          "version": "18.6"
         },
         {
           "id": "18-pkg-latest",
@@ -1553,20 +1600,20 @@
       "web_url": "https://seaweedfs.com/",
       "image": "ghcr.io/daemonless/seaweedfs",
       "manifest_url": "/catalog/manifests/seaweedfs.yaml",
-      "version": "4.43",
+      "version": "4.44",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/seaweedfs:latest",
-          "version": "4.43"
+          "version": "4.44"
         },
         {
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/seaweedfs:pkg",
-          "version": "4.12_6"
+          "version": "4.12_7"
         },
         {
           "id": "pkg-latest",
@@ -1689,13 +1736,13 @@
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/stalwart:pkg",
-          "version": "0.16.15"
+          "version": "0.16.18"
         },
         {
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/stalwart:pkg-latest",
-          "version": "0.16.15"
+          "version": "0.16.18"
         }
       ]
     },
@@ -1778,32 +1825,6 @@
       ]
     },
     {
-      "id": "sylve",
-      "name": "Sylve",
-      "category": "Infrastructure",
-      "class": "service",
-      "icon": "/catalog/icons/sylve.svg",
-      "description": "Modern, open-source management platform for FreeBSD managing Virtual Machines (Bhyve), Jails, and ZFS storage.",
-      "upstream_url": "https://github.com/AlchemillaHQ/Sylve",
-      "web_url": "https://sylve.io",
-      "image": "ghcr.io/daemonless/sylve",
-      "manifest_url": "/catalog/manifests/sylve.yaml",
-      "version": "",
-      "variants": [
-        {
-          "id": "latest",
-          "label": "Latest tagged release of Sylve (AlchemillaHQ/Sylve).",
-          "default": true,
-          "image": "ghcr.io/daemonless/sylve:latest"
-        },
-        {
-          "id": "nightly",
-          "label": "Rolling build from upstream's `tip` release (AlchemillaHQ/Sylve).",
-          "image": "ghcr.io/daemonless/sylve:nightly"
-        }
-      ]
-    },
-    {
       "id": "syncthing",
       "name": "Syncthing",
       "category": "Network",
@@ -1827,7 +1848,7 @@
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/syncthing:pkg",
-          "version": "2.1.2_3"
+          "version": "2.1.2_4"
         },
         {
           "id": "pkg-latest",
@@ -1848,20 +1869,20 @@
       "web_url": "https://tailscale.com/",
       "image": "ghcr.io/daemonless/tailscale",
       "manifest_url": "/catalog/manifests/tailscale.yaml",
-      "version": "1.102.2_1",
+      "version": "1.102.3",
       "variants": [
         {
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "default": true,
           "image": "ghcr.io/daemonless/tailscale:pkg",
-          "version": "1.102.2_1"
+          "version": "1.102.3"
         },
         {
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/tailscale:pkg-latest",
-          "version": "1.102.2_2"
+          "version": "1.102.3"
         }
       ]
     },
@@ -1923,7 +1944,7 @@
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/traefik:pkg",
-          "version": "3.7.10_1"
+          "version": "3.7.10_2"
         },
         {
           "id": "pkg-latest",
@@ -2005,14 +2026,14 @@
       "web_url": "https://liketrek.com/",
       "image": "ghcr.io/daemonless/trek",
       "manifest_url": "/catalog/manifests/trek.yaml",
-      "version": "3.1.3",
+      "version": "3.4.1",
       "variants": [
         {
           "id": "latest",
           "label": "Built from the latest upstream TREK source release.",
           "default": true,
           "image": "ghcr.io/daemonless/trek:latest",
-          "version": "3.1.3"
+          "version": "3.4.1"
         }
       ]
     },
@@ -2051,27 +2072,6 @@
       ]
     },
     {
-      "id": "unifi-os-server",
-      "name": "UniFi OS Server",
-      "category": "Network",
-      "class": "service",
-      "icon": "https://api.iconify.design/simple-icons:ubiquiti.svg?color=%23cbd5e1",
-      "description": "Ubiquiti UniFi OS Server on FreeBSD — runs the full UniFi management stack (unifi-core, UniFi Network) using FreeBSD jails and linuxulator.",
-      "upstream_url": "https://ui.com/consoles/unifi-os-server",
-      "web_url": "https://ui.com/",
-      "image": "ghcr.io/daemonless/unifi-os-server",
-      "manifest_url": "/catalog/manifests/unifi-os-server.yaml",
-      "version": "",
-      "variants": [
-        {
-          "id": "latest",
-          "label": "Upstream binary",
-          "default": true,
-          "image": "ghcr.io/daemonless/unifi-os-server:latest"
-        }
-      ]
-    },
-    {
       "id": "uptime-kuma",
       "name": "Uptime Kuma",
       "category": "Utilities",
@@ -2082,14 +2082,14 @@
       "web_url": "https://uptime.kuma.pet/",
       "image": "ghcr.io/daemonless/uptime-kuma",
       "manifest_url": "/catalog/manifests/uptime-kuma.yaml",
-      "version": "2.5.0",
+      "version": "2.5.3",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/uptime-kuma:latest",
-          "version": "2.5.0"
+          "version": "2.5.3"
         }
       ]
     },
@@ -2124,27 +2124,6 @@
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/vaultwarden:pkg-latest",
           "version": "1.37.1"
-        }
-      ]
-    },
-    {
-      "id": "victoriametrics",
-      "name": "VictoriaMetrics",
-      "category": "Infrastructure \u0026 Monitoring",
-      "class": "service",
-      "icon": "https://api.iconify.design/mdi:chart-timeline-variant.svg?color=%23cbd5e1",
-      "description": "VictoriaMetrics is a fast, cost-effective, and scalable open-source time-series database and monitoring solution. It functions as a drop-in replacement for Prometheus with ultra-low memory usage.",
-      "upstream_url": "https://github.com/VictoriaMetrics/VictoriaMetrics",
-      "web_url": "https://victoriametrics.com/",
-      "image": "ghcr.io/daemonless/victoriametrics",
-      "manifest_url": "/catalog/manifests/victoriametrics.yaml",
-      "version": "",
-      "variants": [
-        {
-          "id": "latest",
-          "label": "Upstream binary",
-          "default": true,
-          "image": "ghcr.io/daemonless/victoriametrics:latest"
         }
       ]
     },
@@ -2187,26 +2166,26 @@
       "web_url": "https://zensical.org",
       "image": "ghcr.io/daemonless/zensical",
       "manifest_url": "/catalog/manifests/zensical.yaml",
-      "version": "0.0.53",
+      "version": "0.0.57",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/zensical:latest",
-          "version": "0.0.53"
+          "version": "0.0.57"
         },
         {
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/zensical:pkg",
-          "version": "0.0.52"
+          "version": "0.0.53"
         },
         {
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/zensical:pkg-latest",
-          "version": "0.0.52"
+          "version": "0.0.56"
         }
       ]
     },

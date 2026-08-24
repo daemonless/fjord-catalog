@@ -52,7 +52,7 @@ x-fjord:
       type: string
       default: UTC
     - name: OC_URL
-      label: URL where OpenCloud can be accessed. Must match EXACTLY what you type in the browser (protocol + hostname + port) — a mismatch (e.g. short hostname vs FQDN) causes a 'Missing or invalid config' error in the web UI with no other explanation.
+      label: URL where OpenCloud can be accessed
       type: string
       default: https://hostname:9200
   variants:
