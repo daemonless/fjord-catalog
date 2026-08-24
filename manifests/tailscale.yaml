@@ -1,0 +1,48 @@
+name: tailscale
+services:
+  tailscale:
+    image: ghcr.io/daemonless/tailscale:latest
+    container_name: tailscale
+    restart: unless-stopped
+    # Needs devices for tun
+    devices:
+      - /dev/tun:/dev/tun
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_EXTRA_ARGS=${TS_EXTRA_ARGS}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+x-fjord:
+  version: "0.1"
+  info:
+    id: tailscale
+    name: Tailscale
+    description: Zero-config mesh VPN built on WireGuard — securely connect your devices without port forwarding or firewall changes.
+    category: Infrastructure
+    class: service
+    icon: /catalog/icons/tailscale.svg
+    upstream_url: https://github.com/tailscale/tailscale
+    web_url: https://tailscale.com/
+  variables:
+    - name: CONFIG_DATA
+      label: State directory (tailscaled.state)
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: TS_AUTHKEY
+      label: 'Optional: Tailscale Auth Key for automatic login'
+      type: string
+      default: tskey-auth-xxxx
+    - name: TS_EXTRA_ARGS
+      label: 'Optional: Additional arguments for tailscale up'
+      type: string
+      default: --advertise-exit-node
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

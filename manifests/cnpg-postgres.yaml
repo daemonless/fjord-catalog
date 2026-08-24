@@ -1,0 +1,37 @@
+name: cnpg-postgres
+services:
+  cnpg-postgres:
+    image: ghcr.io/daemonless/cnpg-postgres:18
+    container_name: cnpg-postgres
+    annotations:
+      org.freebsd.jail.allow.sysvipc: "true"
+    volumes:
+      - "${DATA_PATH}:/var/lib/postgresql/data"
+    ports:
+      - "${WEB_PORT}:5432"
+x-fjord:
+  version: "0.1"
+  info:
+    id: cnpg-postgres
+    name: PostgreSQL (CloudNativePG)
+    description: PostgreSQL on FreeBSD, compatible with the CloudNativePG Kubernetes operator. Includes pgvector, pgaudit, and pg_failover_slots.
+    category: Databases
+    class: service
+    icon: /catalog/icons/cnpg-postgres.svg
+    upstream_url: https://www.postgresql.org/
+    web_url: https://cloudnative-pg.io/
+  variables:
+    - name: WEB_PORT
+      label: PostgreSQL port
+      type: port
+      default: "5432"
+    - name: DATA_PATH
+      label: Database data directory
+      type: path
+      default: ""
+  variants:
+    - id: "17"
+      label: "17"
+    - id: "18"
+      label: "18"
+      default: true

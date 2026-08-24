@@ -1,0 +1,60 @@
+name: mealie
+services:
+  mealie:
+    image: ghcr.io/daemonless/mealie:latest
+    container_name: mealie
+    restart: unless-stopped
+    environment:
+      - BASE_URL=${BASE_URL}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:9000"
+x-fjord:
+  version: "0.1"
+  info:
+    id: mealie
+    name: Mealie
+    description: Intuitive self-hosted recipe management app designed to be the best recipe management experience on the web.
+    category: Utilities
+    class: service
+    icon: /catalog/icons/mealie.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/mealie-recipes/mealie
+    web_url: https://mealie.io/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "9000"
+    - name: CONFIG_DATA
+      label: Data directory (database, images)
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: BASE_URL
+      label: The base URL for the application (e.g. https://mealie.example.com)
+      type: string
+      default: http://localhost:9000
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

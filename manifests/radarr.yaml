@@ -1,0 +1,77 @@
+name: radarr
+services:
+  radarr:
+    image: ghcr.io/daemonless/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    annotations:
+      org.freebsd.jail.allow.mlock: "true"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${MOVIES_PATH}:/movies"
+      - "${DOWNLOADS_PATH}:/downloads"
+    ports:
+      - "${WEB_PORT}:7878"
+x-fjord:
+  version: "0.1"
+  info:
+    id: radarr
+    name: Radarr
+    description: Automated movie collection manager that monitors, grabs, and manages your movie library via Usenet and BitTorrent.
+    category: Media Management
+    class: service
+    icon: /catalog/icons/radarr.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/Radarr/Radarr
+    web_url: https://radarr.video/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "7878"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: MOVIES_PATH
+      label: Movie library
+      type: path
+      default: ""
+      optional: true
+    - name: DOWNLOADS_PATH
+      label: Download directory
+      type: path
+      default: ""
+      optional: true
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true
+    - id: develop
+      label: Develop branch
+    - id: nightly
+      label: Nightly branch
+    - id: pkg
+      label: FreeBSD quarterly packages
+    - id: pkg-latest
+      label: FreeBSD latest packages

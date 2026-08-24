@@ -1,0 +1,58 @@
+name: build-catalog
+
+# Rebuilds catalog.json + manifests/ + icons/ by running the deriver over every
+# image repo in the org, then commits the result back. Runs nightly and on
+# demand. Nothing here is baked into fjord/fjordd -- this is the daemonless
+# catalog's own publishing config.
+on:
+  workflow_dispatch:
+  schedule:
+    # 2h after the daemonless-io version-check cycle (0 */6), so freshly
+    # committed sbom.json versions are picked up. Commit-on-change only, so
+    # no-op runs add nothing to history.
+    - cron: "0 2,8,14,20 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Clone image repos (shallow)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          owner="${{ github.repository_owner }}"
+          mkdir -p repos
+          gh repo list "$owner" --limit 500 --no-archived --json name -q '.[].name' \
+            | while read -r name; do
+                git clone --depth 1 "https://github.com/$owner/$name.git" "repos/$name" >/dev/null 2>&1 || true
+              done
+          echo "cloned $(ls repos | wc -l) repos"
+
+      - name: Derive catalog
+        # Versions come straight from each repo's sbom.json (no external
+        # versions service) -- see sbom_versions.go.
+        run: |
+          rm -rf manifests icons
+          go run . --repos-dir repos --out .
+
+      - name: Commit + push if changed
+        run: |
+          rm -rf repos
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add catalog.json manifests icons
+          if git diff --staged --quiet; then
+            echo "catalog unchanged"
+          else
+            git commit -m "Rebuild catalog ($(date -u +%FT%TZ))"
+            git push
+          fi

@@ -1,0 +1,61 @@
+name: nextcloud
+services:
+  nextcloud:
+    image: ghcr.io/daemonless/nextcloud:latest
+    container_name: nextcloud
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${DATA_PATH}:/data"
+    ports:
+      - "${PORT_80}:80"
+x-fjord:
+  version: "0.1"
+  info:
+    id: nextcloud
+    name: Nextcloud
+    description: Online collaboration platform providing groupware capabilities by default, extensible with additional apps.
+    category: Utilities
+    class: service
+    icon: /catalog/icons/nextcloud.svg
+    upstream_url: https://github.com/nextcloud/server
+    web_url: https://nextcloud.com/
+  variables:
+    - name: PORT_80
+      label: Web UI
+      type: port
+      default: "8082"
+    - name: CONFIG_DATA
+      label: Configuration and application files
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: DATA_PATH
+      label: User data storage
+      type: path
+      default: ""
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

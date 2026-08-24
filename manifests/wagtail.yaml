@@ -1,0 +1,70 @@
+name: wagtail
+services:
+  wagtail:
+    image: ghcr.io/daemonless/wagtail:latest
+    container_name: wagtail
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      # First-run admin login (optional):
+      - WAGTAIL_SUPERUSER_NAME=${WAGTAIL_SUPERUSER_NAME}
+      - WAGTAIL_SUPERUSER_PASSWORD=${WAGTAIL_SUPERUSER_PASSWORD}
+      # Postgres instead of SQLite (optional):
+      # - DATABASE_URL=postgres://wagtail:wagtail@postgres:5432/wagtail
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:8080"
+x-fjord:
+  version: "0.1"
+  info:
+    id: wagtail
+    name: Wagtail
+    description: Wagtail is an open source content management system built on Django, with a strong community and commercial support. It's focused on user experience, and offers precise control for designers and developers.
+    category: Productivity
+    class: service
+    icon: /catalog/icons/wagtail.png
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/wagtail/wagtail
+    web_url: https://wagtail.org/
+  variables:
+    - name: WEB_PORT
+      label: Web UI / admin (/admin)
+      type: port
+      default: "8080"
+    - name: CONFIG_DATA
+      label: Holds the generated Wagtail project (/config/app), SQLite DB, media, and the secret key. Must be persistent.
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: WAGTAIL_SUPERUSER_NAME
+      label: If set with WAGTAIL_SUPERUSER_PASSWORD, creates an admin superuser on start.
+      type: string
+      default: admin
+    - name: WAGTAIL_SUPERUSER_PASSWORD
+      label: Password for the admin superuser (with WAGTAIL_SUPERUSER_NAME).
+      type: secret
+      default: changeme
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

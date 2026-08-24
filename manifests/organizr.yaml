@@ -1,0 +1,55 @@
+name: organizr
+services:
+  organizr:
+    image: ghcr.io/daemonless/organizr:latest
+    container_name: organizr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:80"
+x-fjord:
+  version: "0.1"
+  info:
+    id: organizr
+    name: Organizr
+    description: HTPC/Homelab Services Organizer on FreeBSD.
+    category: Utilities
+    class: service
+    icon: /catalog/icons/organizr.png
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/causefx/Organizr
+    web_url: https://organizr.app/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "80"
+    - name: CONFIG_DATA
+      label: Configuration directory (database, logos)
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

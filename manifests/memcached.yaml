@@ -1,0 +1,51 @@
+name: memcached
+services:
+  memcached:
+    image: ghcr.io/daemonless/memcached:latest
+    container_name: memcached
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - MEMCACHED_ARGS=${MEMCACHED_ARGS}
+    ports:
+      - "${WEB_PORT}:11211"
+x-fjord:
+  version: "0.1"
+  info:
+    id: memcached
+    name: Memcached
+    description: High-performance distributed memory object caching system for speeding up dynamic web applications by reducing database load.
+    category: Databases
+    class: service
+    icon: /catalog/icons/memcached.svg
+    upstream_url: https://github.com/memcached/memcached
+    web_url: https://memcached.org/
+  variables:
+    - name: WEB_PORT
+      label: Memcached TCP port
+      type: port
+      default: "11211"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: MEMCACHED_ARGS
+      label: Additional memcached command-line arguments
+      type: string
+      default: ""
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

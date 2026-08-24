@@ -1,0 +1,66 @@
+name: caddy
+services:
+  caddy:
+    image: ghcr.io/daemonless/caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${DATA_PATH}:/data"
+    ports:
+      - "${WEB_PORT}:80"
+      - "${PORT_443}:443"
+      - "${PORT_443_UDP}:443/udp"
+x-fjord:
+  version: "0.1"
+  info:
+    id: caddy
+    name: Caddy
+    description: Fast, multi-platform web server and reverse proxy with automatic HTTPS, written in Go.
+    category: Network
+    class: service
+    icon: /catalog/icons/caddy.svg
+    upstream_url: https://github.com/caddyserver/caddy
+    web_url: https://caddyserver.com
+    only_for_archs:
+      - amd64
+      - aarch64
+  variables:
+    - name: WEB_PORT
+      label: HTTP
+      type: port
+      default: "80"
+    - name: PORT_443
+      label: HTTPS (TCP + UDP/HTTP-3)
+      type: port
+      default: "443"
+    - name: PORT_443_UDP
+      label: HTTPS (TCP + UDP/HTTP-3)
+      type: port
+      default: "443"
+    - name: CONFIG_DATA
+      label: Configuration directory (Caddyfile)
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: DATA_PATH
+      label: Persistent data (ACME certificates, OCSP staples)
+      type: path
+      default: ""
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Official upstream Caddy FreeBSD binary (auto-tracks latest release).
+      default: true
+    - id: pkg
+      label: FreeBSD quarterly packages
+    - id: pkg-latest
+      label: FreeBSD latest packages

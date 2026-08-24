@@ -1,0 +1,81 @@
+name: readmeabook
+services:
+  readmeabook:
+    image: ghcr.io/daemonless/readmeabook:latest
+    annotations:
+      org.freebsd.jail.allow.sysvipc: "true"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - "${CONFIG_PATH}:/app/config"
+      - "${CACHE_PATH}:/app/cache"
+      - "${DATA_PATH}:/var/lib/postgresql/data"
+      - "${REDIS_PATH}:/var/lib/redis"
+      - "${DOWNLOADS_PATH}:/downloads"
+      - "${MEDIA_PATH}:/media"
+    ports:
+      - "${WEB_PORT}:3030"
+x-fjord:
+  version: "0.1"
+  info:
+    id: readmeabook
+    name: ReadMeABook
+    description: Audiobook request and management platform with AI recommendations.
+    category: Media Management
+    class: service
+    icon: /catalog/icons/readmeabook.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/kikootwo/readmeabook
+    web_url: https://github.com/kikootwo/readmeabook
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "3030"
+    - name: CONFIG_PATH
+      label: Application configuration and secrets
+      type: path
+      default: ""
+    - name: CACHE_PATH
+      label: Thumbnail and metadata cache
+      type: path
+      default: ""
+    - name: DATA_PATH
+      label: PostgreSQL database storage
+      type: path
+      default: ""
+    - name: REDIS_PATH
+      label: Redis data persistence
+      type: path
+      default: ""
+    - name: DOWNLOADS_PATH
+      label: Download client path
+      type: path
+      default: ""
+    - name: MEDIA_PATH
+      label: Audiobook library
+      type: path
+      default: ""
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: LOG_LEVEL
+      label: 'Logging level (default: info)'
+      type: string
+      default: info
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

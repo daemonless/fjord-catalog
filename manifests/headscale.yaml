@@ -1,0 +1,63 @@
+name: headscale
+services:
+  headscale:
+    image: ghcr.io/daemonless/headscale:latest
+    container_name: headscale
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:8080"
+      - "${PORT_3478_UDP}:3478/udp"
+x-fjord:
+  version: "0.1"
+  info:
+    id: headscale
+    name: Headscale
+    description: An open source, self-hosted implementation of the Tailscale control server.
+    category: Network
+    class: service
+    icon: /catalog/icons/headscale.svg
+    upstream_url: https://github.com/juanfont/headscale
+    web_url: https://headscale.net/
+  variables:
+    - name: WEB_PORT
+      label: Control server (HTTP)
+      type: port
+      default: "8080"
+    - name: PORT_3478_UDP
+      label: Embedded DERP STUN (UDP)
+      type: port
+      default: "3478"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Built from the official upstream FreeBSD release binary.
+      default: true
+    - id: pkg
+      label: Installed from the FreeBSD quarterly package repository.
+    - id: pkg-latest
+      label: Installed from the FreeBSD latest package repository.

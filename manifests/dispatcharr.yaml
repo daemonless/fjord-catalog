@@ -1,0 +1,63 @@
+name: dispatcharr
+services:
+  dispatcharr:
+    image: ghcr.io/daemonless/dispatcharr:latest
+    container_name: dispatcharr
+    restart: unless-stopped
+    annotations:
+      org.freebsd.jail.allow.sysvipc: "true"
+    environment:
+      - TZ=${TZ}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - CELERY_NICE_LEVEL=${CELERY_NICE_LEVEL}
+    volumes:
+      - "${DATA_PATH}:/data"
+    ports:
+      - "${WEB_PORT}:9191"
+x-fjord:
+  version: "0.1"
+  info:
+    id: dispatcharr
+    name: Dispatcharr
+    description: Dispatcharr — stream dispatching and channel management.
+    category: Media Management
+    class: service
+    icon: /catalog/icons/dispatcharr.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/Dispatcharr/Dispatcharr
+    web_url: https://dispatcharr.io/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "9191"
+    - name: DATA_PATH
+      label: Persistent data — PostgreSQL cluster, media, backups, logos
+      type: path
+      default: ""
+    - name: TZ
+      label: Timezone (e.g. America/New_York)
+      type: string
+      default: UTC
+    - name: POSTGRES_DB
+      label: 'PostgreSQL database name (default: dispatcharr)'
+      type: string
+      default: dispatcharr
+    - name: POSTGRES_USER
+      label: 'PostgreSQL username (default: dispatcharr)'
+      type: string
+      default: dispatcharr
+    - name: POSTGRES_PASSWORD
+      label: 'PostgreSQL password (default: dispatcharr)'
+      type: secret
+      default: dispatcharr
+    - name: CELERY_NICE_LEVEL
+      label: 'niceness for Celery workers (default: 5)'
+      type: string
+      default: "5"
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

@@ -1,0 +1,76 @@
+name: gitea
+services:
+  gitea:
+    image: ghcr.io/daemonless/gitea:latest
+    container_name: gitea
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - SSH_PORT=${SSH_PORT}
+      - SSH_LISTEN_PORT=${SSH_LISTEN_PORT}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:3000"
+      - "${PORT_22}:22"
+x-fjord:
+  version: "0.1"
+  info:
+    id: gitea
+    name: Gitea
+    description: Lightweight self-hosted Git service — a community managed fork of Gogs written in Go.
+    category: Infrastructure
+    class: service
+    icon: /catalog/icons/gitea.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/go-gitea/gitea
+    web_url: https://about.gitea.com/
+    only_for_archs:
+      - amd64
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "3000"
+    - name: PORT_22
+      label: SSH port
+      type: port
+      default: "2222"
+    - name: CONFIG_DATA
+      label: Configuration, repositories, and data directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: SSH_PORT
+      label: Published port for sshd (used in clone URLs)
+      type: string
+      default: "2222"
+    - name: SSH_LISTEN_PORT
+      label: Port on which sshd listens inside the container
+      type: string
+      default: "22"
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true
+    - id: pkg
+      label: FreeBSD quarterly packages
+    - id: pkg-latest
+      label: FreeBSD latest packages

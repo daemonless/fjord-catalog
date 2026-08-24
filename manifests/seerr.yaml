@@ -1,0 +1,54 @@
+name: seerr
+services:
+  seerr:
+    image: ghcr.io/daemonless/seerr:latest
+    container_name: seerr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:5055"
+x-fjord:
+  version: "0.1"
+  info:
+    id: seerr
+    name: Seerr
+    description: Unified media request management (Plex, Jellyfin, Emby) on FreeBSD.
+    category: Media Management
+    class: service
+    icon: /catalog/icons/seerr.svg
+    upstream_url: https://github.com/seerr-team/seerr
+    web_url: https://seerr.io/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "5055"
+    - name: CONFIG_DATA
+      label: Configuration and database directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

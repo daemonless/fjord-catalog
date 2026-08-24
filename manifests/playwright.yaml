@@ -1,0 +1,22 @@
+name: playwright
+services:
+  playwright:
+    image: ghcr.io/daemonless/playwright:latest
+    container_name: playwright
+    # Use as a base image — run with `podman run --rm` rather than as a persistent service.
+x-fjord:
+  version: "0.1"
+  info:
+    id: playwright
+    name: Playwright
+    description: Playwright (Chromium) on FreeBSD. Use as a base image for running browser tests.
+    category: Utilities
+    class: service
+    icon: /catalog/icons/playwright.svg
+    upstream_url: https://github.com/microsoft/playwright
+    web_url: https://playwright.dev/
+  variables: []
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

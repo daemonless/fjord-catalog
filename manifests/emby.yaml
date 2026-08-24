@@ -1,0 +1,59 @@
+name: emby
+services:
+  emby:
+    image: ghcr.io/daemonless/emby:latest
+    container_name: emby
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:8096"
+x-fjord:
+  version: "0.1"
+  info:
+    id: emby
+    name: Emby
+    description: Personal media server with apps on just about every device.
+    category: Media Servers
+    class: service
+    icon: /catalog/icons/emby.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/MediaBrowser/Emby
+    web_url: https://emby.media/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "8096"
+    - name: CONFIG_DATA
+      label: Configuration and data directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages
+    - id: beta
+      label: beta

@@ -1,0 +1,62 @@
+name: samba
+services:
+  samba:
+    image: ghcr.io/daemonless/samba:pkg
+    container_name: samba
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${SHARES_PATH}:/shares"
+    ports:
+      - "${WEB_PORT}:445"
+      - "${PORT_139}:139"
+x-fjord:
+  version: "0.1"
+  info:
+    id: samba
+    name: Samba
+    description: SMB/CIFS file sharing and Active Directory compatible Domain Controller for FreeBSD.
+    category: Network
+    class: service
+    icon: /catalog/icons/samba.svg
+    upstream_url: https://www.samba.org/
+    web_url: https://www.samba.org/
+  variables:
+    - name: WEB_PORT
+      label: SMB
+      type: port
+      default: "445"
+    - name: PORT_139
+      label: NetBIOS session
+      type: port
+      default: "139"
+    - name: CONFIG_DATA
+      label: smb.conf and persistent state
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: SHARES_PATH
+      label: Shared data directories
+      type: path
+      default: ""
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: 422-pkg
+      label: 422-pkg
+    - id: 422-pkg-latest
+      label: 422-pkg-latest
+    - id: 423-pkg
+      label: 423-pkg
+      default: true
+    - id: 423-pkg-latest
+      label: 423-pkg-latest
+    - id: 423-pkg-krb
+      label: MIT Kerberos

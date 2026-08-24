@@ -1,0 +1,38 @@
+name: jellyfin-ffmpeg
+# One-shot CLI tool, not a supervised service. Kept here only as a run example.
+services:
+  jellyfin-ffmpeg:
+    image: ghcr.io/daemonless/jellyfin-ffmpeg:latest
+    container_name: jellyfin-ffmpeg
+    volumes:
+      - "${WORK_PATH}:/work"
+    working_dir: /work
+    command: ["-version"]
+x-fjord:
+  version: "0.1"
+  info:
+    id: jellyfin-ffmpeg
+    name: Jellyfin FFmpeg
+    description: |-
+      FFmpeg with the Jellyfin patch set for HDR tone mapping (the SIMD-optimized
+      tonemapx / libplacebo filters) on FreeBSD. Ships both the 7.x and 8.x lines:
+      `jellyfin-ffmpeg` (= v7, the default) / `jellyfin-ffmpeg7` / `jellyfin-ffmpeg8`
+      (and matching `*probe`) are all on PATH. Standalone CLI image, not a service.
+    category: Utilities
+    class: service
+    icon: /catalog/icons/jellyfin-ffmpeg.svg
+    upstream_url: https://github.com/jellyfin/jellyfin-ffmpeg
+    web_url: https://jellyfin.org/
+    only_for_archs:
+      - amd64
+      - aarch64
+  variables:
+    - name: WORK_PATH
+      type: path
+      default: ""
+  variants:
+    - id: "7"
+      label: "7"
+      default: true
+    - id: "8"
+      label: "8"

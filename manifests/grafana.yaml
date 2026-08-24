@@ -1,0 +1,57 @@
+name: grafana
+services:
+  grafana:
+    image: ghcr.io/daemonless/grafana:pkg
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:3000"
+x-fjord:
+  version: "0.1"
+  info:
+    id: grafana
+    name: Grafana
+    description: Grafana is an open source and composable observability and data visualization platform. Visualize metrics, logs, and traces from multiple sources like Prometheus, Loki, Elasticsearch, InfluxDB, Postgres and many more.
+    category: Network
+    class: service
+    icon: /catalog/icons/grafana.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/grafana/grafana
+    web_url: https://grafana.com/grafana/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "3000"
+    - name: CONFIG_DATA
+      label: Configuration, data, logs, plugins and provisioning
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: pkg
+      label: Installed from the FreeBSD quarterly package repository.
+      default: true
+    - id: pkg-latest
+      label: Installed from the FreeBSD latest package repository.

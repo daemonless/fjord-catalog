@@ -1,0 +1,62 @@
+name: zensical
+services:
+  zensical:
+    image: ghcr.io/daemonless/zensical:latest
+    container_name: zensical
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:8000"
+x-fjord:
+  version: "0.1"
+  info:
+    id: zensical
+    name: Zensical
+    description: Zensical is a modern static site generator designed to simplify building and maintaining project documentation.  It's built by the creators of Material for MkDocs and shares the same core design principles and philosophy - batteries included, easy to use, with powerful customization options.
+    category: Development
+    class: service
+    icon: /catalog/icons/zensical.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://zensical.org
+    web_url: https://zensical.org
+    only_for_archs:
+      - amd64
+      - aarch64
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "8000"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true
+    - id: pkg
+      label: FreeBSD quarterly packages
+    - id: pkg-latest
+      label: FreeBSD latest packages

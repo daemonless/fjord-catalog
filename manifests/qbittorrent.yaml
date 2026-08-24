@@ -1,0 +1,92 @@
+name: qbittorrent
+services:
+  qbittorrent:
+    image: ghcr.io/daemonless/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - WEBUI_PORT=${WEBUI_PORT}
+      - TORRENTING_PORT=${TORRENTING_PORT}
+      - WEBUI_PASSWORD=${WEBUI_PASSWORD}
+      - WEBUI_AUTH=${WEBUI_AUTH}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${DOWNLOADS_PATH}:/downloads"
+    ports:
+      - "${WEB_PORT}:8080"
+      - "${PORT_6881}:6881"
+      - "${PORT_6881_UDP}:6881/udp"
+x-fjord:
+  version: "0.1"
+  info:
+    id: qbittorrent
+    name: qBittorrent
+    description: Fast, stable BitTorrent client with a feature-rich web UI. Supports DHT, PEX, encryption, magnet links, RSS, IP filtering, and remote management.
+    category: Downloaders
+    class: service
+    icon: /catalog/icons/qbittorrent.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/qbittorrent/qBittorrent
+    web_url: https://www.qbittorrent.org/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "8080"
+    - name: PORT_6881
+      label: BitTorrent peer connections (TCP/UDP)
+      type: port
+      default: "6881"
+    - name: PORT_6881_UDP
+      label: BitTorrent peer connections (TCP/UDP)
+      type: port
+      default: "6881"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: DOWNLOADS_PATH
+      label: Download directory
+      type: path
+      default: ""
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: WEBUI_PORT
+      label: Web UI port (must match port mapping)
+      type: string
+      default: "8080"
+    - name: TORRENTING_PORT
+      label: BitTorrent listening port for peer connections (must match port mapping)
+      type: string
+      default: "6881"
+    - name: WEBUI_PASSWORD
+      label: Set a persistent admin password. If unset, a temporary password is generated each restart and printed to the logs.
+      type: secret
+      default: ""
+    - name: WEBUI_AUTH
+      label: 'Set to ''true'' to enable Web UI authentication. (Note: Upstream/FreeBSD port enables auth by default, but this image defaults to disabled).'
+      type: string
+      default: "false"
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

@@ -1,0 +1,82 @@
+name: jellyfin
+services:
+  jellyfin:
+    image: ghcr.io/daemonless/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    annotations:
+      org.freebsd.jail.allow.mlock: "true"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - FFMPEG_PATH=${FFMPEG_PATH}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${CACHE_PATH}:/cache" # optional
+      - "${TV_PATH}:/tv" # optional
+      - "${MOVIES_PATH}:/movies" # optional
+    ports:
+      - "${WEB_PORT}:8096"
+x-fjord:
+  version: "0.1"
+  info:
+    id: jellyfin
+    name: Jellyfin
+    description: Volunteer-built media solution that puts you in control — stream to any device from your own server, with no strings attached.
+    category: Media Servers
+    class: service
+    icon: /catalog/icons/jellyfin.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/jellyfin/jellyfin
+    web_url: https://jellyfin.org/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "8096"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: CACHE_PATH
+      label: Cache directory
+      type: path
+      default: ""
+      optional: true
+    - name: TV_PATH
+      label: TV Series library
+      type: path
+      default: ""
+      optional: true
+    - name: MOVIES_PATH
+      label: Movie library
+      type: path
+      default: ""
+      optional: true
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: FFMPEG_PATH
+      label: 'Path to the FFmpeg binary. Options: /usr/local/bin/jellyfin-ffmpeg (default) or /usr/local/bin/ffmpeg'
+      type: string
+      default: /usr/local/bin/jellyfin-ffmpeg
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

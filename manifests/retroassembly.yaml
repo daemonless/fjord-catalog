@@ -1,0 +1,45 @@
+name: retroassembly
+services:
+  retroassembly:
+    image: ghcr.io/daemonless/retroassembly:latest
+    container_name: retroassembly
+    restart: unless-stopped
+    environment:
+      - RETROASSEMBLY_RUN_TIME_DATA_DIRECTORY=${RETROASSEMBLY_RUN_TIME_DATA_DIRECTORY}
+      - RETROASSEMBLY_RUN_TIME_STORAGE_DIRECTORY=${RETROASSEMBLY_RUN_TIME_STORAGE_DIRECTORY}
+    volumes:
+      - "${DATA_PATH}:/data"
+    ports:
+      - "${WEB_PORT}:8000"
+x-fjord:
+  version: "0.1"
+  info:
+    id: retroassembly
+    name: RetroAssembly
+    description: Personal retro game collection cabinet in your browser. Play NES, SNES, Genesis, GBA, and more.
+    category: Entertainment
+    class: service
+    icon: /catalog/icons/retroassembly.svg
+    upstream_url: https://github.com/arianrhodsandlot/retroassembly
+    web_url: https://retroassembly.com/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "8000"
+    - name: DATA_PATH
+      label: Database and uploaded ROM storage
+      type: path
+      default: ""
+    - name: RETROASSEMBLY_RUN_TIME_DATA_DIRECTORY
+      label: 'Data directory for SQLite database (default: /data)'
+      type: string
+      default: /data
+    - name: RETROASSEMBLY_RUN_TIME_STORAGE_DIRECTORY
+      label: 'Directory for uploaded ROM files (default: /data/storage)'
+      type: string
+      default: /data/storage
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

@@ -1,0 +1,55 @@
+name: trek
+services:
+  trek:
+    image: ghcr.io/daemonless/trek:latest
+    container_name: trek
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:3000"
+x-fjord:
+  version: "0.1"
+  info:
+    id: trek
+    name: Trek
+    description: Self-hosted travel/trip planner with real-time collaboration, interactive maps, PWA support, SSO, budgets, and packing lists.
+    category: Productivity
+    class: service
+    icon: /catalog/icons/trek.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/mauriceboe/TREK
+    web_url: https://liketrek.com/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "3000"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Built from the latest upstream TREK source release.
+      default: true

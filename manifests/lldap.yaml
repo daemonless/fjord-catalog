@@ -1,0 +1,86 @@
+name: lldap
+services:
+  lldap:
+    image: ghcr.io/daemonless/lldap:latest
+    container_name: lldap
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - LLDAP_LDAP_USER_PASS=${LLDAP_LDAP_USER_PASS}
+      - LLDAP_LDAP_USER_EMAIL=${LLDAP_LDAP_USER_EMAIL}
+      - LLDAP_JWT_SECRET_FILE=${LLDAP_JWT_SECRET_FILE}
+      - LLDAP_KEY_SEED_FILE=${LLDAP_KEY_SEED_FILE}
+      - LLDAP_SMTP_OPTIONS__PASSWORD_FILE=${LLDAP_SMTP_OPTIONS__PASSWORD_FILE}
+    secrets:
+      - source: lldap_jwt_secret
+      - source: lldap_key_seed
+      - source: lldap_smtp_password
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:17170"
+      - "${PORT_3890}:3890"
+x-fjord:
+  version: "0.1"
+  info:
+    id: lldap
+    name: lldap
+    description: This project is a lightweight authentication server that provides an opinionated, simplified LDAP interface for authentication.
+    category: Infrastructure
+    class: service
+    icon: /catalog/icons/lldap.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/lldap/lldap
+    web_url: https://github.com/lldap/lldap
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "17170"
+    - name: PORT_3890
+      label: LDAP
+      type: port
+      default: "3890"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: LLDAP_LDAP_USER_PASS
+      type: string
+      default: '"path/to/secret"'
+    - name: LLDAP_LDAP_USER_EMAIL
+      type: string
+      default: '"path/to/secret"'
+    - name: LLDAP_JWT_SECRET_FILE
+      type: secret
+      default: '"path/to/secret"'
+    - name: LLDAP_KEY_SEED_FILE
+      type: string
+      default: '"path/to/secret"'
+    - name: LLDAP_SMTP_OPTIONS__PASSWORD_FILE
+      type: secret
+      default: '"path/to/secret"'
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

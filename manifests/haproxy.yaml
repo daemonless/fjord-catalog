@@ -1,0 +1,100 @@
+name: haproxy
+services:
+  haproxy:
+    image: ghcr.io/daemonless/haproxy:latest
+    container_name: haproxy
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:80"
+      - "${PORT_443}:443"
+      - "${PORT_8404}:8404"
+x-fjord:
+  version: "0.1"
+  info:
+    id: haproxy
+    name: HAProxy
+    description: Reliable, high performance TCP/HTTP load balancer and reverse proxy.
+    category: Infrastructure
+    class: service
+    icon: /catalog/icons/haproxy.svg
+    upstream_url: https://github.com/haproxy/haproxy
+    web_url: https://www.haproxy.org/
+  variables:
+    - name: WEB_PORT
+      label: HTTP Listener
+      type: port
+      default: "80"
+    - name: PORT_443
+      label: HTTPS Listener (optional)
+      type: port
+      default: "443"
+    - name: PORT_8404
+      label: HAProxy Stats Page (optional)
+      type: port
+      default: "8404"
+    - name: CONFIG_DATA
+      label: Configuration directory containing haproxy.conf
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: 3.4-pkg-latest
+      label: HAProxy 3.4 release branch installed from FreeBSD latest packages.
+      default: true
+    - id: 3.3-pkg-latest
+      label: HAProxy 3.3 release branch installed from FreeBSD latest packages.
+    - id: 3.2-pkg-latest
+      label: HAProxy 3.2 LTS release branch installed from FreeBSD latest packages.
+    - id: 3.0-pkg-latest
+      label: HAProxy 3.0 LTS release branch installed from FreeBSD latest packages.
+    - id: 2.8-pkg-latest
+      label: HAProxy 2.8 LTS release branch installed from FreeBSD latest packages.
+    - id: 2.6-pkg-latest
+      label: HAProxy 2.6 LTS release branch installed from FreeBSD latest packages.
+    - id: 2.4-pkg-latest
+      label: HAProxy 2.4 LTS release branch installed from FreeBSD latest packages.
+    - id: devel-pkg-latest
+      label: HAProxy development edge release branch installed from FreeBSD latest packages.
+    - id: 3.4-lua-pkg-latest
+      label: HAProxy 3.4 release branch with Lua scripting enabled.
+    - id: 3.3-lua-pkg-latest
+      label: HAProxy 3.3 release branch with Lua scripting enabled.
+    - id: 3.2-lua-pkg-latest
+      label: HAProxy 3.2 LTS release branch with Lua scripting enabled.
+    - id: 3.0-lua-pkg-latest
+      label: HAProxy 3.0 LTS release branch with Lua scripting enabled.
+    - id: 2.8-lua-pkg-latest
+      label: HAProxy 2.8 LTS release branch with Lua scripting enabled.
+    - id: 2.6-lua-pkg-latest
+      label: HAProxy 2.6 LTS release branch with Lua scripting enabled.
+    - id: 2.4-lua-pkg-latest
+      label: HAProxy 2.4 LTS release branch with Lua scripting enabled.
+    - id: 3.4-wolfssl-pkg-latest
+      label: HAProxy 3.4 release branch built with WolfSSL TLS engine.
+    - id: 3.3-wolfssl-pkg-latest
+      label: HAProxy 3.3 release branch built with WolfSSL TLS engine.
+    - id: 3.2-wolfssl-pkg-latest
+      label: HAProxy 3.2 LTS release branch built with WolfSSL TLS engine.
+    - id: 3.0-wolfssl-pkg-latest
+      label: HAProxy 3.0 LTS release branch built with WolfSSL TLS engine.

@@ -1,0 +1,30 @@
+name: ffmpeg
+# ffmpeg is a one-shot CLI (class: cli), not a service: run with --rm,
+# mount media into /work, pass ffmpeg args as the command.
+services:
+  ffmpeg:
+    image: ghcr.io/daemonless/ffmpeg:latest
+    volumes:
+      - "${WORK_PATH}:/work"
+x-fjord:
+  version: "0.1"
+  info:
+    id: ffmpeg
+    name: FFmpeg
+    description: FFmpeg CLI (audio/video transcoding) on FreeBSD.
+    category: Utilities
+    class: service
+    icon: /catalog/icons/ffmpeg.svg
+    upstream_url: https://ffmpeg.org
+    web_url: https://ffmpeg.org/
+  variables:
+    - name: WORK_PATH
+      label: Working directory for media in/out — bind-mount your files here
+      type: path
+      default: ""
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

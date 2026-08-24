@@ -1,0 +1,54 @@
+name: adguardhome-sync
+services:
+  adguardhome-sync:
+    image: ghcr.io/daemonless/adguardhome-sync:latest
+    container_name: adguardhome-sync
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:8080"
+x-fjord:
+  version: "0.1"
+  info:
+    id: adguardhome-sync
+    name: AdGuardHome Sync
+    description: Sync AdGuardHome configuration to replica instances.
+    category: Network
+    class: service
+    icon: /catalog/icons/adguardhome-sync.svg
+    upstream_url: https://github.com/bakito/adguardhome-sync
+    web_url: https://github.com/bakito/adguardhome-sync
+  variables:
+    - name: WEB_PORT
+      label: Metrics/API
+      type: port
+      default: "8080"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

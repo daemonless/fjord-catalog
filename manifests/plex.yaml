@@ -1,0 +1,75 @@
+name: plex
+services:
+  plex:
+    image: ghcr.io/daemonless/plex:latest
+    container_name: plex
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - VERSION=${VERSION}
+      - PLEX_CLAIM=${PLEX_CLAIM}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${TRANSCODE_PATH}:/transcode" # optional
+      - "${MOVIES_PATH}:/movies"
+      - "${TV_PATH}:/tv"
+x-fjord:
+  version: "0.1"
+  info:
+    id: plex
+    name: Plex Media Server
+    description: Personal media server that organizes and streams your movie, TV, and music collections to all your devices.
+    category: Media Servers
+    class: service
+    icon: /catalog/icons/plex.svg
+    upstream_url: https://github.com/daemonless/plex
+    web_url: https://plex.tv/
+  variables:
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: TRANSCODE_PATH
+      label: Transcode directory
+      type: path
+      default: ""
+      optional: true
+    - name: MOVIES_PATH
+      label: Movie library
+      type: path
+      default: ""
+    - name: TV_PATH
+      label: TV series library
+      type: path
+      default: ""
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: VERSION
+      label: Plex update channel (container, public, plexpass)
+      type: string
+      default: container
+    - name: PLEX_CLAIM
+      label: 'Optional: Claim token — get one at https://plex.tv/claim'
+      type: string
+      default: ""
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

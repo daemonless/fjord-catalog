@@ -1,0 +1,58 @@
+name: syncthing
+services:
+  syncthing:
+    image: ghcr.io/daemonless/syncthing:latest
+    container_name: syncthing
+    restart: unless-stopped
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:8384"
+      - "${PORT_22000}:22000/tcp"
+      - "${PORT_22000_UDP}:22000/udp"
+      - "${PORT_21027_UDP}:21027/udp"
+x-fjord:
+  version: "0.1"
+  info:
+    id: syncthing
+    name: Syncthing
+    description: Syncthing replaces proprietary sync and cloud services with something open, trustworthy and decentralized. Your data is your data alone and you deserve to choose where it is stored, if it is shared with some third party and how it's transmitted over the Internet.
+    category: Network
+    class: service
+    icon: /catalog/icons/syncthing.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/syncthing/syncthing
+    web_url: https://syncthing.net/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "8384"
+    - name: PORT_22000
+      label: Sync protocol (TCP/UDP)
+      type: port
+      default: "22000"
+    - name: PORT_22000_UDP
+      label: Sync protocol (TCP/UDP)
+      type: port
+      default: "22000"
+    - name: PORT_21027_UDP
+      label: Port
+      type: port
+      default: "21027"
+    - name: CONFIG_DATA
+      label: Configuration and data directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true
+    - id: pkg
+      label: FreeBSD quarterly packages
+    - id: pkg-latest
+      label: FreeBSD latest packages

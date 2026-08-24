@@ -1,0 +1,52 @@
+name: bichon
+services:
+  bichon:
+    image: ghcr.io/daemonless/bichon:latest
+    container_name: bichon
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - BICHON_ENCRYPT_PASSWORD=${BICHON_ENCRYPT_PASSWORD}
+    volumes:
+      - "${DATA_PATH}:/data"
+    ports:
+      - published: 15630
+        target: 15630
+x-fjord:
+  version: "0.1"
+  info:
+    id: bichon
+    name: Bichon
+    description: A lightweight, high-performance Rust email archiver with WebUI.
+    category: Utilities
+    class: service
+    icon: /catalog/icons/bichon.svg
+    upstream_url: https://github.com/rustmailer/bichon
+    web_url: https://github.com/rustmailer/bichon
+  variables:
+    - name: DATA_PATH
+      label: Core data and search indices
+      type: path
+      default: ""
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: BICHON_ENCRYPT_PASSWORD
+      label: Encryption password for core database
+      type: secret
+      default: changeme
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true

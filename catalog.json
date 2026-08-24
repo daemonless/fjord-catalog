@@ -1,0 +1,2314 @@
+{
+  "catalog_name": "Daemonless Apps",
+  "fjord_version": "0.1",
+  "maintainer": "https://daemonless.io",
+  "generated": "2026-08-24T21:11:28Z",
+  "apps": [
+    {
+      "id": "adguardhome",
+      "name": "AdGuard Home",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/adguardhome.svg",
+      "description": "Network-wide ad and tracker blocking DNS server. Covers all devices on your network with no client-side software — includes DoH, DoT, DoQ, and a built-in DHCP server.",
+      "upstream_url": "https://github.com/AdguardTeam/AdGuardHome",
+      "web_url": "https://adguard.com/adguard-home.html",
+      "image": "ghcr.io/daemonless/adguardhome",
+      "manifest_url": "/catalog/manifests/adguardhome.yaml",
+      "version": "v0.107.79",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/adguardhome:latest",
+          "version": "v0.107.79"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/adguardhome:pkg",
+          "version": "0.107.77_3"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/adguardhome:pkg-latest",
+          "version": "0.107.78_2"
+        }
+      ]
+    },
+    {
+      "id": "adguardhome-sync",
+      "name": "AdGuardHome Sync",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/adguardhome-sync.svg",
+      "description": "Sync AdGuardHome configuration to replica instances.",
+      "upstream_url": "https://github.com/bakito/adguardhome-sync",
+      "web_url": "https://github.com/bakito/adguardhome-sync",
+      "image": "ghcr.io/daemonless/adguardhome-sync",
+      "manifest_url": "/catalog/manifests/adguardhome-sync.yaml",
+      "version": "v0.9.2",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/adguardhome-sync:latest",
+          "version": "v0.9.2"
+        }
+      ]
+    },
+    {
+      "id": "audiobookshelf",
+      "name": "Audiobookshelf",
+      "category": "Media Servers",
+      "class": "service",
+      "icon": "/catalog/icons/audiobookshelf.svg",
+      "description": "Self-hosted audiobook and podcast server.",
+      "upstream_url": "https://github.com/advplyr/audiobookshelf",
+      "web_url": "https://www.audiobookshelf.org/",
+      "image": "ghcr.io/daemonless/audiobookshelf",
+      "manifest_url": "/catalog/manifests/audiobookshelf.yaml",
+      "version": "2.36.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/audiobookshelf:latest",
+          "version": "2.36.0"
+        }
+      ]
+    },
+    {
+      "id": "bazarr",
+      "name": "Bazarr",
+      "category": "Media Management",
+      "class": "service",
+      "icon": "/catalog/icons/bazarr.svg",
+      "description": "Bazarr is a companion application to Sonarr and Radarr. It manages and downloads subtitles based on your requirements. You define your preferences by TV show or movie and Bazarr takes care of everything for you.",
+      "upstream_url": "https://github.com/morpheus65535/bazarr",
+      "web_url": "https://www.bazarr.media/",
+      "image": "ghcr.io/daemonless/bazarr",
+      "manifest_url": "/catalog/manifests/bazarr.yaml",
+      "version": "v1.6.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/bazarr:latest",
+          "version": "v1.6.0"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/bazarr:pkg",
+          "version": "1.5.6_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/bazarr:pkg-latest",
+          "version": "1.6.0"
+        }
+      ]
+    },
+    {
+      "id": "bichon",
+      "name": "Bichon",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/bichon.svg",
+      "description": "A lightweight, high-performance Rust email archiver with WebUI.",
+      "upstream_url": "https://github.com/rustmailer/bichon",
+      "web_url": "https://github.com/rustmailer/bichon",
+      "image": "ghcr.io/daemonless/bichon",
+      "manifest_url": "/catalog/manifests/bichon.yaml",
+      "version": "2.0.2",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/bichon:latest",
+          "version": "2.0.2"
+        }
+      ]
+    },
+    {
+      "id": "bulwark-webmail",
+      "name": "Bulwark Webmail",
+      "category": "Productivity",
+      "class": "service",
+      "icon": "/catalog/icons/bulwark-webmail.svg",
+      "description": "Modern self-hosted webmail client for Stalwart Mail Server, powered by JMAP.",
+      "upstream_url": "https://github.com/bulwarkmail/webmail",
+      "web_url": "https://bulwarkmail.org/",
+      "image": "ghcr.io/daemonless/bulwark-webmail",
+      "manifest_url": "/catalog/manifests/bulwark-webmail.yaml",
+      "version": "1.8.1",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/bulwark-webmail:latest",
+          "version": "1.8.1"
+        }
+      ]
+    },
+    {
+      "id": "caddy",
+      "name": "Caddy",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/caddy.svg",
+      "description": "Fast, multi-platform web server and reverse proxy with automatic HTTPS, written in Go.",
+      "upstream_url": "https://github.com/caddyserver/caddy",
+      "web_url": "https://caddyserver.com",
+      "image": "ghcr.io/daemonless/caddy",
+      "manifest_url": "/catalog/manifests/caddy.yaml",
+      "version": "v2.11.4",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Official upstream Caddy FreeBSD binary (auto-tracks latest release).",
+          "default": true,
+          "image": "ghcr.io/daemonless/caddy:latest",
+          "version": "v2.11.4"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/caddy:pkg",
+          "version": "2.11.4_2"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/caddy:pkg-latest",
+          "version": "2.11.4_3"
+        }
+      ]
+    },
+    {
+      "id": "cloudflared",
+      "name": "Cloudflared",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/cloudflared.svg",
+      "description": "Tunneling daemon that proxies any local webserver through the Cloudflare network without DNS records or firewall changes.",
+      "upstream_url": "https://github.com/cloudflare/cloudflared",
+      "web_url": "https://developers.cloudflare.com/cloudflare-one/connections/connect-apps",
+      "image": "ghcr.io/daemonless/cloudflared",
+      "manifest_url": "/catalog/manifests/cloudflared.yaml",
+      "version": "2026.2.0_6",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/cloudflared:pkg",
+          "version": "2026.2.0_6"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/cloudflared:pkg-latest",
+          "version": "2026.2.0_7"
+        }
+      ]
+    },
+    {
+      "id": "pkg-cache",
+      "name": "Daemonless pkg cache",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/pkg-cache.svg",
+      "description": "Managed FreeBSD pkg caching appliance — proxies pkg.FreeBSD.org to speed up package fetches across image builds and insulate them from upstream rate limits/outages.",
+      "upstream_url": "https://github.com/daemonless/pkg-cache",
+      "web_url": "https://daemonless.io/images/pkg-cache/",
+      "image": "ghcr.io/daemonless/pkg-cache",
+      "manifest_url": "/catalog/manifests/pkg-cache.yaml",
+      "version": "1.3",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "daemonless Appliance",
+          "default": true,
+          "image": "ghcr.io/daemonless/pkg-cache:latest",
+          "version": "1.3"
+        }
+      ]
+    },
+    {
+      "id": "dispatcharr",
+      "name": "Dispatcharr",
+      "category": "Media Management",
+      "class": "service",
+      "icon": "/catalog/icons/dispatcharr.svg",
+      "description": "Dispatcharr — stream dispatching and channel management.",
+      "upstream_url": "https://github.com/Dispatcharr/Dispatcharr",
+      "web_url": "https://dispatcharr.io/",
+      "image": "ghcr.io/daemonless/dispatcharr",
+      "manifest_url": "/catalog/manifests/dispatcharr.yaml",
+      "version": "v0.29.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/dispatcharr:latest",
+          "version": "v0.29.0"
+        }
+      ]
+    },
+    {
+      "id": "emby",
+      "name": "Emby",
+      "category": "Media Servers",
+      "class": "service",
+      "icon": "/catalog/icons/emby.svg",
+      "description": "Personal media server with apps on just about every device.",
+      "upstream_url": "https://github.com/MediaBrowser/Emby",
+      "web_url": "https://emby.media/",
+      "image": "ghcr.io/daemonless/emby",
+      "manifest_url": "/catalog/manifests/emby.yaml",
+      "version": "4.9.3.0_1",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/emby:pkg",
+          "version": "4.9.3.0_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/emby:pkg-latest",
+          "version": "4.9.3.0_3"
+        },
+        {
+          "id": "beta",
+          "label": "beta",
+          "image": "ghcr.io/daemonless/emby:beta"
+        }
+      ]
+    },
+    {
+      "id": "ffmpeg",
+      "name": "FFmpeg",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/ffmpeg.svg",
+      "description": "FFmpeg CLI (audio/video transcoding) on FreeBSD.",
+      "upstream_url": "https://ffmpeg.org",
+      "web_url": "https://ffmpeg.org/",
+      "image": "ghcr.io/daemonless/ffmpeg",
+      "manifest_url": "/catalog/manifests/ffmpeg.yaml",
+      "version": "",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/ffmpeg:pkg"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/ffmpeg:pkg-latest"
+        }
+      ]
+    },
+    {
+      "id": "forgejo",
+      "name": "Forgejo",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/forgejo.svg",
+      "description": "Forgejo is a self-hosted lightweight software forge",
+      "upstream_url": "https://codeberg.org/forgejo/forgejo",
+      "web_url": "https://forgejo.org/",
+      "image": "ghcr.io/daemonless/forgejo",
+      "manifest_url": "/catalog/manifests/forgejo.yaml",
+      "version": "15.0.6",
+      "variants": [
+        {
+          "id": "15",
+          "label": "Built from latest upstream source release of the v15 branch.",
+          "image": "ghcr.io/daemonless/forgejo:15",
+          "version": "15.0.6"
+        },
+        {
+          "id": "15-latest",
+          "label": "Built from latest upstream source release of the v15 branch with latest FreeBSD packages.",
+          "default": true,
+          "image": "ghcr.io/daemonless/forgejo:15-latest"
+        },
+        {
+          "id": "15-pkg-latest",
+          "label": "15-pkg-latest",
+          "image": "ghcr.io/daemonless/forgejo:15-pkg-latest",
+          "version": "15.0.5"
+        },
+        {
+          "id": "16",
+          "label": "Built from latest upstream source release of the v16 branch.",
+          "image": "ghcr.io/daemonless/forgejo:16"
+        },
+        {
+          "id": "16-latest",
+          "label": "Built from latest upstream source release of the v16 branch with latest FreeBSD packages.",
+          "image": "ghcr.io/daemonless/forgejo:16-latest"
+        },
+        {
+          "id": "16-pkg-latest",
+          "label": "16-pkg-latest",
+          "image": "ghcr.io/daemonless/forgejo:16-pkg-latest"
+        }
+      ]
+    },
+    {
+      "id": "gitea",
+      "name": "Gitea",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/gitea.svg",
+      "description": "Lightweight self-hosted Git service — a community managed fork of Gogs written in Go.",
+      "upstream_url": "https://github.com/go-gitea/gitea",
+      "web_url": "https://about.gitea.com/",
+      "image": "ghcr.io/daemonless/gitea",
+      "manifest_url": "/catalog/manifests/gitea.yaml",
+      "version": "1.27.2",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/gitea:latest",
+          "version": "1.27.2"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/gitea:pkg",
+          "version": "1.26.4_2"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/gitea:pkg-latest",
+          "version": "1.26.4_2"
+        }
+      ]
+    },
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/grafana.svg",
+      "description": "Grafana is an open source and composable observability and data visualization platform. Visualize metrics, logs, and traces from multiple sources like Prometheus, Loki, Elasticsearch, InfluxDB, Postgres and many more.",
+      "upstream_url": "https://github.com/grafana/grafana",
+      "web_url": "https://grafana.com/grafana/",
+      "image": "ghcr.io/daemonless/grafana",
+      "manifest_url": "/catalog/manifests/grafana.yaml",
+      "version": "13.1.1_1",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "Installed from the FreeBSD quarterly package repository.",
+          "default": true,
+          "image": "ghcr.io/daemonless/grafana:pkg",
+          "version": "13.1.1_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "Installed from the FreeBSD latest package repository.",
+          "image": "ghcr.io/daemonless/grafana:pkg-latest",
+          "version": "13.1.1_2"
+        }
+      ]
+    },
+    {
+      "id": "haproxy",
+      "name": "HAProxy",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/haproxy.svg",
+      "description": "Reliable, high performance TCP/HTTP load balancer and reverse proxy.",
+      "upstream_url": "https://github.com/haproxy/haproxy",
+      "web_url": "https://www.haproxy.org/",
+      "image": "ghcr.io/daemonless/haproxy",
+      "manifest_url": "/catalog/manifests/haproxy.yaml",
+      "version": "3.4.3",
+      "variants": [
+        {
+          "id": "3.4-pkg-latest",
+          "label": "HAProxy 3.4 release branch installed from FreeBSD latest packages.",
+          "default": true,
+          "image": "ghcr.io/daemonless/haproxy:3.4-pkg-latest",
+          "version": "3.4.3"
+        },
+        {
+          "id": "3.3-pkg-latest",
+          "label": "HAProxy 3.3 release branch installed from FreeBSD latest packages.",
+          "image": "ghcr.io/daemonless/haproxy:3.3-pkg-latest",
+          "version": "3.3.13"
+        },
+        {
+          "id": "3.2-pkg-latest",
+          "label": "HAProxy 3.2 LTS release branch installed from FreeBSD latest packages.",
+          "image": "ghcr.io/daemonless/haproxy:3.2-pkg-latest",
+          "version": "3.2.22"
+        },
+        {
+          "id": "3.0-pkg-latest",
+          "label": "HAProxy 3.0 LTS release branch installed from FreeBSD latest packages.",
+          "image": "ghcr.io/daemonless/haproxy:3.0-pkg-latest",
+          "version": "3.0.26"
+        },
+        {
+          "id": "2.8-pkg-latest",
+          "label": "HAProxy 2.8 LTS release branch installed from FreeBSD latest packages.",
+          "image": "ghcr.io/daemonless/haproxy:2.8-pkg-latest",
+          "version": "2.8.27"
+        },
+        {
+          "id": "2.6-pkg-latest",
+          "label": "HAProxy 2.6 LTS release branch installed from FreeBSD latest packages.",
+          "image": "ghcr.io/daemonless/haproxy:2.6-pkg-latest",
+          "version": "2.6.32"
+        },
+        {
+          "id": "2.4-pkg-latest",
+          "label": "HAProxy 2.4 LTS release branch installed from FreeBSD latest packages.",
+          "image": "ghcr.io/daemonless/haproxy:2.4-pkg-latest",
+          "version": "2.4.35"
+        },
+        {
+          "id": "devel-pkg-latest",
+          "label": "HAProxy development edge release branch installed from FreeBSD latest packages.",
+          "image": "ghcr.io/daemonless/haproxy:devel-pkg-latest"
+        },
+        {
+          "id": "3.4-lua-pkg-latest",
+          "label": "HAProxy 3.4 release branch with Lua scripting enabled.",
+          "image": "ghcr.io/daemonless/haproxy:3.4-lua-pkg-latest"
+        },
+        {
+          "id": "3.3-lua-pkg-latest",
+          "label": "HAProxy 3.3 release branch with Lua scripting enabled.",
+          "image": "ghcr.io/daemonless/haproxy:3.3-lua-pkg-latest"
+        },
+        {
+          "id": "3.2-lua-pkg-latest",
+          "label": "HAProxy 3.2 LTS release branch with Lua scripting enabled.",
+          "image": "ghcr.io/daemonless/haproxy:3.2-lua-pkg-latest"
+        },
+        {
+          "id": "3.0-lua-pkg-latest",
+          "label": "HAProxy 3.0 LTS release branch with Lua scripting enabled.",
+          "image": "ghcr.io/daemonless/haproxy:3.0-lua-pkg-latest"
+        },
+        {
+          "id": "2.8-lua-pkg-latest",
+          "label": "HAProxy 2.8 LTS release branch with Lua scripting enabled.",
+          "image": "ghcr.io/daemonless/haproxy:2.8-lua-pkg-latest"
+        },
+        {
+          "id": "2.6-lua-pkg-latest",
+          "label": "HAProxy 2.6 LTS release branch with Lua scripting enabled.",
+          "image": "ghcr.io/daemonless/haproxy:2.6-lua-pkg-latest"
+        },
+        {
+          "id": "2.4-lua-pkg-latest",
+          "label": "HAProxy 2.4 LTS release branch with Lua scripting enabled.",
+          "image": "ghcr.io/daemonless/haproxy:2.4-lua-pkg-latest"
+        },
+        {
+          "id": "3.4-wolfssl-pkg-latest",
+          "label": "HAProxy 3.4 release branch built with WolfSSL TLS engine.",
+          "image": "ghcr.io/daemonless/haproxy:3.4-wolfssl-pkg-latest"
+        },
+        {
+          "id": "3.3-wolfssl-pkg-latest",
+          "label": "HAProxy 3.3 release branch built with WolfSSL TLS engine.",
+          "image": "ghcr.io/daemonless/haproxy:3.3-wolfssl-pkg-latest"
+        },
+        {
+          "id": "3.2-wolfssl-pkg-latest",
+          "label": "HAProxy 3.2 LTS release branch built with WolfSSL TLS engine.",
+          "image": "ghcr.io/daemonless/haproxy:3.2-wolfssl-pkg-latest"
+        },
+        {
+          "id": "3.0-wolfssl-pkg-latest",
+          "label": "HAProxy 3.0 LTS release branch built with WolfSSL TLS engine.",
+          "image": "ghcr.io/daemonless/haproxy:3.0-wolfssl-pkg-latest"
+        }
+      ]
+    },
+    {
+      "id": "headscale",
+      "name": "Headscale",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/headscale.svg",
+      "description": "An open source, self-hosted implementation of the Tailscale control server.",
+      "upstream_url": "https://github.com/juanfont/headscale",
+      "web_url": "https://headscale.net/",
+      "image": "ghcr.io/daemonless/headscale",
+      "manifest_url": "/catalog/manifests/headscale.yaml",
+      "version": "0.29.3",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Built from the official upstream FreeBSD release binary.",
+          "default": true,
+          "image": "ghcr.io/daemonless/headscale:latest",
+          "version": "0.29.3"
+        },
+        {
+          "id": "pkg",
+          "label": "Installed from the FreeBSD quarterly package repository.",
+          "image": "ghcr.io/daemonless/headscale:pkg",
+          "version": "0.27.1_8"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "Installed from the FreeBSD latest package repository.",
+          "image": "ghcr.io/daemonless/headscale:pkg-latest",
+          "version": "0.27.1_9"
+        }
+      ]
+    },
+    {
+      "id": "heimdall",
+      "name": "Heimdall",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/heimdall.svg",
+      "description": "An Application dashboard and launcher — organize all your web apps and services in one place.",
+      "upstream_url": "https://github.com/linuxserver/Heimdall",
+      "web_url": "https://heimdall.site/",
+      "image": "ghcr.io/daemonless/heimdall",
+      "manifest_url": "/catalog/manifests/heimdall.yaml",
+      "version": "v2.8.2",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/heimdall:latest",
+          "version": "v2.8.2"
+        }
+      ]
+    },
+    {
+      "id": "home-assistant",
+      "name": "Home Assistant",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/home-assistant.svg",
+      "description": "Open source home automation that puts local control and privacy first.",
+      "upstream_url": "https://github.com/daemonless/home-assistant",
+      "web_url": "https://www.home-assistant.io/",
+      "image": "ghcr.io/daemonless/home-assistant",
+      "manifest_url": "/catalog/manifests/home-assistant.yaml",
+      "version": "2026.6.4",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/home-assistant:latest",
+          "version": "2026.6.4"
+        }
+      ]
+    },
+    {
+      "id": "homepage",
+      "name": "Homepage",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/homepage.png",
+      "description": "Modern, fully static, fast, secure and highly customizable application dashboard with integrations for over 100 services.",
+      "upstream_url": "https://github.com/gethomepage/homepage",
+      "web_url": "https://gethomepage.dev/",
+      "image": "ghcr.io/daemonless/homepage",
+      "manifest_url": "/catalog/manifests/homepage.yaml",
+      "version": "2.1.2",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/homepage:latest",
+          "version": "2.1.2"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/homepage:pkg",
+          "version": "1.12.3"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/homepage:pkg-latest",
+          "version": "1.13.2"
+        }
+      ]
+    },
+    {
+      "id": "hugo",
+      "name": "Hugo",
+      "category": "Development",
+      "class": "service",
+      "icon": "/catalog/icons/hugo.svg",
+      "description": "Fast and flexible static site generator — builds your entire site at creation time rather than on each request.",
+      "upstream_url": "https://github.com/gohugoio/hugo",
+      "web_url": "https://gohugo.io/",
+      "image": "ghcr.io/daemonless/hugo",
+      "manifest_url": "/catalog/manifests/hugo.yaml",
+      "version": "v0.165.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/hugo:latest",
+          "version": "v0.165.0"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/hugo:pkg",
+          "version": "0.163.3_2_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/hugo:pkg-latest",
+          "version": "0.165.0_2_1"
+        }
+      ]
+    },
+    {
+      "id": "immich",
+      "name": "Immich",
+      "category": "Photos \u0026 Media",
+      "class": "stack",
+      "icon": "/catalog/icons/immich.svg",
+      "description": "High performance self-hosted photo and video management solution.",
+      "upstream_url": "https://github.com/immich-app/immich",
+      "web_url": "https://immich.app/",
+      "image": "ghcr.io/daemonless/immich-server",
+      "manifest_url": "/catalog/manifests/immich.yaml",
+      "version": "",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Latest",
+          "default": true,
+          "image": "ghcr.io/daemonless/immich-server:latest"
+        }
+      ]
+    },
+    {
+      "id": "immich-public-proxy",
+      "name": "Immich Public Proxy",
+      "category": "Photos \u0026 Media",
+      "class": "service",
+      "icon": "/catalog/icons/immich-public-proxy.svg",
+      "description": "Share Immich photos and albums publicly without exposing the Immich instance itself.",
+      "upstream_url": "https://github.com/alangrainger/immich-public-proxy",
+      "web_url": "https://github.com/alangrainger/immich-public-proxy",
+      "image": "ghcr.io/daemonless/immich-public-proxy",
+      "manifest_url": "/catalog/manifests/immich-public-proxy.yaml",
+      "version": "v3.0.1",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/immich-public-proxy:latest",
+          "version": "v3.0.1"
+        }
+      ]
+    },
+    {
+      "id": "jellyfin",
+      "name": "Jellyfin",
+      "category": "Media Servers",
+      "class": "service",
+      "icon": "/catalog/icons/jellyfin.svg",
+      "description": "Volunteer-built media solution that puts you in control — stream to any device from your own server, with no strings attached.",
+      "upstream_url": "https://github.com/jellyfin/jellyfin",
+      "web_url": "https://jellyfin.org/",
+      "image": "ghcr.io/daemonless/jellyfin",
+      "manifest_url": "/catalog/manifests/jellyfin.yaml",
+      "version": "10.11.11",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/jellyfin:pkg",
+          "version": "10.11.11"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/jellyfin:pkg-latest",
+          "version": "10.11.11"
+        }
+      ]
+    },
+    {
+      "id": "jellyfin-ffmpeg",
+      "name": "Jellyfin FFmpeg",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/jellyfin-ffmpeg.svg",
+      "description": "FFmpeg with the Jellyfin patch set for HDR tone mapping (the SIMD-optimized\ntonemapx / libplacebo filters) on FreeBSD. Ships both the 7.x and 8.x lines:\n`jellyfin-ffmpeg` (= v7, the default) / `jellyfin-ffmpeg7` / `jellyfin-ffmpeg8`\n(and matching `*probe`) are all on PATH. Standalone CLI image, not a service.",
+      "upstream_url": "https://github.com/jellyfin/jellyfin-ffmpeg",
+      "web_url": "https://jellyfin.org/",
+      "image": "ghcr.io/daemonless/jellyfin-ffmpeg",
+      "manifest_url": "/catalog/manifests/jellyfin-ffmpeg.yaml",
+      "version": "7.1.4.3",
+      "variants": [
+        {
+          "id": "7",
+          "label": "7",
+          "default": true,
+          "image": "ghcr.io/daemonless/jellyfin-ffmpeg:7",
+          "version": "7.1.4.3"
+        },
+        {
+          "id": "8",
+          "label": "8",
+          "image": "ghcr.io/daemonless/jellyfin-ffmpeg:8",
+          "version": "8.1.2.2_1"
+        }
+      ]
+    },
+    {
+      "id": "lidarr",
+      "name": "Lidarr",
+      "category": "Media Management",
+      "class": "service",
+      "icon": "/catalog/icons/lidarr.svg",
+      "description": "Music collection manager for Usenet and BitTorrent users — monitors RSS feeds, grabs, sorts, and renames tracks from your favorite artists.",
+      "upstream_url": "https://github.com/Lidarr/Lidarr",
+      "web_url": "https://lidarr.audio/",
+      "image": "ghcr.io/daemonless/lidarr",
+      "manifest_url": "/catalog/manifests/lidarr.yaml",
+      "version": "3.1.0.4875",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/lidarr:latest",
+          "version": "3.1.0.4875"
+        },
+        {
+          "id": "develop",
+          "label": "Develop branch",
+          "image": "ghcr.io/daemonless/lidarr:develop"
+        },
+        {
+          "id": "nightly",
+          "label": "Nightly branch",
+          "image": "ghcr.io/daemonless/lidarr:nightly"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/lidarr:pkg",
+          "version": "3.1.0.4875"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/lidarr:pkg-latest",
+          "version": "3.1.0.4875"
+        }
+      ]
+    },
+    {
+      "id": "mariadb",
+      "name": "MariaDB",
+      "category": "Databases",
+      "class": "service",
+      "icon": "/catalog/icons/mariadb.svg",
+      "description": "Drop-in replacement for MySQL built by the original authors — extends core MySQL functionality with alternate storage engines, server optimizations, and patches.",
+      "upstream_url": "https://github.com/MariaDB/server",
+      "web_url": "https://mariadb.org/",
+      "image": "ghcr.io/daemonless/mariadb",
+      "manifest_url": "/catalog/manifests/mariadb.yaml",
+      "version": "12.3.2_1",
+      "variants": [
+        {
+          "id": "10.11-pkg-latest",
+          "label": "10.11-pkg-latest",
+          "image": "ghcr.io/daemonless/mariadb:10.11-pkg-latest",
+          "version": "10.11.18"
+        },
+        {
+          "id": "11.4-pkg-latest",
+          "label": "11.4-pkg-latest",
+          "image": "ghcr.io/daemonless/mariadb:11.4-pkg-latest",
+          "version": "11.4.12"
+        },
+        {
+          "id": "11.8-pkg-latest",
+          "label": "11.8-pkg-latest",
+          "image": "ghcr.io/daemonless/mariadb:11.8-pkg-latest",
+          "version": "11.8.8"
+        },
+        {
+          "id": "12.3-pkg-latest",
+          "label": "12.3-pkg-latest",
+          "default": true,
+          "image": "ghcr.io/daemonless/mariadb:12.3-pkg-latest",
+          "version": "12.3.2_1"
+        }
+      ]
+    },
+    {
+      "id": "mealie",
+      "name": "Mealie",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/mealie.svg",
+      "description": "Intuitive self-hosted recipe management app designed to be the best recipe management experience on the web.",
+      "upstream_url": "https://github.com/mealie-recipes/mealie",
+      "web_url": "https://mealie.io/",
+      "image": "ghcr.io/daemonless/mealie",
+      "manifest_url": "/catalog/manifests/mealie.yaml",
+      "version": "v3.23.1",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/mealie:latest",
+          "version": "v3.23.1"
+        }
+      ]
+    },
+    {
+      "id": "memcached",
+      "name": "Memcached",
+      "category": "Databases",
+      "class": "service",
+      "icon": "/catalog/icons/memcached.svg",
+      "description": "High-performance distributed memory object caching system for speeding up dynamic web applications by reducing database load.",
+      "upstream_url": "https://github.com/memcached/memcached",
+      "web_url": "https://memcached.org/",
+      "image": "ghcr.io/daemonless/memcached",
+      "manifest_url": "/catalog/manifests/memcached.yaml",
+      "version": "1.6.43",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/memcached:pkg",
+          "version": "1.6.43"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/memcached:pkg-latest",
+          "version": "1.6.45"
+        }
+      ]
+    },
+    {
+      "id": "navidrome",
+      "name": "Navidrome",
+      "category": "Media Servers",
+      "class": "service",
+      "icon": "/catalog/icons/navidrome.png",
+      "description": "Modern Music Server and Streamer compatible with Subsonic/Airsonic.",
+      "upstream_url": "https://www.navidrome.org/",
+      "web_url": "https://www.navidrome.org/",
+      "image": "ghcr.io/daemonless/navidrome",
+      "manifest_url": "/catalog/manifests/navidrome.yaml",
+      "version": "0.62.0_2",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/navidrome:pkg",
+          "version": "0.62.0_2"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/navidrome:pkg-latest",
+          "version": "0.63.2_2"
+        }
+      ]
+    },
+    {
+      "id": "nextcloud",
+      "name": "Nextcloud",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/nextcloud.svg",
+      "description": "Online collaboration platform providing groupware capabilities by default, extensible with additional apps.",
+      "upstream_url": "https://github.com/nextcloud/server",
+      "web_url": "https://nextcloud.com/",
+      "image": "ghcr.io/daemonless/nextcloud",
+      "manifest_url": "/catalog/manifests/nextcloud.yaml",
+      "version": "34.0.1_1",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/nextcloud:pkg",
+          "version": "34.0.1_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/nextcloud:pkg-latest",
+          "version": "34.0.3"
+        }
+      ]
+    },
+    {
+      "id": "nocodb",
+      "name": "NocoDB",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/nocodb.svg",
+      "description": "Free and self-hostable Airtable alternative — turn any database into a smart spreadsheet.",
+      "upstream_url": "https://github.com/nocodb/nocodb",
+      "web_url": "https://nocodb.com/",
+      "image": "ghcr.io/daemonless/nocodb",
+      "manifest_url": "/catalog/manifests/nocodb.yaml",
+      "version": "0.301.3",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/nocodb:latest",
+          "version": "0.301.3"
+        }
+      ]
+    },
+    {
+      "id": "opencloud",
+      "name": "OpenCloud",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/opencloud.svg",
+      "description": "OpenCloud is a modern file-sync and share platform.",
+      "upstream_url": "https://github.com/daemonless/opencloud",
+      "web_url": "https://opencloud.eu/",
+      "image": "ghcr.io/daemonless/opencloud",
+      "manifest_url": "/catalog/manifests/opencloud.yaml",
+      "version": "",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/opencloud:latest"
+        }
+      ]
+    },
+    {
+      "id": "radicale",
+      "name": "OpenCloud-Radicale",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/opencloud-radicale.svg",
+      "description": "A simple CalDAV (calendar) and CardDAV (contact) server.",
+      "upstream_url": "https://github.com/daemonless/opencloud-radicale",
+      "web_url": "https://radicale.org/",
+      "image": "ghcr.io/daemonless/opencloud-radicale",
+      "manifest_url": "/catalog/manifests/opencloud-radicale.yaml",
+      "version": "3.7.8",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/opencloud-radicale:latest",
+          "version": "3.7.8"
+        }
+      ]
+    },
+    {
+      "id": "openspeedtest",
+      "name": "OpenSpeedTest",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/openspeedtest.svg",
+      "description": "Self-hosted HTML5 Network Speed Test on FreeBSD.",
+      "upstream_url": "https://github.com/openspeedtest/Speed-Test",
+      "web_url": "https://openspeedtest.com/",
+      "image": "ghcr.io/daemonless/openspeedtest",
+      "manifest_url": "/catalog/manifests/openspeedtest.yaml",
+      "version": "2.0.5",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/openspeedtest:latest",
+          "version": "2.0.5"
+        }
+      ]
+    },
+    {
+      "id": "organizr",
+      "name": "Organizr",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/organizr.png",
+      "description": "HTPC/Homelab Services Organizer on FreeBSD.",
+      "upstream_url": "https://github.com/causefx/Organizr",
+      "web_url": "https://organizr.app/",
+      "image": "ghcr.io/daemonless/organizr",
+      "manifest_url": "/catalog/manifests/organizr.yaml",
+      "version": "2026-05-19",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/organizr:latest",
+          "version": "2026-05-19"
+        }
+      ]
+    },
+    {
+      "id": "papra",
+      "name": "Papra",
+      "category": "Productivity",
+      "class": "service",
+      "icon": "/catalog/icons/papra.svg",
+      "description": "Minimalist self-hosted document management platform (Paperless alternative) on FreeBSD.",
+      "upstream_url": "https://github.com/papra-hq/papra",
+      "web_url": "https://papra.app",
+      "image": "ghcr.io/daemonless/papra",
+      "manifest_url": "/catalog/manifests/papra.yaml",
+      "version": "26.6.1",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/papra:latest",
+          "version": "26.6.1"
+        }
+      ]
+    },
+    {
+      "id": "playwright",
+      "name": "Playwright",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/playwright.svg",
+      "description": "Playwright (Chromium) on FreeBSD. Use as a base image for running browser tests.",
+      "upstream_url": "https://github.com/microsoft/playwright",
+      "web_url": "https://playwright.dev/",
+      "image": "ghcr.io/daemonless/playwright",
+      "manifest_url": "/catalog/manifests/playwright.yaml",
+      "version": "1.62.1",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/playwright:latest",
+          "version": "1.62.1"
+        }
+      ]
+    },
+    {
+      "id": "plex",
+      "name": "Plex Media Server",
+      "category": "Media Servers",
+      "class": "service",
+      "icon": "/catalog/icons/plex.svg",
+      "description": "Personal media server that organizes and streams your movie, TV, and music collections to all your devices.",
+      "upstream_url": "https://github.com/daemonless/plex",
+      "web_url": "https://plex.tv/",
+      "image": "ghcr.io/daemonless/plex",
+      "manifest_url": "/catalog/manifests/plex.yaml",
+      "version": "1.43.3.10896-cb3ebc72d",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/plex:latest",
+          "version": "1.43.3.10896-cb3ebc72d"
+        }
+      ]
+    },
+    {
+      "id": "postgres",
+      "name": "PostgreSQL",
+      "category": "Databases",
+      "class": "service",
+      "icon": "/catalog/icons/postgres.svg",
+      "description": "The World's Most Advanced Open Source Relational Database on FreeBSD.",
+      "upstream_url": "https://www.postgresql.org/",
+      "web_url": "https://www.postgresql.org/",
+      "image": "ghcr.io/daemonless/postgres",
+      "manifest_url": "/catalog/manifests/postgres.yaml",
+      "version": "18.4",
+      "variants": [
+        {
+          "id": "14",
+          "label": "14",
+          "image": "ghcr.io/daemonless/postgres:14",
+          "version": "14.23"
+        },
+        {
+          "id": "14-pkg-latest",
+          "label": "14-pkg-latest",
+          "image": "ghcr.io/daemonless/postgres:14-pkg-latest",
+          "version": "14.24"
+        },
+        {
+          "id": "15",
+          "label": "15",
+          "image": "ghcr.io/daemonless/postgres:15",
+          "version": "15.18"
+        },
+        {
+          "id": "15-pkg-latest",
+          "label": "15-pkg-latest",
+          "image": "ghcr.io/daemonless/postgres:15-pkg-latest",
+          "version": "15.19"
+        },
+        {
+          "id": "16",
+          "label": "16",
+          "image": "ghcr.io/daemonless/postgres:16",
+          "version": "16.14"
+        },
+        {
+          "id": "16-pkg-latest",
+          "label": "16-pkg-latest",
+          "image": "ghcr.io/daemonless/postgres:16-pkg-latest",
+          "version": "16.15"
+        },
+        {
+          "id": "17",
+          "label": "17",
+          "image": "ghcr.io/daemonless/postgres:17",
+          "version": "17.10"
+        },
+        {
+          "id": "17-pkg-latest",
+          "label": "17-pkg-latest",
+          "image": "ghcr.io/daemonless/postgres:17-pkg-latest",
+          "version": "17.11"
+        },
+        {
+          "id": "18",
+          "label": "18",
+          "default": true,
+          "image": "ghcr.io/daemonless/postgres:18",
+          "version": "18.4"
+        },
+        {
+          "id": "18-pkg-latest",
+          "label": "18-pkg-latest",
+          "image": "ghcr.io/daemonless/postgres:18-pkg-latest",
+          "version": "18.6"
+        }
+      ]
+    },
+    {
+      "id": "cnpg-postgres",
+      "name": "PostgreSQL (CloudNativePG)",
+      "category": "Databases",
+      "class": "service",
+      "icon": "/catalog/icons/cnpg-postgres.svg",
+      "description": "PostgreSQL on FreeBSD, compatible with the CloudNativePG Kubernetes operator. Includes pgvector, pgaudit, and pg_failover_slots.",
+      "upstream_url": "https://www.postgresql.org/",
+      "web_url": "https://cloudnative-pg.io/",
+      "image": "ghcr.io/daemonless/cnpg-postgres",
+      "manifest_url": "/catalog/manifests/cnpg-postgres.yaml",
+      "version": "18.4",
+      "variants": [
+        {
+          "id": "17",
+          "label": "17",
+          "image": "ghcr.io/daemonless/cnpg-postgres:17",
+          "version": "17.10"
+        },
+        {
+          "id": "18",
+          "label": "18",
+          "default": true,
+          "image": "ghcr.io/daemonless/cnpg-postgres:18",
+          "version": "18.4"
+        }
+      ]
+    },
+    {
+      "id": "prowlarr",
+      "name": "Prowlarr",
+      "category": "Media Management",
+      "class": "service",
+      "icon": "/catalog/icons/prowlarr.svg",
+      "description": "Indexer manager and proxy for Sonarr, Radarr, and other *arr applications — centralizes indexer configuration across your media stack.",
+      "upstream_url": "https://github.com/Prowlarr/Prowlarr",
+      "web_url": "https://prowlarr.com/",
+      "image": "ghcr.io/daemonless/prowlarr",
+      "manifest_url": "/catalog/manifests/prowlarr.yaml",
+      "version": "2.5.2.5491",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/prowlarr:latest",
+          "version": "2.5.2.5491"
+        },
+        {
+          "id": "develop",
+          "label": "Develop branch",
+          "image": "ghcr.io/daemonless/prowlarr:develop"
+        },
+        {
+          "id": "nightly",
+          "label": "Nightly branch",
+          "image": "ghcr.io/daemonless/prowlarr:nightly"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/prowlarr:pkg",
+          "version": "2.3.5.5327"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/prowlarr:pkg-latest",
+          "version": "2.4.0.5397"
+        }
+      ]
+    },
+    {
+      "id": "radarr",
+      "name": "Radarr",
+      "category": "Media Management",
+      "class": "service",
+      "icon": "/catalog/icons/radarr.svg",
+      "description": "Automated movie collection manager that monitors, grabs, and manages your movie library via Usenet and BitTorrent.",
+      "upstream_url": "https://github.com/Radarr/Radarr",
+      "web_url": "https://radarr.video/",
+      "image": "ghcr.io/daemonless/radarr",
+      "manifest_url": "/catalog/manifests/radarr.yaml",
+      "version": "6.3.0.10514",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/radarr:latest",
+          "version": "6.3.0.10514"
+        },
+        {
+          "id": "develop",
+          "label": "Develop branch",
+          "image": "ghcr.io/daemonless/radarr:develop"
+        },
+        {
+          "id": "nightly",
+          "label": "Nightly branch",
+          "image": "ghcr.io/daemonless/radarr:nightly"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/radarr:pkg",
+          "version": "6.1.1.10360"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/radarr:pkg-latest",
+          "version": "6.3.0.10514"
+        }
+      ]
+    },
+    {
+      "id": "readmeabook",
+      "name": "ReadMeABook",
+      "category": "Media Management",
+      "class": "service",
+      "icon": "/catalog/icons/readmeabook.svg",
+      "description": "Audiobook request and management platform with AI recommendations.",
+      "upstream_url": "https://github.com/kikootwo/readmeabook",
+      "web_url": "https://github.com/kikootwo/readmeabook",
+      "image": "ghcr.io/daemonless/readmeabook",
+      "manifest_url": "/catalog/manifests/readmeabook.yaml",
+      "version": "v1.2.2",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/readmeabook:latest",
+          "version": "v1.2.2"
+        }
+      ]
+    },
+    {
+      "id": "redis",
+      "name": "Redis",
+      "category": "Databases",
+      "class": "service",
+      "icon": "/catalog/icons/redis.svg",
+      "description": "Redis key-value store on FreeBSD.",
+      "upstream_url": "https://github.com/redis/redis",
+      "web_url": "https://redis.io/",
+      "image": "ghcr.io/daemonless/redis",
+      "manifest_url": "/catalog/manifests/redis.yaml",
+      "version": "8.10.0",
+      "variants": [
+        {
+          "id": "8.8-pkg-latest",
+          "label": "8.8-pkg-latest",
+          "default": true,
+          "image": "ghcr.io/daemonless/redis:8.8-pkg-latest",
+          "version": "8.10.0"
+        },
+        {
+          "id": "6.2-pkg-latest",
+          "label": "6.2-pkg-latest",
+          "image": "ghcr.io/daemonless/redis:6.2-pkg-latest",
+          "version": "6.2.23"
+        },
+        {
+          "id": "7.2-pkg-latest",
+          "label": "7.2-pkg-latest",
+          "image": "ghcr.io/daemonless/redis:7.2-pkg-latest",
+          "version": "7.2.15"
+        },
+        {
+          "id": "7.4-pkg-latest",
+          "label": "7.4-pkg-latest",
+          "image": "ghcr.io/daemonless/redis:7.4-pkg-latest",
+          "version": "7.4.10"
+        },
+        {
+          "id": "8.0-pkg-latest",
+          "label": "8.0-pkg-latest",
+          "image": "ghcr.io/daemonless/redis:8.0-pkg-latest",
+          "version": "8.0.6"
+        },
+        {
+          "id": "8.2-pkg-latest",
+          "label": "8.2-pkg-latest",
+          "image": "ghcr.io/daemonless/redis:8.2-pkg-latest",
+          "version": "8.2.8"
+        },
+        {
+          "id": "8.4-pkg-latest",
+          "label": "8.4-pkg-latest",
+          "image": "ghcr.io/daemonless/redis:8.4-pkg-latest",
+          "version": "8.4.5"
+        },
+        {
+          "id": "8.6-pkg-latest",
+          "label": "8.6-pkg-latest",
+          "image": "ghcr.io/daemonless/redis:8.6-pkg-latest",
+          "version": "8.6.5"
+        }
+      ]
+    },
+    {
+      "id": "retroassembly",
+      "name": "RetroAssembly",
+      "category": "Entertainment",
+      "class": "service",
+      "icon": "/catalog/icons/retroassembly.svg",
+      "description": "Personal retro game collection cabinet in your browser. Play NES, SNES, Genesis, GBA, and more.",
+      "upstream_url": "https://github.com/arianrhodsandlot/retroassembly",
+      "web_url": "https://retroassembly.com/",
+      "image": "ghcr.io/daemonless/retroassembly",
+      "manifest_url": "/catalog/manifests/retroassembly.yaml",
+      "version": "v7.260719.1051",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/retroassembly:latest",
+          "version": "v7.260719.1051"
+        }
+      ]
+    },
+    {
+      "id": "sabnzbd",
+      "name": "SABnzbd",
+      "category": "Downloaders",
+      "class": "service",
+      "icon": "/catalog/icons/sabnzbd.svg",
+      "description": "Free and easy binary newsreader that automates the downloading and processing of Usenet content.",
+      "upstream_url": "https://github.com/sabnzbd/sabnzbd",
+      "web_url": "https://sabnzbd.org/",
+      "image": "ghcr.io/daemonless/sabnzbd",
+      "manifest_url": "/catalog/manifests/sabnzbd.yaml",
+      "version": "5.1.1",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/sabnzbd:latest",
+          "version": "5.1.1"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/sabnzbd:pkg",
+          "version": "5.0.1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/sabnzbd:pkg-latest",
+          "version": "5.0.1"
+        }
+      ]
+    },
+    {
+      "id": "samba",
+      "name": "Samba",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/samba.svg",
+      "description": "SMB/CIFS file sharing and Active Directory compatible Domain Controller for FreeBSD.",
+      "upstream_url": "https://www.samba.org/",
+      "web_url": "https://www.samba.org/",
+      "image": "ghcr.io/daemonless/samba",
+      "manifest_url": "/catalog/manifests/samba.yaml",
+      "version": "4.23.8_1",
+      "variants": [
+        {
+          "id": "422-pkg",
+          "label": "422-pkg",
+          "image": "ghcr.io/daemonless/samba:422-pkg",
+          "version": "4.22.10_1"
+        },
+        {
+          "id": "422-pkg-latest",
+          "label": "422-pkg-latest",
+          "image": "ghcr.io/daemonless/samba:422-pkg-latest",
+          "version": "4.22.11"
+        },
+        {
+          "id": "423-pkg",
+          "label": "423-pkg",
+          "default": true,
+          "image": "ghcr.io/daemonless/samba:423-pkg",
+          "version": "4.23.8_1"
+        },
+        {
+          "id": "423-pkg-latest",
+          "label": "423-pkg-latest",
+          "image": "ghcr.io/daemonless/samba:423-pkg-latest",
+          "version": "4.23.11_1"
+        },
+        {
+          "id": "423-pkg-krb",
+          "label": "MIT Kerberos",
+          "image": "ghcr.io/daemonless/samba:423-pkg-krb"
+        }
+      ]
+    },
+    {
+      "id": "seaweedfs",
+      "name": "SeaweedFS",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/seaweedfs.svg",
+      "description": "SeaweedFS is a fast distributed storage system for blobs, objects, files, and a data lake, scaling to billions of files. It provides an S3 API, POSIX FUSE mount, WebDAV, and a Filer with cross-cluster active-active replication.",
+      "upstream_url": "https://github.com/seaweedfs/seaweedfs",
+      "web_url": "https://seaweedfs.com/",
+      "image": "ghcr.io/daemonless/seaweedfs",
+      "manifest_url": "/catalog/manifests/seaweedfs.yaml",
+      "version": "4.43",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/seaweedfs:latest",
+          "version": "4.43"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/seaweedfs:pkg",
+          "version": "4.12_6"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/seaweedfs:pkg-latest",
+          "version": "4.41_2"
+        }
+      ]
+    },
+    {
+      "id": "seerr",
+      "name": "Seerr",
+      "category": "Media Management",
+      "class": "service",
+      "icon": "/catalog/icons/seerr.svg",
+      "description": "Unified media request management (Plex, Jellyfin, Emby) on FreeBSD.",
+      "upstream_url": "https://github.com/seerr-team/seerr",
+      "web_url": "https://seerr.io/",
+      "image": "ghcr.io/daemonless/seerr",
+      "manifest_url": "/catalog/manifests/seerr.yaml",
+      "version": "3.4.1",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/seerr:latest",
+          "version": "3.4.1"
+        }
+      ]
+    },
+    {
+      "id": "smokeping",
+      "name": "SmokePing",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/smokeping.png",
+      "description": "Network latency monitor with historical graphing — tracks round-trip times and packet loss to your hosts over time.",
+      "upstream_url": "https://github.com/oetiker/smokeping",
+      "web_url": "https://oss.oetiker.ch/smokeping/",
+      "image": "ghcr.io/daemonless/smokeping",
+      "manifest_url": "/catalog/manifests/smokeping.yaml",
+      "version": "2.9.0_2",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/smokeping:pkg",
+          "version": "2.9.0_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/smokeping:pkg-latest",
+          "version": "2.9.0_2"
+        }
+      ]
+    },
+    {
+      "id": "sonarr",
+      "name": "Sonarr",
+      "category": "Media Management",
+      "class": "service",
+      "icon": "/catalog/icons/sonarr.svg",
+      "description": "Automated TV series collection manager that monitors, grabs, and manages your TV library via Usenet and BitTorrent.",
+      "upstream_url": "https://github.com/Sonarr/Sonarr",
+      "web_url": "https://sonarr.tv/",
+      "image": "ghcr.io/daemonless/sonarr",
+      "manifest_url": "/catalog/manifests/sonarr.yaml",
+      "version": "4.0.19.2979",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/sonarr:latest",
+          "version": "4.0.19.2979"
+        },
+        {
+          "id": "nightly",
+          "label": "Develop branch",
+          "image": "ghcr.io/daemonless/sonarr:nightly"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/sonarr:pkg",
+          "version": "4.0.17.2952"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/sonarr:pkg-latest",
+          "version": "4.0.19.2979"
+        }
+      ]
+    },
+    {
+      "id": "stalwart",
+      "name": "Stalwart",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/stalwart.svg",
+      "description": "Stalwart Mail Server is an open-source mail server solution with JMAP, IMAP4, POP3, and SMTP support and a wide range of modern features. It is written in Rust and designed to be secure, fast, robust and scalable.",
+      "upstream_url": "https://stalw.art/",
+      "web_url": "https://stalw.art/",
+      "image": "ghcr.io/daemonless/stalwart",
+      "manifest_url": "/catalog/manifests/stalwart.yaml",
+      "version": "v0.16.18",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/stalwart:latest",
+          "version": "v0.16.18"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/stalwart:pkg",
+          "version": "0.16.15"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/stalwart:pkg-latest",
+          "version": "0.16.15"
+        }
+      ]
+    },
+    {
+      "id": "stirling-pdf",
+      "name": "Stirling-PDF",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/stirling-pdf.svg",
+      "description": "Locally hosted web application for performing various operations on PDF files — merge, split, compress, convert, OCR, and more.",
+      "upstream_url": "https://github.com/Stirling-Tools/Stirling-PDF",
+      "web_url": "https://www.stirlingpdf.com/",
+      "image": "ghcr.io/daemonless/stirling-pdf",
+      "manifest_url": "/catalog/manifests/stirling-pdf.yaml",
+      "version": "2.14.3",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/stirling-pdf:latest",
+          "version": "2.14.3"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/stirling-pdf:pkg",
+          "version": "2.2.1_2"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/stirling-pdf:pkg-latest",
+          "version": "2.2.1_2"
+        }
+      ]
+    },
+    {
+      "id": "stump",
+      "name": "Stump",
+      "category": "Media Servers",
+      "class": "service",
+      "icon": "/catalog/icons/stump.svg",
+      "description": "A free and open source comics, manga and digital book server with OPDS support.",
+      "upstream_url": "https://github.com/stumpapp/stump",
+      "web_url": "https://stumpapp.dev",
+      "image": "ghcr.io/daemonless/stump",
+      "manifest_url": "/catalog/manifests/stump.yaml",
+      "version": "v0.1.6",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/stump:latest",
+          "version": "v0.1.6"
+        }
+      ]
+    },
+    {
+      "id": "superset",
+      "name": "Superset",
+      "category": "Productivity",
+      "class": "service",
+      "icon": "/catalog/icons/superset.svg",
+      "description": "Modern data exploration and visualization platform — build charts, dashboards, and SQL-driven analytics on top of your databases.",
+      "upstream_url": "https://github.com/apache/superset",
+      "web_url": "https://superset.apache.org/",
+      "image": "ghcr.io/daemonless/superset",
+      "manifest_url": "/catalog/manifests/superset.yaml",
+      "version": "6.1.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/superset:latest",
+          "version": "6.1.0"
+        }
+      ]
+    },
+    {
+      "id": "sylve",
+      "name": "Sylve",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/sylve.svg",
+      "description": "Modern, open-source management platform for FreeBSD managing Virtual Machines (Bhyve), Jails, and ZFS storage.",
+      "upstream_url": "https://github.com/AlchemillaHQ/Sylve",
+      "web_url": "https://sylve.io",
+      "image": "ghcr.io/daemonless/sylve",
+      "manifest_url": "/catalog/manifests/sylve.yaml",
+      "version": "",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Latest tagged release of Sylve (AlchemillaHQ/Sylve).",
+          "default": true,
+          "image": "ghcr.io/daemonless/sylve:latest"
+        },
+        {
+          "id": "nightly",
+          "label": "Rolling build from upstream's `tip` release (AlchemillaHQ/Sylve).",
+          "image": "ghcr.io/daemonless/sylve:nightly"
+        }
+      ]
+    },
+    {
+      "id": "syncthing",
+      "name": "Syncthing",
+      "category": "Network",
+      "class": "service",
+      "icon": "/catalog/icons/syncthing.svg",
+      "description": "Syncthing replaces proprietary sync and cloud services with something open, trustworthy and decentralized. Your data is your data alone and you deserve to choose where it is stored, if it is shared with some third party and how it's transmitted over the Internet.",
+      "upstream_url": "https://github.com/syncthing/syncthing",
+      "web_url": "https://syncthing.net/",
+      "image": "ghcr.io/daemonless/syncthing",
+      "manifest_url": "/catalog/manifests/syncthing.yaml",
+      "version": "v2.1.3",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/syncthing:latest",
+          "version": "v2.1.3"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/syncthing:pkg",
+          "version": "2.1.2_3"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/syncthing:pkg-latest",
+          "version": "2.1.3_2"
+        }
+      ]
+    },
+    {
+      "id": "tailscale",
+      "name": "Tailscale",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/tailscale.svg",
+      "description": "Zero-config mesh VPN built on WireGuard — securely connect your devices without port forwarding or firewall changes.",
+      "upstream_url": "https://github.com/tailscale/tailscale",
+      "web_url": "https://tailscale.com/",
+      "image": "ghcr.io/daemonless/tailscale",
+      "manifest_url": "/catalog/manifests/tailscale.yaml",
+      "version": "1.102.2_1",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/tailscale:pkg",
+          "version": "1.102.2_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/tailscale:pkg-latest",
+          "version": "1.102.2_2"
+        }
+      ]
+    },
+    {
+      "id": "tautulli",
+      "name": "Tautulli",
+      "category": "Media Servers",
+      "class": "service",
+      "icon": "/catalog/icons/tautulli.svg",
+      "description": "Monitoring and tracking tool for Plex Media Server — tracks what is being watched, who is watching, and when.",
+      "upstream_url": "https://github.com/Tautulli/Tautulli",
+      "web_url": "https://tautulli.com/",
+      "image": "ghcr.io/daemonless/tautulli",
+      "manifest_url": "/catalog/manifests/tautulli.yaml",
+      "version": "v2.17.2",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/tautulli:latest",
+          "version": "v2.17.2"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/tautulli:pkg",
+          "version": "2.16.0_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/tautulli:pkg-latest",
+          "version": "2.16.0_1"
+        }
+      ]
+    },
+    {
+      "id": "traefik",
+      "name": "Traefik",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/traefik.svg",
+      "description": "Modern HTTP reverse proxy and load balancer on FreeBSD.",
+      "upstream_url": "https://github.com/traefik/traefik",
+      "web_url": "https://traefik.io/",
+      "image": "ghcr.io/daemonless/traefik",
+      "manifest_url": "/catalog/manifests/traefik.yaml",
+      "version": "v3.7.11",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/traefik:latest",
+          "version": "v3.7.11"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/traefik:pkg",
+          "version": "3.7.10_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/traefik:pkg-latest",
+          "version": "3.7.10_2"
+        },
+        {
+          "id": "k8s",
+          "label": "Passthrough",
+          "image": "ghcr.io/daemonless/traefik:k8s"
+        }
+      ]
+    },
+    {
+      "id": "transmission",
+      "name": "Transmission",
+      "category": "Downloaders",
+      "class": "service",
+      "icon": "/catalog/icons/transmission.svg",
+      "description": "Lightweight BitTorrent client with a web UI for managing torrent downloads.",
+      "upstream_url": "https://github.com/transmission/transmission",
+      "web_url": "https://transmissionbt.com/",
+      "image": "ghcr.io/daemonless/transmission",
+      "manifest_url": "/catalog/manifests/transmission.yaml",
+      "version": "4.1.3",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/transmission:pkg",
+          "version": "4.1.3"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/transmission:pkg-latest",
+          "version": "4.1.3"
+        }
+      ]
+    },
+    {
+      "id": "transmission-wireguard",
+      "name": "Transmission with WireGuard",
+      "category": "Downloaders",
+      "class": "service",
+      "icon": "/catalog/icons/transmission-wireguard.svg",
+      "description": "Transmission BitTorrent client with built-in WireGuard VPN support.",
+      "upstream_url": "https://github.com/transmission/transmission",
+      "web_url": "https://transmissionbt.com/",
+      "image": "ghcr.io/daemonless/transmission-wireguard",
+      "manifest_url": "/catalog/manifests/transmission-wireguard.yaml",
+      "version": "4.1.3",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/transmission-wireguard:pkg",
+          "version": "4.1.3"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/transmission-wireguard:pkg-latest",
+          "version": "4.1.3"
+        }
+      ]
+    },
+    {
+      "id": "trek",
+      "name": "Trek",
+      "category": "Productivity",
+      "class": "service",
+      "icon": "/catalog/icons/trek.svg",
+      "description": "Self-hosted travel/trip planner with real-time collaboration, interactive maps, PWA support, SSO, budgets, and packing lists.",
+      "upstream_url": "https://github.com/mauriceboe/TREK",
+      "web_url": "https://liketrek.com/",
+      "image": "ghcr.io/daemonless/trek",
+      "manifest_url": "/catalog/manifests/trek.yaml",
+      "version": "3.1.3",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Built from the latest upstream TREK source release.",
+          "default": true,
+          "image": "ghcr.io/daemonless/trek:latest",
+          "version": "3.1.3"
+        }
+      ]
+    },
+    {
+      "id": "unifi",
+      "name": "UniFi Network",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/unifi.svg",
+      "description": "Ubiquiti UniFi Network Application for managing UniFi access points, switches, and gateways.",
+      "upstream_url": "https://ui.com/",
+      "web_url": "https://ui.com/",
+      "image": "ghcr.io/daemonless/unifi",
+      "manifest_url": "/catalog/manifests/unifi.yaml",
+      "version": "10.5.67",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/unifi:latest",
+          "version": "10.5.67"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/unifi:pkg",
+          "version": "10.4.57_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/unifi:pkg-latest",
+          "version": "10.5.67"
+        }
+      ]
+    },
+    {
+      "id": "unifi-os-server",
+      "name": "UniFi OS Server",
+      "category": "Network",
+      "class": "service",
+      "icon": "https://api.iconify.design/simple-icons:ubiquiti.svg?color=%23cbd5e1",
+      "description": "Ubiquiti UniFi OS Server on FreeBSD — runs the full UniFi management stack (unifi-core, UniFi Network) using FreeBSD jails and linuxulator.",
+      "upstream_url": "https://ui.com/consoles/unifi-os-server",
+      "web_url": "https://ui.com/",
+      "image": "ghcr.io/daemonless/unifi-os-server",
+      "manifest_url": "/catalog/manifests/unifi-os-server.yaml",
+      "version": "",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/unifi-os-server:latest"
+        }
+      ]
+    },
+    {
+      "id": "uptime-kuma",
+      "name": "Uptime Kuma",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/uptime-kuma.svg",
+      "description": "Self-hosted uptime monitoring tool with a beautiful dashboard, status pages, and multi-channel notifications.",
+      "upstream_url": "https://github.com/louislam/uptime-kuma",
+      "web_url": "https://uptime.kuma.pet/",
+      "image": "ghcr.io/daemonless/uptime-kuma",
+      "manifest_url": "/catalog/manifests/uptime-kuma.yaml",
+      "version": "2.5.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/uptime-kuma:latest",
+          "version": "2.5.0"
+        }
+      ]
+    },
+    {
+      "id": "vaultwarden",
+      "name": "Vaultwarden",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/vaultwarden.svg",
+      "description": "Lightweight Bitwarden-compatible password manager server — self-host your passwords, secrets, and secure notes.",
+      "upstream_url": "https://github.com/dani-garcia/vaultwarden",
+      "web_url": "https://github.com/dani-garcia/vaultwarden",
+      "image": "ghcr.io/daemonless/vaultwarden",
+      "manifest_url": "/catalog/manifests/vaultwarden.yaml",
+      "version": "1.36.0_1",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "image": "ghcr.io/daemonless/vaultwarden:latest",
+          "version": "1.37.1"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/vaultwarden:pkg",
+          "version": "1.36.0_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/vaultwarden:pkg-latest",
+          "version": "1.37.1"
+        }
+      ]
+    },
+    {
+      "id": "victoriametrics",
+      "name": "VictoriaMetrics",
+      "category": "Infrastructure \u0026 Monitoring",
+      "class": "service",
+      "icon": "https://api.iconify.design/mdi:chart-timeline-variant.svg?color=%23cbd5e1",
+      "description": "VictoriaMetrics is a fast, cost-effective, and scalable open-source time-series database and monitoring solution. It functions as a drop-in replacement for Prometheus with ultra-low memory usage.",
+      "upstream_url": "https://github.com/VictoriaMetrics/VictoriaMetrics",
+      "web_url": "https://victoriametrics.com/",
+      "image": "ghcr.io/daemonless/victoriametrics",
+      "manifest_url": "/catalog/manifests/victoriametrics.yaml",
+      "version": "",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/victoriametrics:latest"
+        }
+      ]
+    },
+    {
+      "id": "wagtail",
+      "name": "Wagtail",
+      "category": "Productivity",
+      "class": "service",
+      "icon": "/catalog/icons/wagtail.png",
+      "description": "Wagtail is an open source content management system built on Django, with a strong community and commercial support. It's focused on user experience, and offers precise control for designers and developers.",
+      "upstream_url": "https://github.com/wagtail/wagtail",
+      "web_url": "https://wagtail.org/",
+      "image": "ghcr.io/daemonless/wagtail",
+      "manifest_url": "/catalog/manifests/wagtail.yaml",
+      "version": "7.4.2",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/wagtail:pkg",
+          "version": "7.4.2"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/wagtail:pkg-latest",
+          "version": "7.4.2"
+        }
+      ]
+    },
+    {
+      "id": "zensical",
+      "name": "Zensical",
+      "category": "Development",
+      "class": "service",
+      "icon": "/catalog/icons/zensical.svg",
+      "description": "Zensical is a modern static site generator designed to simplify building and maintaining project documentation.  It's built by the creators of Material for MkDocs and shares the same core design principles and philosophy - batteries included, easy to use, with powerful customization options.",
+      "upstream_url": "https://zensical.org",
+      "web_url": "https://zensical.org",
+      "image": "ghcr.io/daemonless/zensical",
+      "manifest_url": "/catalog/manifests/zensical.yaml",
+      "version": "0.0.53",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/zensical:latest",
+          "version": "0.0.53"
+        },
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "image": "ghcr.io/daemonless/zensical:pkg",
+          "version": "0.0.52"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/zensical:pkg-latest",
+          "version": "0.0.52"
+        }
+      ]
+    },
+    {
+      "id": "code-server",
+      "name": "code-server",
+      "category": "Development",
+      "class": "service",
+      "icon": "/catalog/icons/code-server.png",
+      "description": "VS Code in the browser — run a full development environment on your FreeBSD server and access it from anywhere.",
+      "upstream_url": "https://github.com/coder/code-server",
+      "web_url": "https://coder.com/docs/code-server",
+      "image": "ghcr.io/daemonless/code-server",
+      "manifest_url": "/catalog/manifests/code-server.yaml",
+      "version": "4.133.0",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/code-server:latest",
+          "version": "4.133.0"
+        }
+      ]
+    },
+    {
+      "id": "lldap",
+      "name": "lldap",
+      "category": "Infrastructure",
+      "class": "service",
+      "icon": "/catalog/icons/lldap.svg",
+      "description": "This project is a lightweight authentication server that provides an opinionated, simplified LDAP interface for authentication.",
+      "upstream_url": "https://github.com/lldap/lldap",
+      "web_url": "https://github.com/lldap/lldap",
+      "image": "ghcr.io/daemonless/lldap",
+      "manifest_url": "/catalog/manifests/lldap.yaml",
+      "version": "0.6.3_1",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/lldap:pkg",
+          "version": "0.6.3_1"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/lldap:pkg-latest",
+          "version": "0.6.3_2"
+        }
+      ]
+    },
+    {
+      "id": "n8n",
+      "name": "n8n",
+      "category": "Utilities",
+      "class": "service",
+      "icon": "/catalog/icons/n8n.svg",
+      "description": "Fair-code workflow automation platform with native AI capabilities — combine visual building with custom code and 400+ integrations.",
+      "upstream_url": "https://github.com/n8n-io/n8n",
+      "web_url": "https://n8n.io/",
+      "image": "ghcr.io/daemonless/n8n",
+      "manifest_url": "/catalog/manifests/n8n.yaml",
+      "version": "2.34.6",
+      "variants": [
+        {
+          "id": "latest",
+          "label": "Upstream binary",
+          "default": true,
+          "image": "ghcr.io/daemonless/n8n:latest",
+          "version": "2.34.6"
+        }
+      ]
+    },
+    {
+      "id": "qbittorrent",
+      "name": "qBittorrent",
+      "category": "Downloaders",
+      "class": "service",
+      "icon": "/catalog/icons/qbittorrent.svg",
+      "description": "Fast, stable BitTorrent client with a feature-rich web UI. Supports DHT, PEX, encryption, magnet links, RSS, IP filtering, and remote management.",
+      "upstream_url": "https://github.com/qbittorrent/qBittorrent",
+      "web_url": "https://www.qbittorrent.org/",
+      "image": "ghcr.io/daemonless/qbittorrent",
+      "manifest_url": "/catalog/manifests/qbittorrent.yaml",
+      "version": "5.2.3",
+      "variants": [
+        {
+          "id": "pkg",
+          "label": "FreeBSD quarterly packages",
+          "default": true,
+          "image": "ghcr.io/daemonless/qbittorrent:pkg",
+          "version": "5.2.3"
+        },
+        {
+          "id": "pkg-latest",
+          "label": "FreeBSD latest packages",
+          "image": "ghcr.io/daemonless/qbittorrent:pkg-latest",
+          "version": "5.2.3"
+        }
+      ]
+    }
+  ]
+}

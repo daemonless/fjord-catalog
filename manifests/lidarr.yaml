@@ -1,0 +1,77 @@
+name: lidarr
+services:
+  lidarr:
+    image: ghcr.io/daemonless/lidarr:latest
+    container_name: lidarr
+    restart: unless-stopped
+    annotations:
+      org.freebsd.jail.allow.mlock: "true"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${MUSIC_PATH}:/music"
+      - "${DOWNLOADS_PATH}:/downloads"
+    ports:
+      - "${WEB_PORT}:8686"
+x-fjord:
+  version: "0.1"
+  info:
+    id: lidarr
+    name: Lidarr
+    description: Music collection manager for Usenet and BitTorrent users — monitors RSS feeds, grabs, sorts, and renames tracks from your favorite artists.
+    category: Media Management
+    class: service
+    icon: /catalog/icons/lidarr.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/Lidarr/Lidarr
+    web_url: https://lidarr.audio/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "8686"
+    - name: CONFIG_DATA
+      label: Configuration directory
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: MUSIC_PATH
+      label: Music library
+      type: path
+      default: ""
+      optional: true
+    - name: DOWNLOADS_PATH
+      label: Download directory
+      type: path
+      default: ""
+      optional: true
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true
+    - id: develop
+      label: Develop branch
+    - id: nightly
+      label: Nightly branch
+    - id: pkg
+      label: FreeBSD quarterly packages
+    - id: pkg-latest
+      label: FreeBSD latest packages

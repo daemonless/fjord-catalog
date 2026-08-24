@@ -1,0 +1,83 @@
+name: pkg-cache
+services:
+  pkg-cache:
+    image: ghcr.io/daemonless/pkg-cache:latest
+    container_name: pkg-cache
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - PKG_UPSTREAM=${PKG_UPSTREAM}
+      - PKG_CACHE_SIZE=${PKG_CACHE_SIZE}
+      - ENABLE_STATS=${ENABLE_STATS}
+      - SKIP_CHOWN=${SKIP_CHOWN}
+      - PKG_LOG_MAX_SIZE=${PKG_LOG_MAX_SIZE}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+      - "${CACHE_PATH}:/cache"
+    ports:
+      - "${WEB_PORT}:80"
+      - "${PORT_7890}:7890"
+x-fjord:
+  version: "0.1"
+  info:
+    id: pkg-cache
+    name: Daemonless pkg cache
+    description: Managed FreeBSD pkg caching appliance — proxies pkg.FreeBSD.org to speed up package fetches across image builds and insulate them from upstream rate limits/outages.
+    category: Infrastructure
+    class: service
+    icon: /catalog/icons/pkg-cache.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/daemonless/pkg-cache
+    web_url: https://daemonless.io/images/pkg-cache/
+    only_for_archs:
+      - amd64
+      - aarch64
+  variables:
+    - name: WEB_PORT
+      label: HTTP — pkg clients point their FreeBSD.conf url here
+      type: port
+      default: "80"
+    - name: PORT_7890
+      label: GoAccess stats dashboard (HTML) — enabled via ENABLE_STATS=true
+      type: port
+      default: "7890"
+    - name: CONFIG_DATA
+      label: Logs, generated stats storage (log/, stats/), and the startup ownership marker (.chown_done). Mount as a persistent volume so the chown is skipped on later starts.
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: CACHE_PATH
+      label: Package cache storage (proxy_cache). Size to match max_size in nginx.conf (default 50G; 10G is fine for light use).
+      type: path
+      default: ""
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: PKG_UPSTREAM
+      label: FreeBSD pkg mirror to proxy, e.g. pkg1.us.freebsd.org or pkg0.eu.freebsd.org. Defaults to the primary pkg.FreeBSD.org.
+      type: string
+      default: pkg.FreeBSD.org
+    - name: PKG_CACHE_SIZE
+      label: Max on-disk cache size (nginx max_size), e.g. 10g, 100g, 500g. 10g is plenty for light use; keep the /cache volume at least this big.
+      type: string
+      default: 50g
+    - name: ENABLE_STATS
+      label: Set to true to enable the GoAccess real-time stats dashboard on port 7890.
+      type: string
+      default: "false"
+    - name: SKIP_CHOWN
+      label: Skip the startup recursive chown of /config and /cache once ownership is recorded in /config/.chown_done (default true). Set false to force a chown on every start. The marker lives in /config, so /config must be a persistent volume for the skip to take effect across restarts.
+      type: string
+      default: "true"
+    - name: PKG_LOG_MAX_SIZE
+      label: Size cap for each on-disk log in /config/log (access.log, error.log, goaccess.log), e.g. 10m, 50m, 1g. A log past this is rotated away so /config can't fill; GoAccess keeps full history in its persisted db regardless.
+      type: string
+      default: 50m
+  variants:
+    - id: latest
+      label: daemonless Appliance
+      default: true

@@ -1,0 +1,41 @@
+name: cloudflared
+services:
+  cloudflared:
+    image: ghcr.io/daemonless/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+      - TUNNEL_METRICS=${TUNNEL_METRICS}
+    ports:
+      - "${WEB_PORT}:2000"
+x-fjord:
+  version: "0.1"
+  info:
+    id: cloudflared
+    name: Cloudflared
+    description: Tunneling daemon that proxies any local webserver through the Cloudflare network without DNS records or firewall changes.
+    category: Infrastructure
+    class: service
+    icon: /catalog/icons/cloudflared.svg
+    upstream_url: https://github.com/cloudflare/cloudflared
+    web_url: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
+  variables:
+    - name: WEB_PORT
+      label: Port
+      type: port
+      default: "2000"
+    - name: TUNNEL_TOKEN
+      label: 'Required: The Cloudflare Tunnel token.'
+      type: secret
+      default: YOUR_CLOUDFLARE_TOKEN_HERE
+    - name: TUNNEL_METRICS
+      label: 'Optional: Address to bind metrics server (default: 0.0.0.0:2000)'
+      type: string
+      default: 0.0.0.0:2000
+  variants:
+    - id: pkg
+      label: FreeBSD quarterly packages
+      default: true
+    - id: pkg-latest
+      label: FreeBSD latest packages

@@ -1,0 +1,73 @@
+name: uptime-kuma
+services:
+  uptime-kuma:
+    image: ghcr.io/daemonless/uptime-kuma:latest
+    container_name: uptime-kuma
+    restart: unless-stopped
+    annotations:
+      org.freebsd.jail.allow.raw_sockets: "true"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UPTIME_KUMA_IS_CONTAINER=${UPTIME_KUMA_IS_CONTAINER}
+      - UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC=${UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC}
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=${PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD}
+      - DATA_DIR=${DATA_DIR}
+    volumes:
+      - "${CONFIG_DATA}:/config"
+    ports:
+      - "${WEB_PORT}:3001"
+x-fjord:
+  version: "0.1"
+  info:
+    id: uptime-kuma
+    name: Uptime Kuma
+    description: Self-hosted uptime monitoring tool with a beautiful dashboard, status pages, and multi-channel notifications.
+    category: Utilities
+    class: service
+    icon: /catalog/icons/uptime-kuma.svg
+    web_port: ${WEB_PORT}
+    upstream_url: https://github.com/louislam/uptime-kuma
+    web_url: https://uptime.kuma.pet/
+  variables:
+    - name: WEB_PORT
+      label: Web UI
+      type: port
+      default: "3001"
+    - name: CONFIG_DATA
+      label: Data directory (database, settings)
+      type: zfs_dataset
+      default: config
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+    - name: PUID
+      label: User ID for the application process
+      type: string
+      default: "1000"
+    - name: PGID
+      label: Group ID for the application process
+      type: string
+      default: "1000"
+    - name: TZ
+      label: Timezone for the container
+      type: string
+      default: UTC
+    - name: UPTIME_KUMA_IS_CONTAINER
+      type: string
+      default: "1"
+    - name: UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC
+      type: string
+      default: "1"
+    - name: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD
+      type: string
+      default: "1"
+    - name: DATA_DIR
+      type: string
+      default: /config
+  variants:
+    - id: latest
+      label: Upstream binary
+      default: true
