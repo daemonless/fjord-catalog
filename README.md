@@ -77,5 +77,5 @@ overrides the sbom-derived versions.
 
 ## CI
 
-`.github/workflows/build.yml` rebuilds nightly: shallow-clones the org's
+`.github/workflows/build.yml` rebuilds every 6 hours: shallow-clones the org's
 repos, derives, and commits the result back when it changed.
