@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-25T14:42:52Z",
+  "generated": "2026-08-25T20:26:47Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -1067,14 +1067,14 @@
       "web_url": "https://opencloud.eu/",
       "image": "ghcr.io/daemonless/opencloud",
       "manifest_url": "/catalog/manifests/opencloud.yaml",
-      "version": "7.4.0",
+      "version": "7.5.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/opencloud:latest",
-          "version": "7.4.0"
+          "version": "7.5.0"
         }
       ]
     },
@@ -1521,14 +1521,14 @@
       "web_url": "https://sabnzbd.org/",
       "image": "ghcr.io/daemonless/sabnzbd",
       "manifest_url": "/catalog/manifests/sabnzbd.yaml",
-      "version": "5.1.1",
+      "version": "5.1.2",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/sabnzbd:latest",
-          "version": "5.1.1"
+          "version": "5.1.2"
         },
         {
           "id": "pkg",
