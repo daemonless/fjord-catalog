@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-25T02:56:05Z",
+  "generated": "2026-08-25T08:39:09Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -1297,20 +1297,20 @@
       "web_url": "https://cloudnative-pg.io/",
       "image": "ghcr.io/daemonless/cnpg-postgres",
       "manifest_url": "/catalog/manifests/cnpg-postgres.yaml",
-      "version": "18.4",
+      "version": "18.6",
       "variants": [
         {
           "id": "17",
           "label": "17",
           "image": "ghcr.io/daemonless/cnpg-postgres:17",
-          "version": "17.10"
+          "version": "17.11"
         },
         {
           "id": "18",
           "label": "18",
           "default": true,
           "image": "ghcr.io/daemonless/cnpg-postgres:18",
-          "version": "18.4"
+          "version": "18.6"
         }
       ]
     },
@@ -2200,14 +2200,14 @@
       "web_url": "https://coder.com/docs/code-server",
       "image": "ghcr.io/daemonless/code-server",
       "manifest_url": "/catalog/manifests/code-server.yaml",
-      "version": "4.133.0",
+      "version": "4.134.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/code-server:latest",
-          "version": "4.133.0"
+          "version": "4.134.0"
         }
       ]
     },
