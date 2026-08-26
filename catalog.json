@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-26T03:03:18Z",
+  "generated": "2026-08-26T08:39:58Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -149,14 +149,14 @@
       "web_url": "https://bulwarkmail.org/",
       "image": "ghcr.io/daemonless/bulwark-webmail",
       "manifest_url": "/catalog/manifests/bulwark-webmail.yaml",
-      "version": "1.8.1",
+      "version": "1.9.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/bulwark-webmail:latest",
-          "version": "1.8.1"
+          "version": "1.9.0"
         }
       ]
     },
@@ -1435,56 +1435,56 @@
       "web_url": "https://redis.io/",
       "image": "ghcr.io/daemonless/redis",
       "manifest_url": "/catalog/manifests/redis.yaml",
-      "version": "8.10.0",
+      "version": "8.10.1",
       "variants": [
         {
           "id": "8.8-pkg-latest",
           "label": "8.8-pkg-latest",
           "default": true,
           "image": "ghcr.io/daemonless/redis:8.8-pkg-latest",
-          "version": "8.10.0"
+          "version": "8.10.1"
         },
         {
           "id": "6.2-pkg-latest",
           "label": "6.2-pkg-latest",
           "image": "ghcr.io/daemonless/redis:6.2-pkg-latest",
-          "version": "6.2.23"
+          "version": "6.2.24"
         },
         {
           "id": "7.2-pkg-latest",
           "label": "7.2-pkg-latest",
           "image": "ghcr.io/daemonless/redis:7.2-pkg-latest",
-          "version": "7.2.15"
+          "version": "7.2.16"
         },
         {
           "id": "7.4-pkg-latest",
           "label": "7.4-pkg-latest",
           "image": "ghcr.io/daemonless/redis:7.4-pkg-latest",
-          "version": "7.4.10"
+          "version": "7.4.11"
         },
         {
           "id": "8.0-pkg-latest",
           "label": "8.0-pkg-latest",
           "image": "ghcr.io/daemonless/redis:8.0-pkg-latest",
-          "version": "8.0.6"
+          "version": "8.0.6_1"
         },
         {
           "id": "8.2-pkg-latest",
           "label": "8.2-pkg-latest",
           "image": "ghcr.io/daemonless/redis:8.2-pkg-latest",
-          "version": "8.2.8"
+          "version": "8.2.9"
         },
         {
           "id": "8.4-pkg-latest",
           "label": "8.4-pkg-latest",
           "image": "ghcr.io/daemonless/redis:8.4-pkg-latest",
-          "version": "8.4.5"
+          "version": "8.4.6"
         },
         {
           "id": "8.6-pkg-latest",
           "label": "8.6-pkg-latest",
           "image": "ghcr.io/daemonless/redis:8.6-pkg-latest",
-          "version": "8.6.5"
+          "version": "8.6.6"
         }
       ]
     },
@@ -1924,14 +1924,14 @@
       "web_url": "https://tautulli.com/",
       "image": "ghcr.io/daemonless/tautulli",
       "manifest_url": "/catalog/manifests/tautulli.yaml",
-      "version": "v2.17.2",
+      "version": "v2.18.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/tautulli:latest",
-          "version": "v2.17.2"
+          "version": "v2.18.0"
         },
         {
           "id": "pkg",
@@ -1971,13 +1971,13 @@
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/traefik:pkg",
-          "version": "3.7.10_2"
+          "version": "3.7.11"
         },
         {
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/traefik:pkg-latest",
-          "version": "3.7.10_2"
+          "version": "3.7.11"
         },
         {
           "id": "k8s",
