@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-26T14:42:53Z",
+  "generated": "2026-08-26T22:42:58Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -354,7 +354,7 @@
           "id": "15-pkg-latest",
           "label": "15-pkg-latest",
           "image": "ghcr.io/daemonless/forgejo:15-pkg-latest",
-          "version": "15.0.6_2"
+          "version": "15.0.7"
         },
         {
           "id": "16",
@@ -371,7 +371,7 @@
           "id": "16-pkg-latest",
           "label": "16-pkg-latest",
           "image": "ghcr.io/daemonless/forgejo:16-pkg-latest",
-          "version": "16.0.2_2"
+          "version": "16.0.3"
         }
       ]
     },
