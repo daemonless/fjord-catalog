@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-27T12:20:37Z",
+  "generated": "2026-08-27T23:34:36Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -149,14 +149,14 @@
       "web_url": "https://bulwarkmail.org/",
       "image": "ghcr.io/daemonless/bulwark-webmail",
       "manifest_url": "/catalog/manifests/bulwark-webmail.yaml",
-      "version": "1.9.0",
+      "version": "1.9.2",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/bulwark-webmail:latest",
-          "version": "1.9.0"
+          "version": "1.9.2"
         }
       ]
     },
@@ -310,18 +310,20 @@
       "web_url": "https://ffmpeg.org/",
       "image": "ghcr.io/daemonless/ffmpeg",
       "manifest_url": "/catalog/manifests/ffmpeg.yaml",
-      "version": "",
+      "version": "8.1.2_1,1",
       "variants": [
         {
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "default": true,
-          "image": "ghcr.io/daemonless/ffmpeg:pkg"
+          "image": "ghcr.io/daemonless/ffmpeg:pkg",
+          "version": "8.1.2_1,1"
         },
         {
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
-          "image": "ghcr.io/daemonless/ffmpeg:pkg-latest"
+          "image": "ghcr.io/daemonless/ffmpeg:pkg-latest",
+          "version": "8.1.2_2,1"
         }
       ]
     },
@@ -663,7 +665,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/homepage:pkg-latest",
-          "version": "1.13.2"
+          "version": "2.1.2"
         }
       ]
     },
@@ -827,14 +829,14 @@
       "web_url": "https://jellyfin.org/",
       "image": "ghcr.io/daemonless/jellyfin-ffmpeg",
       "manifest_url": "/catalog/manifests/jellyfin-ffmpeg.yaml",
-      "version": "7.1.4.3",
+      "version": "7.1.4.3_1",
       "variants": [
         {
           "id": "7",
           "label": "7",
           "default": true,
           "image": "ghcr.io/daemonless/jellyfin-ffmpeg:7",
-          "version": "7.1.4.3"
+          "version": "7.1.4.3_1"
         },
         {
           "id": "8",
@@ -1354,7 +1356,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/prowlarr:pkg-latest",
-          "version": "2.4.0.5397"
+          "version": "2.5.2.5491"
         }
       ]
     },
@@ -1958,14 +1960,14 @@
       "web_url": "https://traefik.io/",
       "image": "ghcr.io/daemonless/traefik",
       "manifest_url": "/catalog/manifests/traefik.yaml",
-      "version": "v3.7.11",
+      "version": "v3.7.12",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/traefik:latest",
-          "version": "v3.7.11"
+          "version": "v3.7.12"
         },
         {
           "id": "pkg",
@@ -2053,14 +2055,14 @@
       "web_url": "https://liketrek.com/",
       "image": "ghcr.io/daemonless/trek",
       "manifest_url": "/catalog/manifests/trek.yaml",
-      "version": "3.4.1",
+      "version": "4.0.0",
       "variants": [
         {
           "id": "latest",
           "label": "Built from the latest upstream TREK source release.",
           "default": true,
           "image": "ghcr.io/daemonless/trek:latest",
-          "version": "3.4.1"
+          "version": "4.0.0"
         }
       ]
     },
@@ -2137,7 +2139,7 @@
           "id": "latest",
           "label": "Upstream binary",
           "image": "ghcr.io/daemonless/vaultwarden:latest",
-          "version": "1.37.1"
+          "version": "1.37.2"
         },
         {
           "id": "pkg",
@@ -2150,7 +2152,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/vaultwarden:pkg-latest",
-          "version": "1.37.1"
+          "version": "1.37.2"
         }
       ]
     },
@@ -2212,7 +2214,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/zensical:pkg-latest",
-          "version": "0.0.56"
+          "version": "0.0.57"
         }
       ]
     },
@@ -2227,14 +2229,14 @@
       "web_url": "https://coder.com/docs/code-server",
       "image": "ghcr.io/daemonless/code-server",
       "manifest_url": "/catalog/manifests/code-server.yaml",
-      "version": "4.134.0",
+      "version": "4.135.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/code-server:latest",
-          "version": "4.134.0"
+          "version": "4.135.0"
         }
       ]
     },
