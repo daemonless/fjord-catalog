@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-27T23:34:36Z",
+  "generated": "2026-08-28T13:45:38Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -1725,14 +1725,14 @@
       "web_url": "https://stalw.art/",
       "image": "ghcr.io/daemonless/stalwart",
       "manifest_url": "/catalog/manifests/stalwart.yaml",
-      "version": "v0.16.18",
+      "version": "v0.16.19",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/stalwart:latest",
-          "version": "v0.16.18"
+          "version": "v0.16.19"
         },
         {
           "id": "pkg",
@@ -1926,14 +1926,14 @@
       "web_url": "https://tautulli.com/",
       "image": "ghcr.io/daemonless/tautulli",
       "manifest_url": "/catalog/manifests/tautulli.yaml",
-      "version": "v2.18.0",
+      "version": "v2.18.1",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/tautulli:latest",
-          "version": "v2.18.0"
+          "version": "v2.18.1"
         },
         {
           "id": "pkg",
@@ -2279,14 +2279,14 @@
       "web_url": "https://n8n.io/",
       "image": "ghcr.io/daemonless/n8n",
       "manifest_url": "/catalog/manifests/n8n.yaml",
-      "version": "2.34.6",
+      "version": "2.35.7",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/n8n:latest",
-          "version": "2.34.6"
+          "version": "2.35.7"
         }
       ]
     },
