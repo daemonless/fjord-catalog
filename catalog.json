@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-29T17:31:01Z",
+  "generated": "2026-08-29T22:19:50Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -255,14 +255,14 @@
       "web_url": "https://dispatcharr.io/",
       "image": "ghcr.io/daemonless/dispatcharr",
       "manifest_url": "/catalog/manifests/dispatcharr.yaml",
-      "version": "v0.29.0",
+      "version": "v0.30.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/dispatcharr:latest",
-          "version": "v0.29.0"
+          "version": "v0.30.0"
         }
       ]
     },
@@ -743,6 +743,11 @@
           "default": true,
           "image": "ghcr.io/daemonless/immich-ml:latest",
           "version": "v3.1.0"
+        },
+        {
+          "id": "beta",
+          "label": "Beta release built from upstream v3.2.0-rc.1.",
+          "image": "ghcr.io/daemonless/immich-ml:beta"
         }
       ]
     },
@@ -787,6 +792,11 @@
           "default": true,
           "image": "ghcr.io/daemonless/immich-server:latest",
           "version": "v3.1.0"
+        },
+        {
+          "id": "beta",
+          "label": "Beta release built from upstream v3.2.0-rc.1.",
+          "image": "ghcr.io/daemonless/immich-server:beta"
         }
       ]
     },
