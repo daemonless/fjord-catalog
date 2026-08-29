@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-29T08:37:39Z",
+  "generated": "2026-08-29T17:31:01Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -323,7 +323,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/ffmpeg:pkg-latest",
-          "version": "8.1.2_2,1"
+          "version": "8.1.2_3,1"
         }
       ]
     },
@@ -901,32 +901,32 @@
       "web_url": "https://mariadb.org/",
       "image": "ghcr.io/daemonless/mariadb",
       "manifest_url": "/catalog/manifests/mariadb.yaml",
-      "version": "12.3.2_1",
+      "version": "12.3.3",
       "variants": [
         {
           "id": "10.11-pkg-latest",
           "label": "10.11-pkg-latest",
           "image": "ghcr.io/daemonless/mariadb:10.11-pkg-latest",
-          "version": "10.11.18"
+          "version": "10.11.19"
         },
         {
           "id": "11.4-pkg-latest",
           "label": "11.4-pkg-latest",
           "image": "ghcr.io/daemonless/mariadb:11.4-pkg-latest",
-          "version": "11.4.12"
+          "version": "11.4.13"
         },
         {
           "id": "11.8-pkg-latest",
           "label": "11.8-pkg-latest",
           "image": "ghcr.io/daemonless/mariadb:11.8-pkg-latest",
-          "version": "11.8.8"
+          "version": "11.8.9"
         },
         {
           "id": "12.3-pkg-latest",
           "label": "12.3-pkg-latest",
           "default": true,
           "image": "ghcr.io/daemonless/mariadb:12.3-pkg-latest",
-          "version": "12.3.2_1"
+          "version": "12.3.3"
         }
       ]
     },
@@ -1569,7 +1569,7 @@
           "id": "422-pkg-latest",
           "label": "422-pkg-latest",
           "image": "ghcr.io/daemonless/samba:422-pkg-latest",
-          "version": "4.22.11"
+          "version": "4.22.11_1"
         },
         {
           "id": "423-pkg",
@@ -1582,7 +1582,7 @@
           "id": "423-pkg-latest",
           "label": "423-pkg-latest",
           "image": "ghcr.io/daemonless/samba:423-pkg-latest",
-          "version": "4.23.11_1"
+          "version": "4.23.11_2"
         },
         {
           "id": "423-pkg-krb",
@@ -2055,14 +2055,14 @@
       "web_url": "https://liketrek.com/",
       "image": "ghcr.io/daemonless/trek",
       "manifest_url": "/catalog/manifests/trek.yaml",
-      "version": "4.0.0",
+      "version": "4.1.1",
       "variants": [
         {
           "id": "latest",
           "label": "Built from the latest upstream TREK source release.",
           "default": true,
           "image": "ghcr.io/daemonless/trek:latest",
-          "version": "4.0.0"
+          "version": "4.1.1"
         }
       ]
     },
