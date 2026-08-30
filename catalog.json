@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-30T13:30:56Z",
+  "generated": "2026-08-30T17:54:13Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -1735,14 +1735,14 @@
       "web_url": "https://stalw.art/",
       "image": "ghcr.io/daemonless/stalwart",
       "manifest_url": "/catalog/manifests/stalwart.yaml",
-      "version": "v0.16.19",
+      "version": "v0.16.20",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/stalwart:latest",
-          "version": "v0.16.19"
+          "version": "v0.16.20"
         },
         {
           "id": "pkg",
