@@ -20,7 +20,7 @@ services:
     restart: always
   immich-machine-learning:
     container_name: immich_machine_learning
-    image: ghcr.io/daemonless/immich-ml:${IMMICH_ML_TAG:-${IMMICH_TAG:-latest}}
+    image: ghcr.io/daemonless/immich-ml:${IMMICH_ML_TAG:-latest}
     network_mode: host
     environment:
       HF_HOME: /cache/huggingface
@@ -77,9 +77,9 @@ x-fjord:
       type: path
       default: /containers/immich/library
     - name: IMMICH_ML_TAG
-      label: Machine learning image tag (defaults to 'latest'. Set to 'no-avx' for CPUs without AVX)
+      label: Machine learning image tag (defaults to 'latest')
       type: string
-      default: ""
+      default: latest
       optional: true
     - name: DB_PASSWORD
       label: PostgreSQL database password
