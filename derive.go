@@ -91,8 +91,10 @@ func parseDocs(docsNode *yaml.Node) (env map[string]string, vols map[string]volD
 
 type imageConfig struct {
 	Cit struct {
-		Mode string `yaml:"mode"`
-		Port int    `yaml:"port"`
+		Mode   string `yaml:"mode"`
+		Port   int    `yaml:"port"`
+		Health string `yaml:"health"`
+		Https  bool   `yaml:"https"`
 	} `yaml:"cit"`
 	Build struct {
 		Architectures []string `yaml:"architectures"`
@@ -122,6 +124,7 @@ type variable struct {
 	Default         string     `yaml:"default"`
 	Optional        bool       `yaml:"optional,omitempty"`
 	HostPermissions *hostPerms `yaml:"host_permissions,omitempty"`
+	Image           string     `yaml:"image,omitempty"` // image_tag vars: the repo this tag selects for
 }
 
 type variant struct {
@@ -139,6 +142,7 @@ type info struct {
 	Class        string   `yaml:"class"`
 	Icon         string   `yaml:"icon,omitempty"`
 	WebPort      string   `yaml:"web_port,omitempty"`
+	WebHTTPS     bool     `yaml:"web_https,omitempty"`
 	UpstreamURL  string   `yaml:"upstream_url,omitempty"`
 	WebURL       string   `yaml:"web_url,omitempty"`
 	Version      string   `yaml:"version,omitempty"`
@@ -197,6 +201,30 @@ type derived struct {
 	imageRepo    string // the service image without its tag, e.g. ghcr.io/x/radarr
 }
 
+// setWebEndpoint stamps info.web_port/web_https from the image's cit config --
+// the same port + https flag dbuild tests against, never guessed from port
+// numbers. "Has a web UI" mirrors dbuild's _resolve_mode: an explicit
+// screenshot/health mode, the https flag, or (mode unset) auto-detect via a
+// committed baseline screenshot or an HTTP health path. Bare port mode is a
+// TCP check (databases), not a web UI. A WEB_PORT variable wins over cit.port
+// so the wizard's choice is reflected.
+func setWebEndpoint(xf *xFjord, cfg imageConfig, repoDir string) {
+	webby := cfg.Cit.Https || cfg.Cit.Mode == "screenshot" || cfg.Cit.Mode == "health"
+	if !webby && cfg.Cit.Mode == "" {
+		baselines, _ := filepath.Glob(filepath.Join(repoDir, ".daemonless", "baseline*.png"))
+		webby = len(baselines) > 0 || cfg.Cit.Health != ""
+	}
+	if !webby {
+		return
+	}
+	if hasVar(xf.Variables, "WEB_PORT") {
+		xf.Info.WebPort = "${WEB_PORT}"
+	} else if cfg.Cit.Port > 0 {
+		xf.Info.WebPort = fmt.Sprint(cfg.Cit.Port)
+	}
+	xf.Info.WebHTTPS = cfg.Cit.Https
+}
+
 // resolveIcon prefers the app's own .daemonless/logo.svg|png (real logo, self
 // hosted), falling back to an Iconify URL for the :material-*: / :simple-*:
 // token. Returns the icon URL and, if a repo logo was found, its source path.
@@ -251,7 +279,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	// Authored multi-service stacks (x-daemonless type: stack) are already
 	// hand-variabilized -- derive by collecting their ${VARS}, never rewriting.
 	if meta.XDaemonless.Type == "stack" {
-		return deriveStackManifest(composeBytes, meta.XDaemonless, repoDir, id)
+		return deriveStackManifest(composeBytes, meta.XDaemonless, cfg, repoDir, id)
 	}
 	if len(meta.Services) > 1 {
 		return nil, fmt.Errorf("multi-service (%d) without x-daemonless type: stack", len(meta.Services))
@@ -425,9 +453,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 		Variables: vars,
 		Variants:  variants,
 	}
-	if hasVar(vars, "WEB_PORT") && cfg.Cit.Mode == "screenshot" {
-		xf.Info.WebPort = "${WEB_PORT}"
-	}
+	setWebEndpoint(&xf, cfg, repoDir)
 	if len(cfg.Build.Architectures) > 0 {
 		xf.Info.OnlyForArchs = cfg.Build.Architectures
 	}

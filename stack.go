@@ -14,6 +14,10 @@ import (
 // varRefRe matches ${VAR} and ${VAR:-default} references in an authored compose.
 var varRefRe = regexp.MustCompile(`\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}`)
 
+// imageTagVarRe matches an image ref whose TAG is a variable:
+// "ghcr.io/x/app:${APP_TAG}" or "...:${APP_TAG:-latest}".
+var imageTagVarRe = regexp.MustCompile(`^([^$\s]+):\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-[^}]*)?\}$`)
+
 // deriveStackManifest handles authored multi-service composes (x-daemonless
 // type: stack). Unlike single-image apps, these are already hand-variabilized
 // with ${VARS} and an example.env -- so the compose passes through UNTOUCHED
@@ -24,7 +28,7 @@ var varRefRe = regexp.MustCompile(`\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}`
 //
 // No variants/train picker: a stack spans multiple image repos, so a single
 // version tag is meaningless (and retagging its db/redis would be destructive).
-func deriveStackManifest(composeBytes []byte, xd xDaemonless, repoDir, id string) (*derived, error) {
+func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, repoDir, id string) (*derived, error) {
 	var doc yaml.Node
 	if err := yaml.Unmarshal(composeBytes, &doc); err != nil {
 		return nil, fmt.Errorf("parse compose node: %w", err)
@@ -46,6 +50,26 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, repoDir, id string
 	composeText := buf.String()
 
 	exampleEnv := parseExampleEnv(filepath.Join(repoDir, "example.env"))
+
+	// Map tag-position variables to their image repo: `image: repo:${VAR...}`
+	// makes VAR an image_tag var, so the wizard can offer that repo's published
+	// tags and follow the train picker.
+	tagVarRepo := map[string]string{}
+	if services := mapGet(root, "services"); services != nil {
+		for i := 1; i < len(services.Content); i += 2 {
+			svc := services.Content[i]
+			if svc.Kind != yaml.MappingNode {
+				continue
+			}
+			img := mapGet(svc, "image")
+			if img == nil || img.Kind != yaml.ScalarNode {
+				continue
+			}
+			if m := imageTagVarRe.FindStringSubmatch(img.Value); m != nil {
+				tagVarRepo[m[2]] = m[1]
+			}
+		}
+	}
 
 	// Collect ${VAR} refs in order of first appearance.
 	seen := map[string]bool{}
@@ -69,14 +93,16 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, repoDir, id string
 		if def == "" {
 			def = exampleEnv[name]
 		}
-		typ := "string"
+		typ, imgRepo := "string", ""
 		switch {
+		case tagVarRepo[name] != "":
+			typ, imgRepo = "image_tag", tagVarRepo[name]
 		case secretRe.MatchString(name):
 			typ = "secret"
 		case strings.Contains(composeText, "${"+name+"}:/"):
 			typ = "path" // host side of a bind mount
 		}
-		vars = append(vars, variable{Name: name, Label: envDocs[name], Type: typ, Default: def, Optional: optional})
+		vars = append(vars, variable{Name: name, Label: envDocs[name], Type: typ, Default: def, Optional: optional, Image: imgRepo})
 	}
 
 	// First service image repo, for the store card / future use.
@@ -104,6 +130,9 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, repoDir, id string
 		},
 		Variables: vars,
 	}
+	// Same web-endpoint rule as single-image apps: cit config is the truth
+	// (host-net stacks publish nothing, so this hint is their ONLY web link).
+	setWebEndpoint(&xf, cfg, repoDir)
 
 	xfNode, err := toNode(xf)
 	if err != nil {
