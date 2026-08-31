@@ -22,6 +22,7 @@ x-fjord:
     category: Productivity
     class: service
     icon: /catalog/icons/bulwark-webmail.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/bulwarkmail/webmail
     web_url: https://bulwarkmail.org/
     only_for_archs:

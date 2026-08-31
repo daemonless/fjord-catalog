@@ -65,22 +65,25 @@ x-fjord:
     category: Photos & Media
     class: stack
     icon: /catalog/icons/immich.svg
+    web_port: "2283"
     upstream_url: https://github.com/immich-app/immich
     web_url: https://immich.app/
   variables:
     - name: IMMICH_TAG
-      type: string
+      type: image_tag
       default: latest
       optional: true
+      image: ghcr.io/daemonless/immich-server
     - name: UPLOAD_LOCATION
       label: Path to store uploaded media
       type: path
       default: /containers/immich/library
     - name: IMMICH_ML_TAG
       label: Machine learning image tag (defaults to 'latest')
-      type: string
+      type: image_tag
       default: latest
       optional: true
+      image: ghcr.io/daemonless/immich-ml
     - name: DB_PASSWORD
       label: PostgreSQL database password
       type: secret

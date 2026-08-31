@@ -19,6 +19,7 @@ x-fjord:
     category: Photos & Media
     class: service
     icon: /catalog/icons/immich-public-proxy.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/alangrainger/immich-public-proxy
     web_url: https://github.com/alangrainger/immich-public-proxy
   variables:

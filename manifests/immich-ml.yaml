@@ -25,6 +25,7 @@ x-fjord:
     category: Photos & Media
     class: service
     icon: /catalog/icons/immich-ml.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/immich-app/immich
     web_url: https://immich.app/
   variables:

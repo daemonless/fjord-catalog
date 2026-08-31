@@ -20,6 +20,7 @@ x-fjord:
     category: Entertainment
     class: service
     icon: /catalog/icons/retroassembly.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/arianrhodsandlot/retroassembly
     web_url: https://retroassembly.com/
   variables:

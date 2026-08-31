@@ -25,6 +25,7 @@ x-fjord:
     category: Media Servers
     class: service
     icon: /catalog/icons/plex.svg
+    web_port: "32400"
     upstream_url: https://github.com/daemonless/plex
     web_url: https://plex.tv/
   variables:

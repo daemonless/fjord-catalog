@@ -24,6 +24,7 @@ x-fjord:
     category: Utilities
     class: service
     icon: /catalog/icons/opencloud.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/daemonless/opencloud
     web_url: https://opencloud.eu/
   variables:

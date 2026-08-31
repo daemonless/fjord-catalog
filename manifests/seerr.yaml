@@ -21,6 +21,7 @@ x-fjord:
     category: Media Management
     class: service
     icon: /catalog/icons/seerr.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/seerr-team/seerr
     web_url: https://seerr.io/
   variables:

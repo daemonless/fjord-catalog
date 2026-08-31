@@ -25,6 +25,7 @@ x-fjord:
     category: Network
     class: service
     icon: /catalog/icons/seaweedfs.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/seaweedfs/seaweedfs
     web_url: https://seaweedfs.com/
     only_for_archs:

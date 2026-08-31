@@ -36,6 +36,7 @@ x-fjord:
     category: Productivity
     class: service
     icon: /catalog/icons/papra.svg
+    web_port: "1221"
     upstream_url: https://github.com/papra-hq/papra
     web_url: https://papra.app
   variables:

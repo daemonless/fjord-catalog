@@ -36,6 +36,7 @@ x-fjord:
     category: Network
     class: service
     icon: /catalog/icons/adguardhome.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/AdguardTeam/AdGuardHome
     web_url: https://adguard.com/adguard-home.html
   variables:

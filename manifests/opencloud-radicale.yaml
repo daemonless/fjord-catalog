@@ -21,6 +21,7 @@ x-fjord:
     category: Utilities
     class: service
     icon: https://api.iconify.design/mdi:apps.svg?color=%23cbd5e1
+    web_port: ${WEB_PORT}
     upstream_url: https://github.com/daemonless/opencloud-radicale
     web_url: https://radicale.org/
   variables:

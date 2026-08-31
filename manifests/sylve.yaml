@@ -39,6 +39,7 @@ x-fjord:
     category: Infrastructure
     class: service
     icon: /catalog/icons/sylve.svg
+    web_port: "8181"
     upstream_url: https://github.com/AlchemillaHQ/Sylve
     web_url: https://sylve.io
     only_for_archs:

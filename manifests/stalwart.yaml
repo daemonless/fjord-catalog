@@ -32,6 +32,7 @@ x-fjord:
     category: Network
     class: service
     icon: /catalog/icons/stalwart.svg
+    web_port: ${WEB_PORT}
     upstream_url: https://stalw.art/
     web_url: https://stalw.art/
   variables:

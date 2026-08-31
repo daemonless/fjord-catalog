@@ -22,6 +22,7 @@ x-fjord:
     category: Utilities
     class: service
     icon: /catalog/icons/home-assistant.svg
+    web_port: "8123"
     upstream_url: https://github.com/daemonless/home-assistant
     web_url: https://www.home-assistant.io/
   variables:

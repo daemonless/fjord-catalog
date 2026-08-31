@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-08-31T19:50:30Z",
+  "generated": "2026-08-31T23:36:54Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -2087,14 +2087,14 @@
       "web_url": "https://ui.com/",
       "image": "ghcr.io/daemonless/unifi",
       "manifest_url": "/catalog/manifests/unifi.yaml",
-      "version": "10.5.67",
+      "version": "10.6.101",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/unifi:latest",
-          "version": "10.5.67"
+          "version": "10.6.101"
         },
         {
           "id": "pkg",

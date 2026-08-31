@@ -23,6 +23,7 @@ x-fjord:
     category: Utilities
     class: service
     icon: /catalog/icons/bichon.svg
+    web_port: "15630"
     upstream_url: https://github.com/rustmailer/bichon
     web_url: https://github.com/rustmailer/bichon
   variables:

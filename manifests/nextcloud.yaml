@@ -22,6 +22,7 @@ x-fjord:
     category: Utilities
     class: service
     icon: /catalog/icons/nextcloud.svg
+    web_port: "8082"
     upstream_url: https://github.com/nextcloud/server
     web_url: https://nextcloud.com/
   variables:

@@ -29,6 +29,8 @@ x-fjord:
     category: Utilities
     class: service
     icon: /catalog/icons/unifi.svg
+    web_port: ${WEB_PORT}
+    web_https: true
     upstream_url: https://ui.com/
     web_url: https://ui.com/
     only_for_archs:

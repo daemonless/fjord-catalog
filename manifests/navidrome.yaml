@@ -24,6 +24,7 @@ x-fjord:
     category: Media Servers
     class: service
     icon: /catalog/icons/navidrome.png
+    web_port: ${WEB_PORT}
     upstream_url: https://www.navidrome.org/
     web_url: https://www.navidrome.org/
     only_for_archs:
