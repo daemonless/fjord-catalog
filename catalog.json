@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-09-02T12:32:08Z",
+  "generated": "2026-09-02T17:36:30Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -2289,14 +2289,14 @@
       "web_url": "https://n8n.io/",
       "image": "ghcr.io/daemonless/n8n",
       "manifest_url": "/catalog/manifests/n8n.yaml",
-      "version": "2.35.7",
+      "version": "2.37.7",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/n8n:latest",
-          "version": "2.35.7"
+          "version": "2.37.7"
         }
       ]
     },
