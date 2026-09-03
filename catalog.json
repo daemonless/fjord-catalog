@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-09-03T06:50:39Z",
+  "generated": "2026-09-03T12:35:25Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -951,14 +951,14 @@
       "web_url": "https://mealie.io/",
       "image": "ghcr.io/daemonless/mealie",
       "manifest_url": "/catalog/manifests/mealie.yaml",
-      "version": "v3.24.0",
+      "version": "v3.25.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/mealie:latest",
-          "version": "v3.24.0"
+          "version": "v3.25.0"
         }
       ]
     },
@@ -1101,14 +1101,14 @@
       "web_url": "https://radicale.org/",
       "image": "ghcr.io/daemonless/opencloud-radicale",
       "manifest_url": "/catalog/manifests/opencloud-radicale.yaml",
-      "version": "3.7.8",
+      "version": "3.8.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/opencloud-radicale:latest",
-          "version": "3.7.8"
+          "version": "3.8.0"
         }
       ]
     },
