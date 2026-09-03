@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-09-02T22:20:29Z",
+  "generated": "2026-09-03T06:50:39Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -624,14 +624,14 @@
       "web_url": "https://www.home-assistant.io/",
       "image": "ghcr.io/daemonless/home-assistant",
       "manifest_url": "/catalog/manifests/home-assistant.yaml",
-      "version": "2026.8.3",
+      "version": "2026.9.0",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/home-assistant:latest",
-          "version": "2026.8.3"
+          "version": "2026.9.0"
         }
       ]
     },
