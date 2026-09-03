@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-09-03T12:35:25Z",
+  "generated": "2026-09-03T17:31:06Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -2065,14 +2065,14 @@
       "web_url": "https://liketrek.com/",
       "image": "ghcr.io/daemonless/trek",
       "manifest_url": "/catalog/manifests/trek.yaml",
-      "version": "4.1.1",
+      "version": "4.2.0",
       "variants": [
         {
           "id": "latest",
           "label": "Built from the latest upstream TREK source release.",
           "default": true,
           "image": "ghcr.io/daemonless/trek:latest",
-          "version": "4.1.1"
+          "version": "4.2.0"
         }
       ]
     },
