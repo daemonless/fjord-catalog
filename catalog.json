@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-09-04T06:55:42Z",
+  "generated": "2026-09-04T12:29:56Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -951,14 +951,14 @@
       "web_url": "https://mealie.io/",
       "image": "ghcr.io/daemonless/mealie",
       "manifest_url": "/catalog/manifests/mealie.yaml",
-      "version": "v3.25.0",
+      "version": "v3.25.1",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/mealie:latest",
-          "version": "v3.25.0"
+          "version": "v3.25.1"
         }
       ]
     },
@@ -1803,14 +1803,14 @@
       "web_url": "https://stumpapp.dev",
       "image": "ghcr.io/daemonless/stump",
       "manifest_url": "/catalog/manifests/stump.yaml",
-      "version": "v0.1.6",
+      "version": "v0.1.7",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/stump:latest",
-          "version": "v0.1.6"
+          "version": "v0.1.7"
         }
       ]
     },
@@ -2205,20 +2205,20 @@
       "web_url": "https://zensical.org",
       "image": "ghcr.io/daemonless/zensical",
       "manifest_url": "/catalog/manifests/zensical.yaml",
-      "version": "0.0.57",
+      "version": "0.0.59",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/zensical:latest",
-          "version": "0.0.57"
+          "version": "0.0.59"
         },
         {
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/zensical:pkg",
-          "version": "0.0.53"
+          "version": "0.0.57"
         },
         {
           "id": "pkg-latest",
