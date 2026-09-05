@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-09-05T16:31:23Z",
+  "generated": "2026-09-05T21:55:39Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -127,14 +127,14 @@
       "web_url": "https://github.com/rustmailer/bichon",
       "image": "ghcr.io/daemonless/bichon",
       "manifest_url": "/catalog/manifests/bichon.yaml",
-      "version": "2.0.2",
+      "version": "2.0.3",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/bichon:latest",
-          "version": "2.0.2"
+          "version": "2.0.3"
         }
       ]
     },
@@ -624,14 +624,14 @@
       "web_url": "https://www.home-assistant.io/",
       "image": "ghcr.io/daemonless/home-assistant",
       "manifest_url": "/catalog/manifests/home-assistant.yaml",
-      "version": "2026.9.0",
+      "version": "2026.9.1",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/home-assistant:latest",
-          "version": "2026.9.0"
+          "version": "2026.9.1"
         }
       ]
     },
