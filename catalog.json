@@ -2,7 +2,7 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-09-05T06:40:03Z",
+  "generated": "2026-09-05T11:37:02Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -1949,13 +1949,13 @@
           "id": "pkg",
           "label": "FreeBSD quarterly packages",
           "image": "ghcr.io/daemonless/tautulli:pkg",
-          "version": "2.16.0_1"
+          "version": "2.16.0_2"
         },
         {
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/tautulli:pkg-latest",
-          "version": "2.16.0_1"
+          "version": "2.16.0_2"
         }
       ]
     },
