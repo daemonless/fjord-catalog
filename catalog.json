@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-06T11:57:00Z",
+  "generated": "2026-09-06T16:42:27Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -853,7 +853,7 @@
           "id": "8",
           "label": "8",
           "image": "ghcr.io/daemonless/jellyfin-ffmpeg:8",
-          "version": "8.1.2.2_1"
+          "version": "8.1.2.4"
         }
       ]
     },
@@ -2066,14 +2066,14 @@
       "web_url": "https://liketrek.com/",
       "image": "ghcr.io/daemonless/trek",
       "manifest_url": "/catalog/manifests/trek.yaml",
-      "version": "4.2.0",
+      "version": "4.2.1",
       "variants": [
         {
           "id": "latest",
           "label": "Built from the latest upstream TREK source release.",
           "default": true,
           "image": "ghcr.io/daemonless/trek:latest",
-          "version": "4.2.0"
+          "version": "4.2.1"
         }
       ]
     },
