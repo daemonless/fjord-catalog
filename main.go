@@ -43,6 +43,7 @@ type catalogFile struct {
 	CatalogName  string     `json:"catalog_name"`
 	FjordVersion string     `json:"fjord_version"`
 	Maintainer   string     `json:"maintainer"`
+	Icon         string     `json:"icon,omitempty"` // catalog branding, source-relative like app icons
 	Generated    string     `json:"generated"`
 	Apps         []catEntry `json:"apps"`
 }
@@ -80,6 +81,7 @@ func main() {
 		CatalogName:  "Daemonless Apps",
 		FjordVersion: "0.1",
 		Maintainer:   "https://daemonless.io",
+		Icon:         "/catalog/icon.svg", // icon.svg at the repo root, beside catalog.json
 		Generated:    time.Now().UTC().Format(time.RFC3339),
 	}
 	var skipped []string
