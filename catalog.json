@@ -2,7 +2,8 @@
   "catalog_name": "Daemonless Apps",
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
-  "generated": "2026-09-06T06:50:03Z",
+  "icon": "/catalog/icon.svg",
+  "generated": "2026-09-06T09:17:20Z",
   "apps": [
     {
       "id": "adguardhome",
