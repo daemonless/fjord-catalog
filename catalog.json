@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-06T16:42:27Z",
+  "generated": "2026-09-06T21:57:00Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -35,7 +35,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/adguardhome:pkg-latest",
-          "version": "0.107.78_2"
+          "version": "0.107.78_3"
         }
       ]
     },
@@ -191,7 +191,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/caddy:pkg-latest",
-          "version": "2.11.4_3"
+          "version": "2.11.4_4"
         }
       ]
     },
@@ -219,7 +219,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/cloudflared:pkg-latest",
-          "version": "2026.2.0_7"
+          "version": "2026.2.0_8"
         }
       ]
     },
@@ -234,14 +234,14 @@
       "web_url": "https://daemonless.io/images/pkg-cache/",
       "image": "ghcr.io/daemonless/pkg-cache",
       "manifest_url": "/catalog/manifests/pkg-cache.yaml",
-      "version": "1.3",
+      "version": "1.4",
       "variants": [
         {
           "id": "latest",
-          "label": "Upstream binary",
+          "label": "daemonless Appliance",
           "default": true,
           "image": "ghcr.io/daemonless/pkg-cache:latest",
-          "version": "1.3"
+          "version": "1.4"
         }
       ]
     },
@@ -357,7 +357,7 @@
           "id": "15-pkg-latest",
           "label": "15-pkg-latest",
           "image": "ghcr.io/daemonless/forgejo:15-pkg-latest",
-          "version": "15.0.7"
+          "version": "15.0.7_1"
         },
         {
           "id": "16",
@@ -374,7 +374,7 @@
           "id": "16-pkg-latest",
           "label": "16-pkg-latest",
           "image": "ghcr.io/daemonless/forgejo:16-pkg-latest",
-          "version": "16.0.3"
+          "version": "16.0.3_1"
         }
       ]
     },
@@ -436,7 +436,7 @@
           "id": "pkg-latest",
           "label": "Installed from the FreeBSD latest package repository.",
           "image": "ghcr.io/daemonless/grafana:pkg-latest",
-          "version": "13.1.1_2"
+          "version": "13.1.1_3"
         }
       ]
     },
@@ -588,7 +588,7 @@
           "id": "pkg-latest",
           "label": "Installed from the FreeBSD latest package repository.",
           "image": "ghcr.io/daemonless/headscale:pkg-latest",
-          "version": "0.27.1_9"
+          "version": "0.27.1_10"
         }
       ]
     },
@@ -700,7 +700,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/hugo:pkg-latest",
-          "version": "0.165.0_2_1"
+          "version": "0.165.0_3_1"
         }
       ]
     },
@@ -1015,7 +1015,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/navidrome:pkg-latest",
-          "version": "0.63.2_2"
+          "version": "0.63.2_3"
         }
       ]
     },
@@ -1632,7 +1632,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/seaweedfs:pkg-latest",
-          "version": "4.41_2"
+          "version": "4.41_3"
         }
       ]
     },
@@ -1736,14 +1736,14 @@
       "web_url": "https://stalw.art/",
       "image": "ghcr.io/daemonless/stalwart",
       "manifest_url": "/catalog/manifests/stalwart.yaml",
-      "version": "v0.16.20",
+      "version": "v0.16.21",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/stalwart:latest",
-          "version": "v0.16.20"
+          "version": "v0.16.21"
         },
         {
           "id": "pkg",
@@ -1922,7 +1922,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/tailscale:pkg-latest",
-          "version": "1.102.3"
+          "version": "1.102.3_1"
         }
       ]
     },
@@ -1990,7 +1990,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/traefik:pkg-latest",
-          "version": "3.7.11"
+          "version": "3.7.11_1"
         },
         {
           "id": "k8s",
