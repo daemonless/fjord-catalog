@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-07T06:59:12Z",
+  "generated": "2026-09-07T13:58:40Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -1894,7 +1894,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/syncthing:pkg-latest",
-          "version": "2.1.3_2"
+          "version": "2.1.3_3"
         }
       ]
     },
