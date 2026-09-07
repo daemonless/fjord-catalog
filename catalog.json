@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-07T18:39:41Z",
+  "generated": "2026-09-07T22:29:43Z",
   "apps": [
     {
       "id": "adguardhome",
