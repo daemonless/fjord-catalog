@@ -359,21 +359,40 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 		}
 	}
 
-	// volumes -> CONFIG_DATA (zfs_dataset) / <NAME>_PATH (path)
+	// volumes -> managed datasets (auto-provisioned by fjord) or host paths.
+	// A volume is "managed storage" when its host side is relative or under the
+	// /containers convention -- fjord owns the location, so it becomes a
+	// zfs_dataset the user never has to fill. A host side that points at a real
+	// system path (/etc/resolv.conf, /mnt/media, ...) stays a user-supplied
+	// path. /config keeps its canonical CONFIG_DATA name for continuity.
 	if vols := mapGet(svcNode, "volumes"); vols != nil && vols.Kind == yaml.SequenceNode {
 		for _, item := range vols.Content {
 			host, cont, opts := splitVolume(item.Value)
 			if cont == "" {
 				continue
 			}
+			// Fixed host system files stay literal binds: they're not user
+			// config, and their names ("resolv.conf") don't form valid env vars.
+			// The engines mount (podman) or skip (appjail) them directly.
+			if cont == "/etc/resolv.conf" || cont == "/etc/localtime" {
+				continue
+			}
+			base := envName(filepath.Base(cont))
+			managed := host == "" || !filepath.IsAbs(host) || strings.HasPrefix(host, "/containers/")
 			v := variable{Default: host}
-			if cont == "/config" {
+			switch {
+			case cont == "/config":
 				v.Name = "CONFIG_DATA"
 				v.Type = "zfs_dataset"
 				v.Default = "config"
 				v.HostPermissions = &hostPerms{Uid: 1000, Gid: 1000, Mode: "755"}
-			} else {
-				v.Name = strings.ToUpper(strings.Trim(filepath.Base(cont), "/")) + "_PATH"
+			case managed:
+				v.Name = base + "_DATA"
+				v.Type = "zfs_dataset"
+				v.Default = strings.ToLower(base)
+				v.HostPermissions = &hostPerms{Uid: 1000, Gid: 1000, Mode: "755"}
+			default:
+				v.Name = base + "_PATH"
 				v.Type = "path"
 				v.Default = ""
 			}
@@ -484,17 +503,20 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 
 func deriveVariants(cfg imageConfig, av *appVersions) []variant {
 	canned := map[string]string{
-		"latest":     "Upstream binary",
+		"latest":     "Latest",
 		"pkg":        "FreeBSD quarterly packages",
 		"pkg-latest": "FreeBSD latest packages",
 	}
 	var out []variant
 	for _, v := range cfg.Build.Variants {
+		// Prefer a clean channel name: the canned label for known tags, then
+		// the tag itself. tag_desc is a README blurb (often Markdown), so it's
+		// only a last resort for custom tags, with its markup stripped.
 		label := v.Tag
-		if v.TagDesc != "" {
-			label = firstSentence(v.TagDesc)
-		} else if c, ok := canned[v.Tag]; ok {
+		if c, ok := canned[v.Tag]; ok {
 			label = c
+		} else if v.TagDesc != "" {
+			label = stripMarkdown(firstSentence(v.TagDesc))
 		}
 		out = append(out, variant{ID: v.Tag, Label: label, Default: v.Default, Version: av.forVariant(v.Tag)})
 	}

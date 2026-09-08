@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 )
 
@@ -53,19 +52,13 @@ func main() {
 	outDir := flag.String("out", ".", "output catalog directory")
 	appsCSV := flag.String("apps", "all", "comma-separated app ids to derive, or \"all\" to scan every repo")
 	versionsPath := flag.String("versions", "", "optional versions JSON; when omitted, versions come from each repo's sbom.json")
+	sourcesPath := flag.String("sources", "sources.yaml", "catalog config (branding + sources); absent -> built-in daemonless default")
 	flag.Parse()
 
-	var apps []string
-	if *appsCSV == "all" {
-		apps = scanRepos(*reposDir)
-	} else {
-		apps = strings.Split(*appsCSV, ",")
-	}
-	var versions map[string]*appVersions
-	if *versionsPath != "" {
-		versions = loadVersions(*versionsPath)
-	} else {
-		versions = loadSbomVersions(*reposDir, apps)
+	cfg, err := loadConfig(*sourcesPath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "config:", err)
+		os.Exit(1)
 	}
 
 	manifestDir := filepath.Join(*outDir, "manifests")
@@ -78,44 +71,43 @@ func main() {
 	}
 
 	cat := catalogFile{
-		CatalogName:  "Daemonless Apps",
+		CatalogName:  cfg.Catalog.Name,
 		FjordVersion: "0.1",
-		Maintainer:   "https://daemonless.io",
-		Icon:         "/catalog/icon.svg", // icon.svg at the repo root, beside catalog.json
+		Maintainer:   cfg.Catalog.Maintainer,
+		Icon:         cfg.Catalog.Icon,
 		Generated:    time.Now().UTC().Format(time.RFC3339),
 	}
 	var skipped []string
 
-	for _, id := range apps {
-		id = strings.TrimSpace(id)
-		if id == "" {
-			continue
-		}
-		repo := filepath.Join(*reposDir, id)
-		composeBytes, err := os.ReadFile(filepath.Join(repo, "compose.yaml"))
+	for _, src := range cfg.Sources {
+		prov, err := providerFor(src, *reposDir, *versionsPath, *appsCSV)
 		if err != nil {
-			skipped = append(skipped, id+": no compose.yaml")
-			continue
+			fmt.Fprintf(os.Stderr, "source %q: %v\n", src.Name, err)
+			os.Exit(1)
 		}
-		configBytes, _ := os.ReadFile(filepath.Join(repo, ".daemonless/config.yaml"))
-
-		d, err := deriveManifest(composeBytes, configBytes, repo, id, versions[id])
+		refs, err := prov.Discover()
 		if err != nil {
-			skipped = append(skipped, id+": "+err.Error())
-			continue
+			fmt.Fprintf(os.Stderr, "source %q discover: %v\n", src.Name, err)
+			os.Exit(1)
 		}
-
-		if err := os.WriteFile(filepath.Join(manifestDir, id+".yaml"), []byte(d.manifestYAML), 0o644); err != nil {
-			skipped = append(skipped, id+": write "+err.Error())
-			continue
-		}
-		if d.logoSrc != "" {
-			if err := copyFile(d.logoSrc, filepath.Join(iconDir, id+filepath.Ext(d.logoSrc))); err != nil {
-				fmt.Fprintf(os.Stderr, "  warn %s: copy logo: %v\n", id, err)
+		for _, ref := range refs {
+			da, err := prov.Derive(ref)
+			if err != nil {
+				skipped = append(skipped, ref.ID+": "+err.Error())
+				continue
 			}
+			if err := os.WriteFile(filepath.Join(manifestDir, ref.ID+".yaml"), []byte(da.ManifestYAML), 0o644); err != nil {
+				skipped = append(skipped, ref.ID+": write "+err.Error())
+				continue
+			}
+			if da.IconSrc != "" {
+				if err := copyFile(da.IconSrc, filepath.Join(iconDir, ref.ID+filepath.Ext(da.IconSrc))); err != nil {
+					fmt.Fprintf(os.Stderr, "  warn %s: copy logo: %v\n", ref.ID, err)
+				}
+			}
+			cat.Apps = append(cat.Apps, da.Entry)
+			fmt.Printf("derived  %-14s (%d vars, %d variants)\n", ref.ID, da.Vars, len(da.Entry.Variants))
 		}
-		cat.Apps = append(cat.Apps, catalogEntryFor(d, id))
-		fmt.Printf("derived  %-14s (%d vars, %d variants)\n", id, len(d.xf.Variables), len(d.xf.Variants))
 	}
 
 	sort.Slice(cat.Apps, func(i, j int) bool { return cat.Apps[i].Name < cat.Apps[j].Name })
@@ -128,32 +120,6 @@ func main() {
 	fmt.Printf("\n%d derived, %d skipped\n", len(cat.Apps), len(skipped))
 	for _, s := range skipped {
 		fmt.Println("  skip", s)
-	}
-}
-
-func catalogEntryFor(d *derived, id string) catEntry {
-	xf := d.xf
-	base := d.imageRepo
-	var vs []catVariant
-	for _, v := range xf.Variants {
-		vs = append(vs, catVariant{ID: v.ID, Label: v.Label, Default: v.Default, Image: base + ":" + v.ID, Version: v.Version})
-	}
-	if len(vs) == 0 {
-		vs = append(vs, catVariant{ID: "latest", Label: "Latest", Default: true, Image: base + ":latest"})
-	}
-	return catEntry{
-		ID:          xf.Info.ID,
-		Name:        xf.Info.Name,
-		Category:    xf.Info.Category,
-		Class:       xf.Info.Class,
-		Icon:        xf.Info.Icon,
-		Description: xf.Info.Description,
-		UpstreamURL: xf.Info.UpstreamURL,
-		WebURL:      xf.Info.WebURL,
-		Image:       base,
-		ManifestURL: "/catalog/manifests/" + id + ".yaml",
-		Version:     xf.Info.Version,
-		Variants:    vs,
 	}
 }
 

@@ -8,6 +8,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// envName uppercases a path component and collapses every non-alphanumeric rune
+// to "_" so it forms a valid env-var fragment: "resolv.conf" -> "RESOLV_CONF",
+// never the invalid "RESOLV.CONF" that breaks ${VAR} expansion.
+func envName(s string) string {
+	s = strings.ToUpper(strings.Trim(s, "/"))
+	return strings.Map(func(r rune) rune {
+		if (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
+			return r
+		}
+		return '_'
+	}, s)
+}
+
 // --- yaml.Node helpers ---
 
 func mapGet(m *yaml.Node, key string) *yaml.Node {
@@ -161,4 +174,10 @@ func firstSentence(s string) string {
 	}
 	s = strings.Trim(s, "*")
 	return s
+}
+
+// stripMarkdown removes inline emphasis markers so a README-flavored string
+// reads cleanly as a plain label.
+func stripMarkdown(s string) string {
+	return strings.NewReplacer("*", "", "_", "", "`", "").Replace(s)
 }
