@@ -26,7 +26,7 @@ services:
       # Lock down registration after you create the first (admin) account.
       - AUTH_IS_REGISTRATION_ENABLED=${AUTH_IS_REGISTRATION_ENABLED}
     volumes:
-      - "${APP_DATA_PATH}:/app_data"
+      - "${APP_DATA_DATA}:/app_data"
 x-fjord:
   version: "0.1"
   info:
@@ -40,10 +40,14 @@ x-fjord:
     upstream_url: https://github.com/papra-hq/papra
     web_url: https://papra.app
   variables:
-    - name: APP_DATA_PATH
+    - name: APP_DATA_DATA
       label: Application data — SQLite database, stored documents, and config
-      type: path
-      default: ""
+      type: zfs_dataset
+      default: app_data
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
     - name: PUID
       label: User ID for the application process
       type: string
@@ -106,5 +110,5 @@ x-fjord:
       default: "true"
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true

@@ -42,5 +42,5 @@ x-fjord:
       default: /data/storage
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true

@@ -60,11 +60,11 @@ x-fjord:
       default: UTC
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true
     - id: pkg
       label: FreeBSD quarterly packages
     - id: pkg-latest
       label: FreeBSD latest packages
     - id: k8s
-      label: 'Same as :latest (s6) but with DAEMONLESS_SUPERVISE=orchestrator baked in: a service exit terminates the container so the orchestrator (Kubernetes, etc.) restarts the pod.'
+      label: 'Same as :latest (s6) but with DAEMONLESSSUPERVISE=orchestrator baked in: a service exit terminates the container so the orchestrator (Kubernetes, etc.) restarts the pod.'

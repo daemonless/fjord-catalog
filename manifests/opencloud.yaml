@@ -58,5 +58,5 @@ x-fjord:
       default: https://hostname:9200
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true

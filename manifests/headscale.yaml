@@ -56,9 +56,9 @@ x-fjord:
       default: UTC
   variants:
     - id: latest
-      label: Built from the official upstream FreeBSD release binary.
+      label: Latest
       default: true
     - id: pkg
-      label: Installed from the FreeBSD quarterly package repository.
+      label: FreeBSD quarterly packages
     - id: pkg-latest
-      label: Installed from the FreeBSD latest package repository.
+      label: FreeBSD latest packages

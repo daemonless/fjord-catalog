@@ -77,5 +77,5 @@ x-fjord:
       default: info
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true

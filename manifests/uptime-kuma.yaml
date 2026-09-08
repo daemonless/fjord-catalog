@@ -69,5 +69,5 @@ x-fjord:
       default: /config
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true

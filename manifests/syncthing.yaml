@@ -50,7 +50,7 @@ x-fjord:
         mode: "755"
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true
     - id: pkg
       label: FreeBSD quarterly packages

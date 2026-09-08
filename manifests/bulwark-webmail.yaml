@@ -56,5 +56,5 @@ x-fjord:
       default: https://mail.example.com
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true

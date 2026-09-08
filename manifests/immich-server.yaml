@@ -80,7 +80,7 @@ x-fjord:
       default: UTC
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true
     - id: beta
       label: Beta release built from upstream v3.2.0-rc.1.

@@ -98,7 +98,7 @@ x-fjord:
       default: "true"
   variants:
     - id: latest
-      label: Upstream binary
+      label: Latest
       default: true
     - id: pkg
       label: FreeBSD quarterly packages

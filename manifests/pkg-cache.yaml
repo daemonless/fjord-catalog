@@ -13,7 +13,7 @@ services:
       - PKG_LOG_MAX_SIZE=${PKG_LOG_MAX_SIZE}
     volumes:
       - "${CONFIG_DATA}:/config"
-      - "${CACHE_PATH}:/cache"
+      - "${CACHE_DATA}:/cache"
     ports:
       - "${WEB_PORT}:80"
       - "${PORT_7890}:7890"
@@ -49,10 +49,14 @@ x-fjord:
         uid: 1000
         gid: 1000
         mode: "755"
-    - name: CACHE_PATH
+    - name: CACHE_DATA
       label: Package cache storage (proxy_cache). Size to match max_size in nginx.conf (default 50G; 10G is fine for light use).
-      type: path
-      default: ""
+      type: zfs_dataset
+      default: cache
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
     - name: TZ
       label: Timezone for the container
       type: string
@@ -79,5 +83,5 @@ x-fjord:
       default: 50m
   variants:
     - id: latest
-      label: daemonless Appliance
+      label: Latest
       default: true

@@ -29,7 +29,7 @@ services:
     env_file:
       - .env
     volumes:
-      - "${SYLVE_PATH}:/var/db/sylve"
+      - "${SYLVE_DATA}:/var/db/sylve"
 x-fjord:
   version: "0.1"
   info:
@@ -46,13 +46,17 @@ x-fjord:
       - amd64
       - aarch64
   variables:
-    - name: SYLVE_PATH
+    - name: SYLVE_DATA
       label: Sylve database and runtime configuration
-      type: path
-      default: ""
+      type: zfs_dataset
+      default: sylve
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
   variants:
     - id: latest
-      label: Latest tagged release of Sylve (AlchemillaHQ/Sylve).
+      label: Latest
       default: true
     - id: nightly
-      label: Rolling build from upstream's `tip` release (AlchemillaHQ/Sylve).
+      label: Rolling build from upstream's tip release (AlchemillaHQ/Sylve).
