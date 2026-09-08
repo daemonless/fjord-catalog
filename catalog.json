@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-08T17:46:02Z",
+  "generated": "2026-09-08T22:22:33Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -1848,14 +1848,14 @@
       "web_url": "https://sylve.io",
       "image": "ghcr.io/daemonless/sylve",
       "manifest_url": "/catalog/manifests/sylve.yaml",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "variants": [
         {
           "id": "latest",
           "label": "Latest tagged release of Sylve (AlchemillaHQ/Sylve).",
           "default": true,
           "image": "ghcr.io/daemonless/sylve:latest",
-          "version": "0.3.0"
+          "version": "0.3.1"
         },
         {
           "id": "nightly",
@@ -2206,14 +2206,14 @@
       "web_url": "https://zensical.org",
       "image": "ghcr.io/daemonless/zensical",
       "manifest_url": "/catalog/manifests/zensical.yaml",
-      "version": "0.0.59",
+      "version": "0.0.60",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/zensical:latest",
-          "version": "0.0.59"
+          "version": "0.0.60"
         },
         {
           "id": "pkg",
@@ -2240,14 +2240,14 @@
       "web_url": "https://coder.com/docs/code-server",
       "image": "ghcr.io/daemonless/code-server",
       "manifest_url": "/catalog/manifests/code-server.yaml",
-      "version": "4.135.0",
+      "version": "4.136.2",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/code-server:latest",
-          "version": "4.135.0"
+          "version": "4.136.2"
         }
       ]
     },
