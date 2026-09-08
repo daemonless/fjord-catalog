@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-08T06:54:26Z",
+  "generated": "2026-09-08T12:37:32Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -1613,14 +1613,14 @@
       "web_url": "https://seaweedfs.com/",
       "image": "ghcr.io/daemonless/seaweedfs",
       "manifest_url": "/catalog/manifests/seaweedfs.yaml",
-      "version": "4.45",
+      "version": "4.46",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/seaweedfs:latest",
-          "version": "4.45"
+          "version": "4.46"
         },
         {
           "id": "pkg",
@@ -1875,14 +1875,14 @@
       "web_url": "https://syncthing.net/",
       "image": "ghcr.io/daemonless/syncthing",
       "manifest_url": "/catalog/manifests/syncthing.yaml",
-      "version": "v2.1.3",
+      "version": "v2.1.5",
       "variants": [
         {
           "id": "latest",
           "label": "Upstream binary",
           "default": true,
           "image": "ghcr.io/daemonless/syncthing:latest",
-          "version": "v2.1.3"
+          "version": "v2.1.5"
         },
         {
           "id": "pkg",
@@ -1994,7 +1994,7 @@
         },
         {
           "id": "k8s",
-          "label": "Passthrough",
+          "label": "Same as :latest (s6) but with DAEMONLESS_SUPERVISE=orchestrator baked in: a service exit terminates the container so the orchestrator (Kubernetes, etc.) restarts the pod.",
           "image": "ghcr.io/daemonless/traefik:k8s"
         }
       ]

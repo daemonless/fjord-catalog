@@ -67,4 +67,4 @@ x-fjord:
     - id: pkg-latest
       label: FreeBSD latest packages
     - id: k8s
-      label: Passthrough
+      label: 'Same as :latest (s6) but with DAEMONLESS_SUPERVISE=orchestrator baked in: a service exit terminates the container so the orchestrator (Kubernetes, etc.) restarts the pod.'
