@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-09T17:32:55Z",
+  "generated": "2026-09-09T22:15:32Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -835,25 +835,25 @@
       "category": "Utilities",
       "class": "service",
       "icon": "/catalog/icons/jellyfin-ffmpeg.svg",
-      "description": "FFmpeg with the Jellyfin patch set for HDR tone mapping (the SIMD-optimized\ntonemapx / libplacebo filters) on FreeBSD. Ships both the 7.x and 8.x lines:\n`jellyfin-ffmpeg` (= v7, the default) / `jellyfin-ffmpeg7` / `jellyfin-ffmpeg8`\n(and matching `*probe`) are all on PATH. Standalone CLI image, not a service.",
+      "description": "FFmpeg with the Jellyfin patch set for HDR tone mapping (the SIMD-optimized\ntonemapx / libplacebo filters) on FreeBSD. `latest` / `8` is the 8.x line\n(`jellyfin-ffmpeg8`); `7` is the 7.x line (`jellyfin-ffmpeg7`). In every tag\n`ffmpeg` / `ffprobe` point at that line's binaries. Standalone CLI image, not a service.",
       "upstream_url": "https://github.com/jellyfin/jellyfin-ffmpeg",
       "web_url": "https://jellyfin.org/",
       "image": "ghcr.io/daemonless/jellyfin-ffmpeg",
       "manifest_url": "/catalog/manifests/jellyfin-ffmpeg.yaml",
-      "version": "7.1.4.3_1",
+      "version": "8.1.2.4",
       "variants": [
         {
-          "id": "7",
-          "label": "7",
-          "default": true,
-          "image": "ghcr.io/daemonless/jellyfin-ffmpeg:7",
-          "version": "7.1.4.3_1"
-        },
-        {
           "id": "8",
-          "label": "8",
+          "label": "FreeBSD Port",
+          "default": true,
           "image": "ghcr.io/daemonless/jellyfin-ffmpeg:8",
           "version": "8.1.2.4"
+        },
+        {
+          "id": "7",
+          "label": "FreeBSD Package",
+          "image": "ghcr.io/daemonless/jellyfin-ffmpeg:7",
+          "version": "7.1.4.3_1"
         }
       ]
     },
@@ -2290,14 +2290,14 @@
       "web_url": "https://n8n.io/",
       "image": "ghcr.io/daemonless/n8n",
       "manifest_url": "/catalog/manifests/n8n.yaml",
-      "version": "2.38.1",
+      "version": "2.38.5",
       "variants": [
         {
           "id": "latest",
           "label": "Latest",
           "default": true,
           "image": "ghcr.io/daemonless/n8n:latest",
-          "version": "2.38.1"
+          "version": "2.38.5"
         }
       ]
     },
