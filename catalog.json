@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-09T12:43:33Z",
+  "generated": "2026-09-09T17:32:55Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -681,14 +681,14 @@
       "web_url": "https://gohugo.io/",
       "image": "ghcr.io/daemonless/hugo",
       "manifest_url": "/catalog/manifests/hugo.yaml",
-      "version": "v0.165.0",
+      "version": "v0.166.0",
       "variants": [
         {
           "id": "latest",
           "label": "Latest",
           "default": true,
           "image": "ghcr.io/daemonless/hugo:latest",
-          "version": "v0.165.0"
+          "version": "v0.166.0"
         },
         {
           "id": "pkg",
