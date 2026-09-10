@@ -3,7 +3,7 @@
   "fjord_version": "0.1",
   "maintainer": "https://daemonless.io",
   "icon": "/catalog/icon.svg",
-  "generated": "2026-09-09T22:15:32Z",
+  "generated": "2026-09-10T07:09:38Z",
   "apps": [
     {
       "id": "adguardhome",
@@ -588,7 +588,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/headscale:pkg-latest",
-          "version": "0.27.1_10"
+          "version": "0.29.3"
         }
       ]
     },
@@ -1632,7 +1632,7 @@
           "id": "pkg-latest",
           "label": "FreeBSD latest packages",
           "image": "ghcr.io/daemonless/seaweedfs:pkg-latest",
-          "version": "4.41_3"
+          "version": "4.45"
         }
       ]
     },
@@ -1834,33 +1834,6 @@
           "default": true,
           "image": "ghcr.io/daemonless/superset:latest",
           "version": "6.1.0"
-        }
-      ]
-    },
-    {
-      "id": "sylve",
-      "name": "Sylve",
-      "category": "Infrastructure",
-      "class": "service",
-      "icon": "/catalog/icons/sylve.svg",
-      "description": "Modern, open-source management platform for FreeBSD managing Virtual Machines (Bhyve), Jails, and ZFS storage.",
-      "upstream_url": "https://github.com/AlchemillaHQ/Sylve",
-      "web_url": "https://sylve.io",
-      "image": "ghcr.io/daemonless/sylve",
-      "manifest_url": "/catalog/manifests/sylve.yaml",
-      "version": "0.3.1",
-      "variants": [
-        {
-          "id": "latest",
-          "label": "Latest",
-          "default": true,
-          "image": "ghcr.io/daemonless/sylve:latest",
-          "version": "0.3.1"
-        },
-        {
-          "id": "nightly",
-          "label": "Rolling build from upstream's tip release (AlchemillaHQ/Sylve).",
-          "image": "ghcr.io/daemonless/sylve:nightly"
         }
       ]
     },
