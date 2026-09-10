@@ -12,14 +12,21 @@ import (
 
 // --- source shapes (subset we read) ---
 
-type volDoc struct {
+// docEntry is one x-daemonless docs entry (env or volume): a bare string
+// ("Movie library") or a mapping ({desc: ..., optional: true, level: primary}).
+// optional = may be left empty; level = where the wizard shows it
+// (primary = up front, options, advanced), independent of optional.
+type docEntry struct {
 	Desc     string
 	Optional bool
+	Level    string
 }
 
-// UnmarshalYAML accepts either a bare string ("Movie library") or a mapping
-// ({desc: ..., optional: true}).
-func (v *volDoc) UnmarshalYAML(n *yaml.Node) error {
+var validLevels = map[string]bool{"primary": true, "options": true, "advanced": true}
+
+type volDoc = docEntry
+
+func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 	if n.Kind == yaml.ScalarNode {
 		v.Desc = n.Value
 		return nil
@@ -27,11 +34,15 @@ func (v *volDoc) UnmarshalYAML(n *yaml.Node) error {
 	var m struct {
 		Desc     string `yaml:"desc"`
 		Optional bool   `yaml:"optional"`
+		Level    string `yaml:"level"`
 	}
 	if err := n.Decode(&m); err != nil {
 		return err
 	}
-	v.Desc, v.Optional = m.Desc, m.Optional
+	if m.Level != "" && !validLevels[m.Level] {
+		return fmt.Errorf("level %q: want primary, options or advanced", m.Level)
+	}
+	v.Desc, v.Optional, v.Level = m.Desc, m.Optional, m.Level
 	return nil
 }
 
@@ -51,8 +62,8 @@ type xDaemonless struct {
 // parseDocs reads x-daemonless.docs tolerantly from the node, returning
 // env/volume/port label maps. Anything it can't read is simply omitted (labels
 // are nice-to-have). Keys come from node .Value, so "67/udp" and 7878 both work.
-func parseDocs(docsNode *yaml.Node) (env map[string]string, vols map[string]volDoc, ports map[string]string) {
-	env, vols, ports = map[string]string{}, map[string]volDoc{}, map[string]string{}
+func parseDocs(docsNode *yaml.Node) (env map[string]docEntry, vols map[string]volDoc, ports map[string]string) {
+	env, vols, ports = map[string]docEntry{}, map[string]volDoc{}, map[string]string{}
 	if docsNode == nil || docsNode.Kind != yaml.MappingNode {
 		return
 	}
@@ -66,15 +77,9 @@ func parseDocs(docsNode *yaml.Node) (env map[string]string, vols map[string]volD
 			key, v := val.Content[j].Value, val.Content[j+1]
 			switch section {
 			case "env":
-				if v.Kind == yaml.ScalarNode {
-					env[key] = v.Value
-				} else {
-					var m struct {
-						Desc string `yaml:"desc"`
-					}
-					_ = v.Decode(&m)
-					env[key] = m.Desc
-				}
+				var ed docEntry
+				_ = v.Decode(&ed)
+				env[key] = ed
 			case "ports":
 				if v.Kind == yaml.ScalarNode {
 					ports[key] = v.Value
@@ -123,6 +128,7 @@ type variable struct {
 	Type            string     `yaml:"type"`
 	Default         string     `yaml:"default"`
 	Optional        bool       `yaml:"optional,omitempty"`
+	Level           string     `yaml:"level,omitempty"` // wizard placement: primary | options | advanced
 	HostPermissions *hostPerms `yaml:"host_permissions,omitempty"`
 	Image           string     `yaml:"image,omitempty"` // image_tag vars: the repo this tag selects for
 }
@@ -401,6 +407,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 			if d, ok := volDocs[cont]; ok {
 				v.Label = d.Desc
 				v.Optional = d.Optional
+				v.Level = d.Level
 			}
 			vars = append(vars, v)
 			target := "${" + v.Name + "}:" + cont
@@ -419,7 +426,8 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 			if secretRe.MatchString(key) {
 				typ = "secret"
 			}
-			vars = append(vars, variable{Name: key, Label: envDocs[key], Type: typ, Default: val})
+			d := envDocs[key]
+			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: val, Optional: d.Optional, Level: d.Level})
 		}
 		switch env.Kind {
 		case yaml.SequenceNode:

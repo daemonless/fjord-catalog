@@ -82,7 +82,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		seen[name] = true
 		// An inline ${VAR:-fallback} means the compose works without a value --
 		// the variable is optional by construction.
-		optional := strings.Contains(m[0], ":-")
+		optional := strings.Contains(m[0], ":-") || envDocs[name].Optional
 		def := inlineDef
 		if strings.Contains(def, "${") {
 			// Nested fallback like ${A:-${B:-x}} -- leave the default empty so
@@ -102,7 +102,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		case strings.Contains(composeText, "${"+name+"}:/"):
 			typ = "path" // host side of a bind mount
 		}
-		vars = append(vars, variable{Name: name, Label: envDocs[name], Type: typ, Default: def, Optional: optional, Image: imgRepo})
+		vars = append(vars, variable{Name: name, Label: envDocs[name].Desc, Type: typ, Default: def, Optional: optional, Level: envDocs[name].Level, Image: imgRepo})
 	}
 
 	// First service image repo, for the store card / future use.

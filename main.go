@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -142,11 +143,12 @@ func buildSource(src Source, top CatalogMeta, outRoot, reposDir, versionsPath, a
 		cat.Apps = append(cat.Apps, da.Entry)
 		fmt.Printf("%-12s derived  %-14s (%d vars, %d variants)\n", src.Name, ref.ID, da.Vars, len(da.Entry.Variants))
 	}
-	// Stable: name, then id, so two apps that share a display name keep a
-	// fixed order across runs.
+	// Stable, case-insensitive: "code-server" sorts with the Cs, not after
+	// every capitalized name. Then id, so shared display names keep a fixed order.
 	sort.SliceStable(cat.Apps, func(i, j int) bool {
-		if cat.Apps[i].Name != cat.Apps[j].Name {
-			return cat.Apps[i].Name < cat.Apps[j].Name
+		a, b := strings.ToLower(cat.Apps[i].Name), strings.ToLower(cat.Apps[j].Name)
+		if a != b {
+			return a < b
 		}
 		return cat.Apps[i].ID < cat.Apps[j].ID
 	})

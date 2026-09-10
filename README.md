@@ -61,7 +61,10 @@ daemonless catalog is exactly this: the `catalog/` directory of
 Each app is a repository with a `compose.yaml` carrying `x-daemonless`
 metadata (title, icon, category, description, links, docs for env/ports/
 volumes) and, optionally, a `.daemonless/config.yaml` and an `sbom.json`
-for versions. See the daemonless image repos for the shape.
+for versions. See the daemonless image repos for the shape. An env or
+volume doc is a string, or `{desc, optional: true, level: primary}`:
+`optional` lets the install wizard accept it empty, `level` (primary,
+options, advanced) says where the wizard shows it.
 
 Two derivation modes, chosen per app:
 
