@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -65,8 +66,10 @@ func (p *githubProvider) Discover() ([]AppRef, error) {
 		cmd := exec.Command("git", "clone", "--depth", "1", "--quiet", url, dir)
 		if tok := os.Getenv("GITHUB_TOKEN"); tok != "" {
 			// Token in the header, never in the URL (it would leak into the
-			// remote config and logs).
-			cmd.Args = append([]string{cmd.Args[0], "-c", "http.extraheader=AUTHORIZATION: bearer " + tok}, cmd.Args[1:]...)
+			// remote config and logs). GitHub's git endpoint rejects "bearer";
+			// it wants basic auth with the x-access-token user, as actions/checkout sends.
+			cred := base64.StdEncoding.EncodeToString([]byte("x-access-token:" + tok))
+			cmd.Args = append([]string{cmd.Args[0], "-c", "http.extraheader=AUTHORIZATION: basic " + cred}, cmd.Args[1:]...)
 		}
 		if out, err := cmd.CombinedOutput(); err != nil {
 			fmt.Fprintf(os.Stderr, "  warn %s: clone: %v: %s\n", n, err, strings.TrimSpace(string(out)))
