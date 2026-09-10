@@ -1,0 +1,62 @@
+name: sylve
+services:
+  sylve:
+    image: ghcr.io/daemonless/sylve:nightly
+    container_name: sylve
+    hostname: ${SYLVE_HOSTNAME}
+    restart: always
+    network_mode: host
+    annotations:
+      org.freebsd.jail.name: "sylve"
+      org.freebsd.jail.devfs_ruleset: "10"
+      io.daemonless.sylve.autowire: "true"
+      io.daemonless.sylve.dataset: "${SYLVE_DATASET}"
+      org.freebsd.jail.allow.vmm: "true"
+      org.freebsd.jail.allow.mount: "true"
+      org.freebsd.jail.allow.mount.zfs: "true"
+      org.freebsd.jail.allow.mount.fdescfs: "true"
+      org.freebsd.jail.allow.nfsd: "true"
+      org.freebsd.jail.children.max: "100"
+      org.freebsd.jail.enforce_statfs: "1"
+      org.freebsd.jail.allow.raw_sockets: "true"
+      org.freebsd.jail.allow.chflags: "true"
+      org.freebsd.jail.allow.routing: "true"
+      org.freebsd.jail.allow.mount.linprocfs: "true"
+      org.freebsd.jail.allow.mount.linsysfs: "true"
+      org.freebsd.jail.allow.mount.tmpfs: "true"
+      org.freebsd.jail.allow.mount.devfs: "true"
+      org.freebsd.jail.allow.unprivileged_proc_debug: "true"
+    env_file:
+      - .env
+    volumes:
+      - "${SYLVE_DATA}:/var/db/sylve"
+x-fjord:
+  version: "0.1"
+  info:
+    id: sylve
+    name: Sylve
+    description: Modern, open-source management platform for FreeBSD managing Virtual Machines (Bhyve), Jails, and ZFS storage.
+    category: Infrastructure
+    class: service
+    icon: /catalog/icons/sylve.svg
+    web_port: "8181"
+    upstream_url: https://github.com/AlchemillaHQ/Sylve
+    web_url: https://sylve.io
+    only_for_archs:
+      - amd64
+      - aarch64
+  variables:
+    - name: SYLVE_DATA
+      label: Sylve database and runtime configuration
+      type: zfs_dataset
+      default: sylve
+      host_permissions:
+        uid: 1000
+        gid: 1000
+        mode: "755"
+  variants:
+    - id: latest
+      label: Latest
+      default: true
+    - id: nightly
+      label: Rolling build from upstream's tip release (AlchemillaHQ/Sylve).
