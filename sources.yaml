@@ -1,16 +1,21 @@
-# fjord-catalog build config: catalog branding + the sources to derive.
-# Absent file -> built-in daemonless default. See README for the full schema.
-
+# fjord-catalog build config for THIS repo's own smoke build. The published
+# daemonless catalog is built from daemonless/daemonless (catalog/sources.yaml),
+# which calls the reusable workflow here.
+#
+# Schema:
+#   catalog:   default branding for every source (name, maintainer, icon)
+#   sources:   one entry per catalog to publish, written to <out>/<name>/
+#     provider: local             - scan <repos-dir>[/path] for app dirs
+#               daemonless-github - list org + shallow-clone matching repos
+#     include/exclude: regexps over app ids (repo names)
+#     catalog: per-source branding override
 catalog:
   name: "Daemonless Apps"
   maintainer: "https://daemonless.io"
-  icon: "/catalog/icon.svg"
+  icon: "icon.svg"
 
 sources:
-  # The daemonless image set. CI clones the org's repos into --repos-dir, then
-  # this scans that dir (each subdir with a compose.yaml = one app). Org-clone
-  # discovery ("provider: daemonless-github" with an org) lands in a later pass.
   - name: daemonless
-    provider: local
-    path: "."
-    # include/exclude are regexps over app ids; empty = derive everything.
+    provider: daemonless-github
+    org: daemonless
+    exclude: "^(base|base-core|base-manifest-test|build-tools|ci-daemonless-io|daemonless|daemonless-io|dbuild|fjord|fjord-catalog|freebsd-ports|mkdocs-zip-bundle-plugin|\\.github)$"

@@ -1,19 +1,48 @@
 name: build-catalog
 
-# Rebuilds catalog.json + manifests/ + icons/ by running the deriver over every
-# image repo in the org, then commits the result back. Runs nightly and on
-# demand. Nothing here is baked into fjord/fjordd -- this is the daemonless
-# catalog's own publishing config.
+# Reusable workflow: builds one or more fjord catalogs from a caller repo's
+# sources.yaml and publishes them to the caller's GitHub Pages as a static
+# JSON "API" (<site>/v1/<source>/catalog.json, manifests/, icons/). The
+# daemonless catalog itself is just another caller: daemonless/daemonless,
+# catalog/sources.yaml.
+#
+# Minimal caller (.github/workflows/catalog.yml):
+#   on:
+#     schedule: [{ cron: "0 */6 * * *" }]
+#     workflow_dispatch:
+#   permissions: { contents: read, pages: write, id-token: write }
+#   jobs:
+#     catalog:
+#       uses: daemonless/fjord-catalog/.github/workflows/build.yml@main
+#       with: { sources: catalog/sources.yaml }   # default: sources.yaml at the root
 on:
-  workflow_dispatch:
-  schedule:
-    # 2h after the daemonless-io version-check cycle (0 */6), so freshly
-    # committed sbom.json versions are picked up. Commit-on-change only, so
-    # no-op runs add nothing to history.
-    - cron: "0 2,8,14,20 * * *"
+  workflow_call:
+    inputs:
+      sources:
+        description: path to sources.yaml in the caller repo
+        type: string
+        default: sources.yaml
+      out:
+        description: output dir inside the published site (schema version path)
+        type: string
+        default: v1
+      publish:
+        description: deploy to the caller's GitHub Pages (false = upload an artifact only)
+        type: boolean
+        default: true
+      builder-ref:
+        description: fjord-catalog ref to build with
+        type: string
+        default: main
+      apps:
+        description: comma-separated app ids to limit derivation (smoke builds)
+        type: string
+        default: all
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -21,38 +50,56 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: daemonless/fjord-catalog
+          ref: ${{ inputs.builder-ref }}
+          path: .fjord-catalog
+
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version-file: .fjord-catalog/go.mod
 
-      - name: Clone image repos (shallow)
+      - name: Derive catalogs
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          owner="${{ github.repository_owner }}"
-          mkdir -p repos
-          gh repo list "$owner" --limit 500 --no-archived --json name -q '.[].name' \
-            | while read -r name; do
-                git clone --depth 1 "https://github.com/$owner/$name.git" "repos/$name" >/dev/null 2>&1 || true
-              done
-          echo "cloned $(ls repos | wc -l) repos"
+          mkdir -p site
+          (cd .fjord-catalog && go run . \
+            --sources "${GITHUB_WORKSPACE}/${{ inputs.sources }}" \
+            --repos-dir "${GITHUB_WORKSPACE}/repos" \
+            --out "${GITHUB_WORKSPACE}/site/${{ inputs.out }}" \
+            --apps "${{ inputs.apps }}")
+          # Caller-provided site extras live next to sources.yaml (or at the
+          # repo root): CNAME for a custom domain, static/ for a landing page,
+          # icon.svg as the branding icon sources.yaml refers to.
+          SRC_DIR="$(dirname "${{ inputs.sources }}")"
+          for base in "$SRC_DIR" .; do
+            [ -f "$base/CNAME" ] && cp "$base/CNAME" site/ && break
+          done
+          for base in "$SRC_DIR" .; do
+            [ -d "$base/static" ] && cp -R "$base/static/." site/ && break
+          done
+          for d in site/${{ inputs.out }}/*/; do
+            [ -f "${d%/}/icon.svg" ] && continue
+            for base in "$SRC_DIR" .; do
+              [ -f "$base/icon.svg" ] && cp "$base/icon.svg" "${d%/}/icon.svg" && break
+            done
+          done
+          touch site/.nojekyll
+          find site -maxdepth 3 -type d | sort
 
-      - name: Derive catalog
-        # Versions come straight from each repo's sbom.json (no external
-        # versions service) -- see sbom_versions.go.
-        run: |
-          rm -rf manifests icons
-          go run . --repos-dir repos --out .
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
-      - name: Commit + push if changed
-        run: |
-          rm -rf repos
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add catalog.json manifests icons
-          if git diff --staged --quiet; then
-            echo "catalog unchanged"
-          else
-            git commit -m "Rebuild catalog ($(date -u +%FT%TZ))"
-            git push
-          fi
+  publish:
+    if: ${{ inputs.publish }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,33 @@
+name: ci
+
+# The builder's own checks: vet + tests, then a smoke derivation of a few
+# real daemonless repos through the org provider (no publishing).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./... && go test ./...
+      - name: Smoke derivation (org provider, 3 apps)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          go run . --sources sources.yaml --repos-dir repos --out out/v1 --apps radarr,sonarr,immich
+          test -s out/v1/daemonless/catalog.json && test -s out/v1/sources.json
+          grep -q '"manifest_url": "manifests/radarr.yaml"' out/v1/daemonless/catalog.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smoke-catalog
+          path: out

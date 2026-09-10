@@ -29,27 +29,46 @@ type CatalogMeta struct {
 // Source describes one place apps come from. `provider` selects how apps are
 // discovered; `include`/`exclude` are regexps over app ids (empty = no filter).
 type Source struct {
-	Name     string `yaml:"name"`
-	Provider string `yaml:"provider"` // local | monorepo | daemonless-github (org-clone: later)
-	Path     string `yaml:"path"`     // local/monorepo: subdir under --repos-dir to scan ("." = root)
-	Org      string `yaml:"org"`      // github providers: the org to scan (org-clone: later)
-	Include  string `yaml:"include"`  // regexp; app id must match (empty = all)
-	Exclude  string `yaml:"exclude"`  // regexp; app id must NOT match (empty = none)
+	Name     string      `yaml:"name"`
+	Provider string      `yaml:"provider"` // local | daemonless-github
+	Path     string      `yaml:"path"`     // local: subdir under --repos-dir to scan ("." = root)
+	Org      string      `yaml:"org"`      // daemonless-github: the org to list + clone
+	Include  string      `yaml:"include"`  // regexp; app id must match (empty = all)
+	Exclude  string      `yaml:"exclude"`  // regexp; app id must NOT match (empty = none)
+	Catalog  CatalogMeta `yaml:"catalog"`  // per-source branding; empty fields fall back to the top-level catalog:
 }
 
+// meta is the branding this source publishes: its own, backfilled from the
+// top-level catalog block.
+func (s Source) meta(top CatalogMeta) CatalogMeta {
+	m := s.Catalog
+	if m.Name == "" {
+		m.Name = top.Name
+	}
+	if m.Maintainer == "" {
+		m.Maintainer = top.Maintainer
+	}
+	if m.Icon == "" {
+		m.Icon = top.Icon
+	}
+	if m.Name == "" {
+		m.Name = s.Name
+	}
+	return m
+}
+
+// defaultConfig is what an absent sources.yaml means: derive the local repo
+// dir as one unbranded source. Nothing daemonless-specific lives here -- a
+// catalog's branding is its own data.
 func defaultConfig() Config {
 	return Config{
-		Catalog: CatalogMeta{
-			Name:       "Daemonless Apps",
-			Maintainer: "https://daemonless.io",
-			Icon:       "/catalog/icon.svg",
-		},
-		Sources: []Source{{Name: "daemonless", Provider: "local", Path: "."}},
+		Catalog: CatalogMeta{Name: "Apps"},
+		Sources: []Source{{Name: "local", Provider: "local", Path: "."}},
 	}
 }
 
-// loadConfig reads sources.yaml. A missing file yields defaultConfig(); a present
-// one has empty catalog fields / source list backfilled from the default.
+// loadConfig reads sources.yaml. A missing file yields defaultConfig(); a
+// present one must name at least one source.
 func loadConfig(path string) (Config, error) {
 	b, err := os.ReadFile(path)
 	if err != nil {
@@ -62,18 +81,18 @@ func loadConfig(path string) (Config, error) {
 	if err := yaml.Unmarshal(b, &c); err != nil {
 		return Config{}, fmt.Errorf("parse %s: %w", path, err)
 	}
-	d := defaultConfig()
-	if c.Catalog.Name == "" {
-		c.Catalog.Name = d.Catalog.Name
-	}
-	if c.Catalog.Maintainer == "" {
-		c.Catalog.Maintainer = d.Catalog.Maintainer
-	}
-	if c.Catalog.Icon == "" {
-		c.Catalog.Icon = d.Catalog.Icon
-	}
 	if len(c.Sources) == 0 {
-		c.Sources = d.Sources
+		return Config{}, fmt.Errorf("%s: no sources defined", path)
+	}
+	seen := map[string]bool{}
+	for _, s := range c.Sources {
+		if s.Name == "" || strings.ContainsAny(s.Name, "/\\ ") {
+			return Config{}, fmt.Errorf("%s: every source needs a name usable as a directory (got %q)", path, s.Name)
+		}
+		if seen[s.Name] {
+			return Config{}, fmt.Errorf("%s: duplicate source name %q", path, s.Name)
+		}
+		seen[s.Name] = true
 	}
 	return c, nil
 }
@@ -82,33 +101,34 @@ func loadConfig(path string) (Config, error) {
 // are runtime paths (flags) shared across sources. Unknown providers return an
 // error the caller logs and skips.
 func providerFor(src Source, reposDir, versionsPath, appsCSV string) (Provider, error) {
+	inc, err := compileFilter(src.Include)
+	if err != nil {
+		return nil, fmt.Errorf("include: %w", err)
+	}
+	exc, err := compileFilter(src.Exclude)
+	if err != nil {
+		return nil, fmt.Errorf("exclude: %w", err)
+	}
+	var apps []string
+	if appsCSV != "all" {
+		apps = strings.Split(appsCSV, ",")
+	}
 	switch src.Provider {
-	case "", "local", "monorepo", "daemonless-github":
-		// All scan a local directory of app subdirs today. daemonless-github's
-		// org clone is done by CI (into reposDir) until org-clone discovery lands.
+	case "", "local":
+		// A directory of app repos already on disk (a monorepo checkout, or
+		// clones made by something else).
 		scanDir := reposDir
 		if src.Path != "" && src.Path != "." {
 			scanDir = filepath.Join(reposDir, src.Path)
 		}
-		inc, err := compileFilter(src.Include)
-		if err != nil {
-			return nil, fmt.Errorf("include: %w", err)
+		return &daemonlessProvider{reposDir: scanDir, apps: apps, versionsPath: versionsPath, include: inc, exclude: exc}, nil
+	case "daemonless-github":
+		if src.Org == "" {
+			return nil, fmt.Errorf("provider daemonless-github needs org:")
 		}
-		exc, err := compileFilter(src.Exclude)
-		if err != nil {
-			return nil, fmt.Errorf("exclude: %w", err)
-		}
-		var apps []string
-		if appsCSV != "all" {
-			apps = strings.Split(appsCSV, ",")
-		}
-		return &daemonlessProvider{
-			reposDir:     scanDir,
-			apps:         apps,
-			versionsPath: versionsPath,
-			include:      inc,
-			exclude:      exc,
-		}, nil
+		// Clones land in <repos-dir>/<org>/ so two org sources can't collide.
+		inner := &daemonlessProvider{reposDir: filepath.Join(reposDir, src.Org), versionsPath: versionsPath}
+		return &githubProvider{org: src.Org, include: inc, exclude: exc, apps: apps, inner: inner}, nil
 	default:
 		return nil, fmt.Errorf("unknown provider %q", src.Provider)
 	}

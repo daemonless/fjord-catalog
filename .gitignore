@@ -1,4 +1,6 @@
-# CI working dirs (the deriver's inputs) -- never committed
+# CI working dirs (the deriver's inputs and outputs) -- never committed
 /repos/
+/out/
+/site/
 /versions.json
 /fjord-catalog

@@ -14,7 +14,6 @@ import (
 	"time"
 )
 
-// Default first-slice app set: varied, single-service.
 type catVariant struct {
 	ID      string `json:"id"`
 	Label   string `json:"label"`
@@ -34,7 +33,7 @@ type catEntry struct {
 	WebURL      string       `json:"web_url,omitempty"`
 	Image       string       `json:"image,omitempty"`
 	ManifestURL string       `json:"manifest_url"`
-	Version     string       `json:"version"`
+	Version     string       `json:"version,omitempty"`
 	Variants    []catVariant `json:"variants"`
 }
 
@@ -42,14 +41,22 @@ type catalogFile struct {
 	CatalogName  string     `json:"catalog_name"`
 	FjordVersion string     `json:"fjord_version"`
 	Maintainer   string     `json:"maintainer"`
-	Icon         string     `json:"icon,omitempty"` // catalog branding, source-relative like app icons
+	Icon         string     `json:"icon,omitempty"` // catalog branding, relative to this catalog's base URL like app icons
 	Generated    string     `json:"generated"`
 	Apps         []catEntry `json:"apps"`
 }
 
+// sourceIndex is <out>/sources.json: one entry per published catalog, so a
+// consumer given the base URL can find every source without guessing names.
+type sourceIndex struct {
+	Name    string `json:"name"`
+	Catalog string `json:"catalog"` // relative path to that source's catalog.json
+	Apps    int    `json:"apps"`
+}
+
 func main() {
 	reposDir := flag.String("repos-dir", "..", "directory containing the image repos (each a compose.yaml + .daemonless/config.yaml)")
-	outDir := flag.String("out", ".", "output catalog directory")
+	outDir := flag.String("out", "out", "output root; each source is written to <out>/<source>/ plus <out>/sources.json")
 	appsCSV := flag.String("apps", "all", "comma-separated app ids to derive, or \"all\" to scan every repo")
 	versionsPath := flag.String("versions", "", "optional versions JSON; when omitted, versions come from each repo's sbom.json")
 	sourcesPath := flag.String("sources", "sources.yaml", "catalog config (branding + sources); absent -> built-in daemonless default")
@@ -61,66 +68,100 @@ func main() {
 		os.Exit(1)
 	}
 
-	manifestDir := filepath.Join(*outDir, "manifests")
-	iconDir := filepath.Join(*outDir, "icons")
-	for _, d := range []string{manifestDir, iconDir} {
-		if err := os.MkdirAll(d, 0o755); err != nil {
-			fmt.Fprintln(os.Stderr, "mkdir:", err)
-			os.Exit(1)
-		}
-	}
-
-	cat := catalogFile{
-		CatalogName:  cfg.Catalog.Name,
-		FjordVersion: "0.1",
-		Maintainer:   cfg.Catalog.Maintainer,
-		Icon:         cfg.Catalog.Icon,
-		Generated:    time.Now().UTC().Format(time.RFC3339),
-	}
-	var skipped []string
-
+	// One catalog per source, each under <out>/<source>/ with its own
+	// catalog.json, manifests/ and icons/, so every source is independently
+	// publishable and refreshable; <out>/sources.json lists them.
+	var index []sourceIndex
+	total, failed := 0, 0
 	for _, src := range cfg.Sources {
-		prov, err := providerFor(src, *reposDir, *versionsPath, *appsCSV)
+		n, err := buildSource(src, cfg.Catalog, *outDir, *reposDir, *versionsPath, *appsCSV)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "source %q: %v\n", src.Name, err)
-			os.Exit(1)
+			failed++
+			continue
 		}
-		refs, err := prov.Discover()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "source %q discover: %v\n", src.Name, err)
-			os.Exit(1)
-		}
-		for _, ref := range refs {
-			da, err := prov.Derive(ref)
-			if err != nil {
-				skipped = append(skipped, ref.ID+": "+err.Error())
-				continue
-			}
-			if err := os.WriteFile(filepath.Join(manifestDir, ref.ID+".yaml"), []byte(da.ManifestYAML), 0o644); err != nil {
-				skipped = append(skipped, ref.ID+": write "+err.Error())
-				continue
-			}
-			if da.IconSrc != "" {
-				if err := copyFile(da.IconSrc, filepath.Join(iconDir, ref.ID+filepath.Ext(da.IconSrc))); err != nil {
-					fmt.Fprintf(os.Stderr, "  warn %s: copy logo: %v\n", ref.ID, err)
-				}
-			}
-			cat.Apps = append(cat.Apps, da.Entry)
-			fmt.Printf("derived  %-14s (%d vars, %d variants)\n", ref.ID, da.Vars, len(da.Entry.Variants))
-		}
+		index = append(index, sourceIndex{Name: src.Name, Catalog: src.Name + "/catalog.json", Apps: n})
+		total += n
 	}
-
-	sort.Slice(cat.Apps, func(i, j int) bool { return cat.Apps[i].Name < cat.Apps[j].Name })
-	data, _ := json.MarshalIndent(cat, "", "  ")
-	if err := os.WriteFile(filepath.Join(*outDir, "catalog.json"), append(data, '\n'), 0o644); err != nil {
-		fmt.Fprintln(os.Stderr, "write catalog:", err)
+	if failed > 0 || total == 0 {
+		// Never publish an empty or partial catalog as if it were real: a
+		// rate-limited clone or a typo'd --repos-dir must fail the run.
+		fmt.Fprintf(os.Stderr, "\n%d apps across %d sources (%d sources failed) -- refusing to write an empty/partial index\n", total, len(index), failed)
 		os.Exit(1)
 	}
+	data, _ := json.MarshalIndent(index, "", "  ")
+	if err := os.WriteFile(filepath.Join(*outDir, "sources.json"), append(data, '\n'), 0o644); err != nil {
+		fmt.Fprintln(os.Stderr, "write sources.json:", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\n%d apps across %d source(s) -> %s\n", total, len(index), *outDir)
+}
 
-	fmt.Printf("\n%d derived, %d skipped\n", len(cat.Apps), len(skipped))
+// buildSource derives one source into <out>/<name>/ and returns its app count.
+func buildSource(src Source, top CatalogMeta, outRoot, reposDir, versionsPath, appsCSV string) (int, error) {
+	outDir := filepath.Join(outRoot, src.Name)
+	manifestDir := filepath.Join(outDir, "manifests")
+	iconDir := filepath.Join(outDir, "icons")
+	for _, d := range []string{manifestDir, iconDir} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			return 0, fmt.Errorf("mkdir: %w", err)
+		}
+	}
+	meta := src.meta(top)
+	cat := catalogFile{
+		CatalogName:  meta.Name,
+		FjordVersion: "0.1",
+		Maintainer:   meta.Maintainer,
+		Icon:         meta.Icon,
+		Generated:    time.Now().UTC().Format(time.RFC3339),
+	}
+	prov, err := providerFor(src, reposDir, versionsPath, appsCSV)
+	if err != nil {
+		return 0, err
+	}
+	refs, err := prov.Discover()
+	if err != nil {
+		return 0, fmt.Errorf("discover: %w", err)
+	}
+	var skipped []string
+	for _, ref := range refs {
+		da, err := prov.Derive(ref)
+		if err != nil {
+			skipped = append(skipped, ref.ID+": "+err.Error())
+			continue
+		}
+		if err := os.WriteFile(filepath.Join(manifestDir, ref.ID+".yaml"), []byte(da.ManifestYAML), 0o644); err != nil {
+			skipped = append(skipped, ref.ID+": write "+err.Error())
+			continue
+		}
+		if da.IconSrc != "" {
+			if err := copyFile(da.IconSrc, filepath.Join(iconDir, ref.ID+filepath.Ext(da.IconSrc))); err != nil {
+				fmt.Fprintf(os.Stderr, "  warn %s: copy logo: %v\n", ref.ID, err)
+			}
+		}
+		cat.Apps = append(cat.Apps, da.Entry)
+		fmt.Printf("%-12s derived  %-14s (%d vars, %d variants)\n", src.Name, ref.ID, da.Vars, len(da.Entry.Variants))
+	}
+	// Stable: name, then id, so two apps that share a display name keep a
+	// fixed order across runs.
+	sort.SliceStable(cat.Apps, func(i, j int) bool {
+		if cat.Apps[i].Name != cat.Apps[j].Name {
+			return cat.Apps[i].Name < cat.Apps[j].Name
+		}
+		return cat.Apps[i].ID < cat.Apps[j].ID
+	})
+	if len(cat.Apps) == 0 {
+		return 0, fmt.Errorf("derived no apps (repos dir empty or unreadable?)")
+	}
+	data, _ := json.MarshalIndent(cat, "", "  ")
+	if err := os.WriteFile(filepath.Join(outDir, "catalog.json"), append(data, '\n'), 0o644); err != nil {
+		return 0, fmt.Errorf("write catalog: %w", err)
+	}
+	fmt.Printf("%-12s %d derived, %d skipped\n", src.Name, len(cat.Apps), len(skipped))
 	for _, s := range skipped {
 		fmt.Println("  skip", s)
 	}
+	return len(cat.Apps), nil
 }
 
 func copyFile(src, dst string) error {
@@ -131,10 +172,15 @@ func copyFile(src, dst string) error {
 	return os.WriteFile(dst, b, 0o644)
 }
 
-// scanRepos returns every repo dir under root that has a compose.yaml.
+// scanRepos returns every repo dir under root that has a compose.yaml. An
+// unreadable root yields nothing, which buildSource turns into an error.
 func scanRepos(root string) []string {
 	var out []string
-	entries, _ := os.ReadDir(root)
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "  warn: read %s: %v\n", root, err)
+		return nil
+	}
 	for _, e := range entries {
 		if !e.IsDir() {
 			continue

@@ -232,7 +232,7 @@ func resolveIcon(repoDir, id, token string) (url, logoSrc string) {
 	for _, ext := range []string{"svg", "png"} {
 		p := filepath.Join(repoDir, ".daemonless", "logo."+ext)
 		if _, err := os.Stat(p); err == nil {
-			return "/catalog/icons/" + id + "." + ext, p
+			return "icons/" + id + "." + ext, p
 		}
 	}
 	return iconifyURL(token), ""
@@ -347,7 +347,9 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				name = "WEB_PORT"
 			}
 			label := "Port"
-			if d, ok := portDocs[num]; ok {
+			if d, ok := portDocs[cont]; ok { // docs keyed "67/udp"
+				label = d
+			} else if d, ok := portDocs[num]; ok {
 				label = d
 			}
 			def := host // host-side port number, without any protocol
@@ -459,7 +461,10 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	xf := xFjord{
 		Version: "0.1",
 		Info: info{
-			ID:          firstNonEmpty(meta.Name, id),
+			// The id is the repo dir: it names the manifest + icon files and is
+			// what consumers dedupe on. A compose `name:` that differs (opencloud-
+			// radicale's "radicale") must not leak into it.
+			ID:          id,
 			Name:        firstNonEmpty(xd.Title, id),
 			Description: xd.Description,
 			Category:    xd.Category,

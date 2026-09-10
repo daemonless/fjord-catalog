@@ -78,11 +78,14 @@ func (p *daemonlessProvider) Derive(ref AppRef) (*DerivedApp, error) {
 func catalogEntryFor(d *derived, id string) catEntry {
 	xf := d.xf
 	base := d.imageRepo
-	var vs []catVariant
+	vs := []catVariant{}
 	for _, v := range xf.Variants {
 		vs = append(vs, catVariant{ID: v.ID, Label: v.Label, Default: v.Default, Image: base + ":" + v.ID, Version: v.Version})
 	}
-	if len(vs) == 0 {
+	// A single-image app with no declared variants still installs as :latest.
+	// A stack's images are pinned by its own ${VAR} tags, so inventing a
+	// "<first service>:latest" variant would mislead the wizard.
+	if len(vs) == 0 && xf.Info.Class != "stack" {
 		vs = append(vs, catVariant{ID: "latest", Label: "Latest", Default: true, Image: base + ":latest"})
 	}
 	return catEntry{
@@ -95,7 +98,7 @@ func catalogEntryFor(d *derived, id string) catEntry {
 		UpstreamURL: xf.Info.UpstreamURL,
 		WebURL:      xf.Info.WebURL,
 		Image:       base,
-		ManifestURL: "/catalog/manifests/" + id + ".yaml",
+		ManifestURL: "manifests/" + id + ".yaml",
 		Version:     xf.Info.Version,
 		Variants:    vs,
 	}
