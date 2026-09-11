@@ -156,10 +156,11 @@ type info struct {
 }
 
 type xFjord struct {
-	Version   string     `yaml:"version"`
-	Info      info       `yaml:"info"`
-	Variables []variable `yaml:"variables"`
-	Variants  []variant  `yaml:"variants,omitempty"`
+	Version   string         `yaml:"version"`
+	Info      info           `yaml:"info"`
+	Variables []variable     `yaml:"variables"`
+	Variants  []variant      `yaml:"variants,omitempty"`
+	Appjail   *appjailBundle `yaml:"appjail,omitempty"` // dbuild-rendered director bundle; nil when appjail: false
 }
 
 // appVersions holds an app's per-variant versions from a versions file, in
@@ -488,6 +489,14 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	setWebEndpoint(&xf, cfg, repoDir)
 	if len(cfg.Build.Architectures) > 0 {
 		xf.Info.OnlyForArchs = cfg.Build.Architectures
+	}
+
+	// AppJail deploy bundle (dbuild-rendered). Fail-soft: a bundle hiccup on
+	// one app must not drop the app from the catalog.
+	if bundle, err := renderAppjailBundle(repoDir); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: %s: appjail bundle skipped: %v\n", id, err)
+	} else if bundle != nil {
+		xf.Appjail = bundle
 	}
 
 	// Attach x-fjord to the compose root and marshal. The MANIFEST copy drops

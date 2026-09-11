@@ -61,7 +61,17 @@ func main() {
 	appsCSV := flag.String("apps", "all", "comma-separated app ids to derive, or \"all\" to scan every repo")
 	versionsPath := flag.String("versions", "", "optional versions JSON; when omitted, versions come from each repo's sbom.json")
 	sourcesPath := flag.String("sources", "sources.yaml", "catalog config (branding + sources); absent -> built-in daemonless default")
+	dbuildPath := flag.String("dbuild", "", "path to the dbuild checkout (PYTHONPATH) for rendering AppJail bundles; default: <repos-dir>/dbuild if present")
 	flag.Parse()
+
+	// AppJail bundles are rendered by dbuild. Use --dbuild, else the sibling
+	// checkout when present; otherwise stay disabled (catalog still builds).
+	appjailDbuildPath = *dbuildPath
+	if appjailDbuildPath == "" {
+		if cand := filepath.Join(*reposDir, "dbuild"); fileExists(filepath.Join(cand, "dbuild", "__main__.py")) {
+			appjailDbuildPath = cand
+		}
+	}
 
 	cfg, err := loadConfig(*sourcesPath)
 	if err != nil {

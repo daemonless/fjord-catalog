@@ -134,6 +134,14 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	// (host-net stacks publish nothing, so this hint is their ONLY web link).
 	setWebEndpoint(&xf, cfg, repoDir)
 
+	// AppJail bundle for multi-service stacks: an app that authored a full
+	// appjail.director (immich) gets it emitted verbatim by dbuild. Fail-soft.
+	if bundle, err := renderAppjailBundle(repoDir); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: %s: appjail bundle skipped: %v\n", id, err)
+	} else if bundle != nil {
+		xf.Appjail = bundle
+	}
+
 	xfNode, err := toNode(xf)
 	if err != nil {
 		return nil, err
