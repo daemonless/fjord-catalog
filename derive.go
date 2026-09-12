@@ -304,9 +304,13 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	if len(meta.Services) == 0 {
 		return nil, fmt.Errorf("no services")
 	}
-	// Authored multi-service stacks (x-daemonless type: stack) are already
-	// hand-variabilized -- derive by collecting their ${VARS}, never rewriting.
-	if meta.XDaemonless.Type == "stack" {
+	// Multi-service composes are derived by collecting their ${VARS}, never
+	// rewriting -- which needs the author to have variabilized them and
+	// shipped an example.env with the defaults. That file is the signal; NOT
+	// x-daemonless `type: stack`, which is dbuild's "this repo builds no image"
+	// flag (immich) and must not be set on an image repo that happens to
+	// ship a sidecar.
+	if meta.XDaemonless.Type == "stack" || fileExists(filepath.Join(repoDir, "example.env")) {
 		return deriveStackManifest(composeBytes, meta.XDaemonless, cfg, repoDir, id)
 	}
 	if len(meta.Services) > 1 {
