@@ -204,6 +204,7 @@ var secretRe = regexp.MustCompile(`(?i)(password|secret|token|_key$|apikey)`)
 type derived struct {
 	manifestYAML string
 	xf           xFjord
+	arches       []string // OCI arch names the image is built for
 	logoSrc      string
 	imageRepo    string // the service image without its tag, e.g. ghcr.io/x/radarr
 }
@@ -259,6 +260,26 @@ func iconifyURL(token string) string {
 		return ""
 	}
 	return fmt.Sprintf("https://api.iconify.design/%s:%s.svg?color=%%23cbd5e1", prefix, name)
+}
+
+// archesOf is the OCI architecture list an image is built for, from the repo
+// config's `build.architectures` (dbuild's FreeBSD spelling "aarch64" mapped
+// to OCI "arm64"). Absent means amd64 only, which is dbuild's own default.
+func archesOf(cfg imageConfig) []string {
+	if len(cfg.Build.Architectures) == 0 {
+		return []string{"amd64"}
+	}
+	out := make([]string, 0, len(cfg.Build.Architectures))
+	for _, a := range cfg.Build.Architectures {
+		switch a {
+		case "aarch64":
+			a = "arm64"
+		case "x86_64":
+			a = "amd64"
+		}
+		out = append(out, a)
+	}
+	return out
 }
 
 // deriveManifest turns an app's compose.yaml + config.yaml into an x-fjord
@@ -363,7 +384,11 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 			if s := strings.IndexByte(def, '/'); s >= 0 {
 				def = def[:s]
 			}
-			vars = append(vars, variable{Name: name, Label: label, Type: "port", Default: def})
+			// A port the image documents as "(optional)" (an HTTPS listener
+			// nobody configured, a stats page) may be left blank: fjord then
+			// drops that publish line instead of failing on "${VAR}:443".
+			optional := strings.Contains(strings.ToLower(label), "(optional)")
+			vars = append(vars, variable{Name: name, Label: label, Type: "port", Default: def, Optional: optional})
 			setScalar(item, fmt.Sprintf("${%s}:%s", name, cont), true)
 		}
 	}
@@ -520,7 +545,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	if err != nil {
 		return nil, err
 	}
-	return &derived{manifestYAML: out, xf: xf, logoSrc: logoSrc, imageRepo: imageRepo}, nil
+	return &derived{manifestYAML: out, xf: xf, arches: archesOf(cfg), logoSrc: logoSrc, imageRepo: imageRepo}, nil
 }
 
 func deriveVariants(cfg imageConfig, av *appVersions) []variant {

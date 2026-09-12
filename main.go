@@ -24,18 +24,23 @@ type catVariant struct {
 }
 
 type catEntry struct {
-	ID          string       `json:"id"`
-	Name        string       `json:"name"`
-	Category    string       `json:"category"`
-	Class       string       `json:"class"`
-	Icon        string       `json:"icon"`
-	Description string       `json:"description,omitempty"`
-	UpstreamURL string       `json:"upstream_url,omitempty"`
-	WebURL      string       `json:"web_url,omitempty"`
-	Image       string       `json:"image,omitempty"`
-	ManifestURL string       `json:"manifest_url"`
-	Version     string       `json:"version,omitempty"`
-	Variants    []catVariant `json:"variants"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Category    string `json:"category"`
+	Class       string `json:"class"`
+	Icon        string `json:"icon"`
+	Description string `json:"description,omitempty"`
+	UpstreamURL string `json:"upstream_url,omitempty"`
+	WebURL      string `json:"web_url,omitempty"`
+	Image       string `json:"image,omitempty"`
+	ManifestURL string `json:"manifest_url"`
+	Version     string `json:"version,omitempty"`
+	// Architectures the image is built for, in Go/OCI spelling (amd64,
+	// arm64), from the repo's .daemonless/config.yaml `build.architectures`
+	// (absent = amd64 only, dbuild's default). fjord hides or flags apps the
+	// host can't run.
+	Architectures []string     `json:"architectures"`
+	Variants      []catVariant `json:"variants"`
 }
 
 type catalogFile struct {

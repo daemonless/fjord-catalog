@@ -89,17 +89,18 @@ func catalogEntryFor(d *derived, id string) catEntry {
 		vs = append(vs, catVariant{ID: "latest", Label: "Latest", Default: true, Image: base + ":latest"})
 	}
 	return catEntry{
-		ID:          xf.Info.ID,
-		Name:        xf.Info.Name,
-		Category:    xf.Info.Category,
-		Class:       xf.Info.Class,
-		Icon:        xf.Info.Icon,
-		Description: xf.Info.Description,
-		UpstreamURL: xf.Info.UpstreamURL,
-		WebURL:      xf.Info.WebURL,
-		Image:       base,
-		ManifestURL: "manifests/" + id + ".yaml",
-		Version:     xf.Info.Version,
-		Variants:    vs,
+		ID:            xf.Info.ID,
+		Name:          xf.Info.Name,
+		Category:      xf.Info.Category,
+		Class:         xf.Info.Class,
+		Icon:          xf.Info.Icon,
+		Description:   xf.Info.Description,
+		UpstreamURL:   xf.Info.UpstreamURL,
+		WebURL:        xf.Info.WebURL,
+		Image:         base,
+		ManifestURL:   "manifests/" + id + ".yaml",
+		Version:       xf.Info.Version,
+		Architectures: d.arches,
+		Variants:      vs,
 	}
 }

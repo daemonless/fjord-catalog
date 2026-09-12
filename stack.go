@@ -151,7 +151,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	if err != nil {
 		return nil, err
 	}
-	return &derived{manifestYAML: out, xf: xf, logoSrc: logoSrc, imageRepo: imageRepo}, nil
+	return &derived{manifestYAML: out, xf: xf, arches: archesOf(cfg), logoSrc: logoSrc, imageRepo: imageRepo}, nil
 }
 
 // parseExampleEnv reads uncommented KEY=VALUE lines from an example.env.
