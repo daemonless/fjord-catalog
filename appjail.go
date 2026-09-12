@@ -21,6 +21,10 @@ type appjailBundle struct {
 	Makejail     string `yaml:"makejail"`
 	TemplateConf string `yaml:"template_conf,omitempty"`
 	EnvDefaults  string `yaml:"env_defaults"`
+	// Extras are any further files dbuild put in the bundle -- a sidecar's
+	// own jail template (postgres-template.conf) -- keyed by file name and
+	// written next to director.yml at install.
+	Extras map[string]string `yaml:"extras,omitempty"`
 }
 
 func fileExists(path string) bool {
@@ -56,10 +60,22 @@ func renderAppjailBundle(repoDir string) (*appjailBundle, error) {
 	if director == "" {
 		return nil, nil // appjail: false -> dbuild emitted nothing
 	}
-	return &appjailBundle{
+	b := &appjailBundle{
 		Director:     director,
 		Makejail:     read("Makejail"),
 		TemplateConf: read("template.conf"),
 		EnvDefaults:  read(".env"),
-	}, nil
+	}
+	known := map[string]bool{"appjail-director.yml": true, "Makejail": true, "template.conf": true, ".env": true}
+	entries, _ := os.ReadDir(tmp)
+	for _, e := range entries {
+		if e.IsDir() || known[e.Name()] {
+			continue
+		}
+		if b.Extras == nil {
+			b.Extras = map[string]string{}
+		}
+		b.Extras[e.Name()] = read(e.Name())
+	}
+	return b, nil
 }
