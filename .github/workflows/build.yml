@@ -34,6 +34,10 @@ on:
         description: fjord-catalog ref to build with
         type: string
         default: main
+      dbuild-ref:
+        description: daemonless/dbuild ref that renders the AppJail bundles
+        type: string
+        default: main
       apps:
         description: comma-separated app ids to limit derivation (smoke builds)
         type: string
@@ -60,6 +64,23 @@ jobs:
         with:
           go-version-file: .fjord-catalog/go.mod
 
+      # dbuild renders each app's AppJail bundle (director.yml, Makejail,
+      # template.conf, .env) into its manifest. Without it the catalog still
+      # builds, silently bundle-less -- so it is checked out explicitly and
+      # passed with --dbuild rather than relying on the <repos>/dbuild default.
+      - uses: actions/checkout@v4
+        with:
+          repository: daemonless/dbuild
+          ref: ${{ inputs.dbuild-ref }}
+          path: .dbuild
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dbuild runtime deps
+        run: python3 -m pip install --quiet PyYAML jinja2
+
       - name: Derive catalogs
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -68,8 +89,13 @@ jobs:
           (cd .fjord-catalog && go run . \
             --sources "${GITHUB_WORKSPACE}/${{ inputs.sources }}" \
             --repos-dir "${GITHUB_WORKSPACE}/repos" \
+            --dbuild "${GITHUB_WORKSPACE}/.dbuild" \
             --out "${GITHUB_WORKSPACE}/site/${{ inputs.out }}" \
             --apps "${{ inputs.apps }}")
+          # A bundle-less catalog is a regression, not a warning: fail loudly.
+          n=$(grep -l "^  appjail:" "${GITHUB_WORKSPACE}/site/${{ inputs.out }}"/*/manifests/*.yaml | wc -l)
+          echo "manifests with an appjail bundle: $n"
+          [ "$n" -gt 0 ] || { echo "no appjail bundles rendered -- is dbuild working?"; exit 1; }
           # Caller-provided site extras live next to sources.yaml (or at the
           # repo root): CNAME for a custom domain, static/ for a landing page,
           # icon.svg as the branding icon sources.yaml refers to.

@@ -20,13 +20,25 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go vet ./... && go test ./...
+      # Same dbuild wiring as build.yml, so the smoke run proves bundles render.
+      - uses: actions/checkout@v4
+        with:
+          repository: daemonless/dbuild
+          path: .dbuild
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m pip install --quiet PyYAML jinja2
       - name: Smoke derivation (org provider, 3 apps)
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          go run . --sources sources.yaml --repos-dir repos --out out/v1 --apps radarr,sonarr,immich
+          go run . --sources sources.yaml --repos-dir repos --dbuild "$PWD/.dbuild" --out out/v1 --apps radarr,sonarr,immich
           test -s out/v1/daemonless/catalog.json && test -s out/v1/sources.json
           grep -q '"manifest_url": "manifests/radarr.yaml"' out/v1/daemonless/catalog.json
+          # radarr is appjail-enabled: its manifest must carry the director bundle
+          grep -q '^  appjail:' out/v1/daemonless/manifests/radarr.yaml
+          grep -q '"architectures"' out/v1/daemonless/catalog.json
       - uses: actions/upload-artifact@v4
         with:
           name: smoke-catalog
