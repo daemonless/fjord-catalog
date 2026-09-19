@@ -15,17 +15,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - run: go vet ./... && go test ./...
       # Same dbuild wiring as build.yml, so the smoke run proves bundles render.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: daemonless/dbuild
           path: .dbuild
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: python3 -m pip install --quiet PyYAML jinja2
@@ -39,7 +39,7 @@ jobs:
           # radarr is appjail-enabled: its manifest must carry the director bundle
           grep -q '^  appjail:' out/v1/daemonless/manifests/radarr.yaml
           grep -q '"architectures"' out/v1/daemonless/catalog.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: smoke-catalog
           path: out
