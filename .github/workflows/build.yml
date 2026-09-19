@@ -52,15 +52,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: daemonless/fjord-catalog
           ref: ${{ inputs.builder-ref }}
           path: .fjord-catalog
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: .fjord-catalog/go.mod
 
@@ -68,13 +68,13 @@ jobs:
       # template.conf, .env) into its manifest. Without it the catalog still
       # builds, silently bundle-less -- so it is checked out explicitly and
       # passed with --dbuild rather than relying on the <repos>/dbuild default.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: daemonless/dbuild
           ref: ${{ inputs.dbuild-ref }}
           path: .dbuild
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -115,7 +115,7 @@ jobs:
           touch site/.nojekyll
           find site -maxdepth 3 -type d | sort
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
@@ -128,4 +128,4 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
