@@ -16,11 +16,12 @@ import (
 )
 
 type catVariant struct {
-	ID      string `json:"id"`
-	Label   string `json:"label"`
-	Default bool   `json:"default,omitempty"`
-	Image   string `json:"image"`
-	Version string `json:"version,omitempty"`
+	ID      string   `json:"id"`
+	Label   string   `json:"label"`
+	Default bool     `json:"default,omitempty"`
+	Image   string   `json:"image"`
+	Version string   `json:"version,omitempty"`
+	Aliases []string `json:"aliases,omitempty"`
 }
 
 type catEntry struct {

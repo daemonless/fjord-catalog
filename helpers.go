@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -180,4 +181,51 @@ func firstSentence(s string) string {
 // reads cleanly as a plain label.
 func stripMarkdown(s string) string {
 	return strings.NewReplacer("*", "", "_", "", "`", "").Replace(s)
+}
+
+// varRefFull matches one whole ${...} reference, capturing the name and
+// whatever follows it.
+var varRefFull = regexp.MustCompile(`\$\{([A-Za-z_][A-Za-z0-9_]*)([^}]*)\}`)
+
+// composeDefault turns a compose value into the default the install form
+// should show.
+//
+// A variabilized compose says `GARAGE_ZONE=${GARAGE_ZONE:-dc1}`, and taking
+// that string as the default put the literal "${GARAGE_ZONE:-dc1}" in the
+// field -- so the form asked the operator to read shell substitution syntax,
+// and installing without touching it wrote that text into the .env.
+//
+// The forms compose supports, and what each means here:
+//
+//	${NAME}            no default; the field starts empty
+//	${NAME:-x} ${NAME-x}   x is the default
+//	${NAME:?msg}       required, no default
+//	${NAME:+x}         only when NAME is set, so nothing to prefill
+//
+// A reference inside a larger string keeps the rest of it:
+// "http://${ML_HOST:-localhost}:3003" -> "http://localhost:3003".
+func composeDefault(val string) string {
+	if !strings.Contains(val, "${") {
+		return val
+	}
+	return varRefFull.ReplaceAllStringFunc(val, func(m string) string {
+		g := varRefFull.FindStringSubmatch(m)
+		rest := g[2]
+		switch {
+		case strings.HasPrefix(rest, ":-"):
+			return rest[2:]
+		case strings.HasPrefix(rest, ":?"), strings.HasPrefix(rest, ":+"):
+			return ""
+		case strings.HasPrefix(rest, "-"):
+			return rest[1:]
+		case rest == "":
+			return ""
+		default:
+			// ":default" -- pyaml_env's form, which appjail-director uses.
+			if strings.HasPrefix(rest, ":") {
+				return rest[1:]
+			}
+			return ""
+		}
+	})
 }

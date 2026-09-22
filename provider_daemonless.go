@@ -80,7 +80,7 @@ func catalogEntryFor(d *derived, id string) catEntry {
 	base := d.imageRepo
 	vs := []catVariant{}
 	for _, v := range xf.Variants {
-		vs = append(vs, catVariant{ID: v.ID, Label: v.Label, Default: v.Default, Image: base + ":" + v.ID, Version: v.Version})
+		vs = append(vs, catVariant{ID: v.ID, Label: v.Label, Default: v.Default, Image: base + ":" + v.ID, Version: v.Version, Aliases: v.Aliases})
 	}
 	// A single-image app with no declared variants still installs as :latest.
 	// A stack's images are pinned by its own ${VAR} tags, so inventing a

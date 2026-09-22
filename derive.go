@@ -57,6 +57,11 @@ type xDaemonless struct {
 	UpstreamURL string `yaml:"upstream_url"`
 	WebURL      string `yaml:"web_url"`
 	Type        string `yaml:"type"` // "stack" = authored multi-service compose
+	// Networking is the app's own answer to which of its services is the one
+	// people open: service name -> network spec, "*" for the rest. Carried
+	// through to x-fjord verbatim; fjord resolves "default" and "private".
+	Networking map[string]string `yaml:"networking"`
+	Hostnames  map[string]string `yaml:"hostnames"`
 }
 
 // parseDocs reads x-daemonless.docs tolerantly from the node, returning
@@ -104,9 +109,10 @@ type imageConfig struct {
 	Build struct {
 		Architectures []string `yaml:"architectures"`
 		Variants      []struct {
-			Tag     string `yaml:"tag"`
-			Default bool   `yaml:"default"`
-			TagDesc string `yaml:"tag_desc"`
+			Tag     string   `yaml:"tag"`
+			Default bool     `yaml:"default"`
+			TagDesc string   `yaml:"tag_desc"`
+			Aliases []string `yaml:"aliases"`
 		} `yaml:"variants"`
 	} `yaml:"build"`
 	Fjord struct {
@@ -134,10 +140,11 @@ type variable struct {
 }
 
 type variant struct {
-	ID      string `yaml:"id"`
-	Label   string `yaml:"label"`
-	Default bool   `yaml:"default,omitempty"`
-	Version string `yaml:"version,omitempty"`
+	ID      string   `yaml:"id"`
+	Label   string   `yaml:"label"`
+	Default bool     `yaml:"default,omitempty"`
+	Version string   `yaml:"version,omitempty"`
+	Aliases []string `yaml:"aliases,omitempty"`
 }
 
 type info struct {
@@ -161,6 +168,11 @@ type xFjord struct {
 	Variables []variable     `yaml:"variables"`
 	Variants  []variant      `yaml:"variants,omitempty"`
 	Appjail   *appjailBundle `yaml:"appjail,omitempty"` // dbuild-rendered director bundle; nil when appjail: false
+	// Networking is x-daemonless.networking, unchanged. An app knows which of
+	// its services serves and which are its database; whoever installs it does
+	// not, and should not have to say.
+	Networking map[string]string `yaml:"networking,omitempty"`
+	Hostnames  map[string]string `yaml:"hostnames,omitempty"`
 }
 
 // appVersions holds an app's per-variant versions from a versions file, in
@@ -457,7 +469,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				typ = "secret"
 			}
 			d := envDocs[key]
-			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: val, Optional: d.Optional, Level: d.Level})
+			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: composeDefault(val), Optional: d.Optional, Level: d.Level})
 		}
 		switch env.Kind {
 		case yaml.SequenceNode:
@@ -498,6 +510,10 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	iconURL, logoSrc := resolveIcon(repoDir, id, xd.Icon)
 	xf := xFjord{
 		Version: "0.1",
+		// Straight through: fjord resolves "default" and "private" at install,
+		// because only it knows which network the install was told to use.
+		Networking: xd.Networking,
+		Hostnames:  xd.Hostnames,
 		Info: info{
 			// The id is the repo dir: it names the manifest + icon files and is
 			// what consumers dedupe on. A compose `name:` that differs (opencloud-
@@ -569,7 +585,7 @@ func deriveVariants(cfg imageConfig, av *appVersions) []variant {
 		} else if v.TagDesc != "" {
 			label = stripMarkdown(firstSentence(v.TagDesc))
 		}
-		out = append(out, variant{ID: v.Tag, Label: label, Default: v.Default, Version: av.forVariant(v.Tag)})
+		out = append(out, variant{ID: v.Tag, Label: label, Default: v.Default, Version: av.forVariant(v.Tag), Aliases: v.Aliases})
 	}
 	// No declared variants: the image implicitly publishes "latest". Synthesize
 	// it so the app still gets a variant (and a version) in the catalog.

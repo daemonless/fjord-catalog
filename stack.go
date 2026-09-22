@@ -118,6 +118,11 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	iconURL, logoSrc := resolveIcon(repoDir, id, xd.Icon)
 	xf := xFjord{
 		Version: "0.1",
+		// A multi-service stack is exactly the case this exists for: it has a
+		// service people open and several that are its plumbing, and only the
+		// app knows which is which.
+		Networking: xd.Networking,
+		Hostnames:  xd.Hostnames,
 		Info: info{
 			ID:          id,
 			Name:        firstNonEmpty(xd.Title, id),
