@@ -1,0 +1,45 @@
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+// A tool that runs and exits, or an image only built FROM, is not an app
+// the store offers: the builder skips it by its x-daemonless class.
+func TestToolsAndBaseImagesAreNotApps(t *testing.T) {
+	for _, class := range []string{"cli", "base"} {
+		compose := "name: tool\nx-daemonless:\n  title: Tool\n  class: " + class + "\nservices:\n  tool:\n    image: ghcr.io/daemonless/tool:latest\n"
+		dir := t.TempDir()
+		_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+		_, err := deriveManifest([]byte(compose), nil, dir, "tool", nil)
+		if err == nil || !strings.Contains(err.Error(), "class "+class) {
+			t.Errorf("class %s: want a skip naming the class, got %v", class, err)
+		}
+	}
+	// The same compose with no class is an ordinary service and derives.
+	compose := "name: app\nx-daemonless:\n  title: App\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    ports: [\"8080:8080\"]\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	if _, err := deriveManifest([]byte(compose), nil, dir, "app", nil); err != nil {
+		t.Errorf("a service should derive, got %v", err)
+	}
+}
+
+// One service plus an example.env is an image, not a stack: it keeps its
+// variants. The stack path is for composes with several services.
+func TestOneServiceWithExampleEnvStaysAnImage(t *testing.T) {
+	compose := "name: app\nx-daemonless:\n  title: App\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    environment:\n      - APP_DB=${APP_DB:-sqlite}\n    ports: [\"8080:8080\"]\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "example.env"), []byte("TZ=UTC\n"), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	if d.xf.Info.Class == "stack" {
+		t.Errorf("derived as a stack; want an image with its version picker")
+	}
+}

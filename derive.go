@@ -56,6 +56,7 @@ type xDaemonless struct {
 	Description string `yaml:"description"`
 	UpstreamURL string `yaml:"upstream_url"`
 	WebURL      string `yaml:"web_url"`
+	Class       string `yaml:"class"`
 	Type        string `yaml:"type"` // "stack" = authored multi-service compose
 	// Networking is the app's own answer to which of its services is the one
 	// people open: service name -> network spec, "*" for the rest. Carried
@@ -316,13 +317,22 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	if len(meta.Services) == 0 {
 		return nil, fmt.Errorf("no services")
 	}
+	// A tool that runs and exits (jellyfin-ffmpeg) or an image only built
+	// FROM (base, node) is not something to install from a store: no port,
+	// nothing to keep running, nothing to open.
+	if c := meta.XDaemonless.Class; c == "cli" || c == "base" {
+		return nil, fmt.Errorf("class %s: a tool or a base image, not an app", c)
+	}
 	// Multi-service composes are derived by collecting their ${VARS}, never
 	// rewriting -- which needs the author to have variabilized them and
 	// shipped an example.env with the defaults. That file is the signal; NOT
 	// x-daemonless `type: stack`, which is dbuild's "this repo builds no image"
 	// flag (immich) and must not be set on an image repo that happens to
 	// ship a sidecar.
-	if meta.XDaemonless.Type == "stack" || fileExists(filepath.Join(repoDir, "example.env")) {
+	// A one-service compose with an example.env is still a single image
+	// (vikunja ships one for its database choice): the image path keeps its
+	// version picker, which the stack path has no variants for.
+	if meta.XDaemonless.Type == "stack" || (len(meta.Services) > 1 && fileExists(filepath.Join(repoDir, "example.env"))) {
 		return deriveStackManifest(composeBytes, meta.XDaemonless, cfg, repoDir, id)
 	}
 	if len(meta.Services) > 1 {
