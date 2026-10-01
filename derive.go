@@ -479,7 +479,12 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				typ = "secret"
 			}
 			d := envDocs[key]
-			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: composeDefault(val), Optional: d.Optional, Level: d.Level})
+			// A compose fallback (${VAR:-x}) means the service runs without a
+			// value, so the wizard must not demand one -- the same reading the
+			// stack path gives it. vikunja's database variables are all of
+			// this kind, and read as required they blocked every install.
+			optional := d.Optional || strings.Contains(val, ":-")
+			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: composeDefault(val), Optional: optional, Level: d.Level})
 		}
 		switch env.Kind {
 		case yaml.SequenceNode:
