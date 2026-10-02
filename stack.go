@@ -150,6 +150,11 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	} else if bundle != nil {
 		xf.Appjail = bundle
 	}
+	if cs, err := renderChoices(repoDir); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: %s: choices skipped: %v\n", id, err)
+	} else if len(cs) > 0 {
+		xf.Choices = cs
+	}
 
 	xfNode, err := toNode(xf)
 	if err != nil {

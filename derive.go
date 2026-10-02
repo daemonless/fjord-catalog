@@ -174,6 +174,10 @@ type xFjord struct {
 	// not, and should not have to say.
 	Networking map[string]string `yaml:"networking,omitempty"`
 	Hostnames  map[string]string `yaml:"hostnames,omitempty"`
+	// Choices are the stack's x-daemonless.choices as dbuild resolves them;
+	// the compose above is the default answer, and each option says what to
+	// add, drop, set and ask for.
+	Choices []choice `yaml:"choices,omitempty"`
 }
 
 // appVersions holds an app's per-variant versions from a versions file, in
@@ -557,6 +561,11 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 		fmt.Fprintf(os.Stderr, "warning: %s: appjail bundle skipped: %v\n", id, err)
 	} else if bundle != nil {
 		xf.Appjail = bundle
+	}
+	if cs, err := renderChoices(repoDir); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: %s: choices skipped: %v\n", id, err)
+	} else if len(cs) > 0 {
+		xf.Choices = cs
 	}
 
 	// Attach x-fjord to the compose root and marshal. The MANIFEST copy drops
