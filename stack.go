@@ -39,6 +39,10 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	root := doc.Content[0]
 	envDocs, _, _ := parseDocs(mapGet(mapGet(root, "x-daemonless"), "docs"))
 	root.Content = dropKey(root.Content, "x-daemonless")
+	// A service behind a compose profile is a part the stack offers, not
+	// part of the default install (immich's public proxy); fjord cannot
+	// pick it yet, so it stays out of the manifest, variables included.
+	dropProfiledServices(root)
 
 	var buf bytes.Buffer
 	enc := yaml.NewEncoder(&buf)
@@ -177,4 +181,40 @@ func parseExampleEnv(path string) map[string]string {
 		}
 	}
 	return out
+}
+
+// dropProfiledServices removes every service that carries `profiles:` from
+// the compose node, and the mentions of it in the others' depends_on lists.
+func dropProfiledServices(root *yaml.Node) {
+	services := mapGet(root, "services")
+	if services == nil || services.Kind != yaml.MappingNode {
+		return
+	}
+	gone := map[string]bool{}
+	kept := make([]*yaml.Node, 0, len(services.Content))
+	for i := 0; i+1 < len(services.Content); i += 2 {
+		name, svc := services.Content[i], services.Content[i+1]
+		if p := mapGet(svc, "profiles"); p != nil && (p.Kind == yaml.SequenceNode && len(p.Content) > 0) {
+			gone[name.Value] = true
+			continue
+		}
+		kept = append(kept, name, svc)
+	}
+	if len(gone) == 0 {
+		return
+	}
+	services.Content = kept
+	for i := 1; i < len(services.Content); i += 2 {
+		dep := mapGet(services.Content[i], "depends_on")
+		if dep == nil || dep.Kind != yaml.SequenceNode {
+			continue
+		}
+		left := dep.Content[:0]
+		for _, n := range dep.Content {
+			if !gone[n.Value] {
+				left = append(left, n)
+			}
+		}
+		dep.Content = left
+	}
 }

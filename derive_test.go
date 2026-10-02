@@ -65,3 +65,30 @@ func TestComposeFallbackMakesAVariableOptional(t *testing.T) {
 		t.Errorf("a plain empty value stays required, got %v", got)
 	}
 }
+
+// A service behind a compose profile is a part on offer, not part of the
+// default install: it stays out of the stack's manifest, its variables too.
+func TestProfiledServicesStayOutOfTheStackManifest(t *testing.T) {
+	compose := "name: photos\nx-daemonless:\n  title: Photos\n  type: stack\nservices:\n  server:\n    image: ghcr.io/daemonless/photos-server:latest\n    environment:\n      - TZ=${TZ}\n    depends_on:\n      - db\n      - proxy\n  proxy:\n    image: ghcr.io/daemonless/photos-proxy:latest\n    profiles: [proxy]\n    environment:\n      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-}\n  db:\n    image: ghcr.io/daemonless/postgres:17\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "example.env"), []byte("TZ=UTC\n"), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "photos", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	if strings.Contains(d.manifestYAML, "photos-proxy") {
+		t.Errorf("the profiled service is in the manifest:\n%s", d.manifestYAML)
+	}
+	if strings.Contains(d.manifestYAML, "- proxy") {
+		t.Errorf("the dropped service is still a depends_on")
+	}
+	for _, v := range d.xf.Variables {
+		if v.Name == "PUBLIC_BASE_URL" {
+			t.Errorf("a variable only the dropped service reads is still asked for")
+		}
+	}
+	if !strings.Contains(d.manifestYAML, "- db") {
+		t.Errorf("the other depends_on entry went missing")
+	}
+}
