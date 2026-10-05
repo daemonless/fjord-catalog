@@ -31,7 +31,10 @@ type choiceOption struct {
 	Services  string              `yaml:"services,omitempty" json:"services"`
 	DependsOn map[string][]string `yaml:"depends_on,omitempty" json:"depends_on"`
 	Drop      []string            `yaml:"drop,omitempty" json:"drop"`
-	Ask       []choiceAsk         `yaml:"ask,omitempty" json:"ask"`
+	// Service -> the variable carrying its host name, for a service this
+	// option adds: fjord points it at 127.0.0.1 on a host-network install.
+	Hostnames map[string]string `yaml:"hostnames,omitempty" json:"hostnames"`
+	Ask       []choiceAsk       `yaml:"ask,omitempty" json:"ask"`
 }
 
 type choice struct {
