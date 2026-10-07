@@ -21,6 +21,12 @@ type choiceAsk struct {
 	Values  map[string]string `yaml:"values,omitempty" json:"values"`
 }
 
+type choiceAppjail struct {
+	Director  string            `yaml:"director" json:"director"`
+	Files     map[string]string `yaml:"files,omitempty" json:"files"`
+	Hostnames map[string]string `yaml:"hostnames,omitempty" json:"hostnames"`
+}
+
 type choiceOption struct {
 	ID        string              `yaml:"id" json:"id"`
 	Label     string              `yaml:"label" json:"label"`
@@ -34,7 +40,10 @@ type choiceOption struct {
 	// Service -> the variable carrying its host name, for a service this
 	// option adds: fjord points it at 127.0.0.1 on a host-network install.
 	Hostnames map[string]string `yaml:"hostnames,omitempty" json:"hostnames"`
-	Ask       []choiceAsk       `yaml:"ask,omitempty" json:"ask"`
+	// Appjail is the option's AppJail form: director services and volumes it
+	// adds to the bundle, files they reference, and their host variables.
+	Appjail *choiceAppjail `yaml:"appjail,omitempty" json:"appjail"`
+	Ask     []choiceAsk    `yaml:"ask,omitempty" json:"ask"`
 }
 
 type choice struct {
