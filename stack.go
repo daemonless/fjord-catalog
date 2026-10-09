@@ -106,6 +106,9 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		case strings.Contains(composeText, "${"+name+"}:/"):
 			typ = "path" // host side of a bind mount
 		}
+		if envDocs[name].PublicURL {
+			typ = "public_url"
+		}
 		vars = append(vars, variable{Name: name, Label: envDocs[name].Desc, Type: typ, Default: def, Optional: optional, Level: envDocs[name].Level, Image: imgRepo})
 	}
 

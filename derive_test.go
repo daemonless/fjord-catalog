@@ -92,3 +92,20 @@ func TestProfiledServicesStayOutOfTheStackManifest(t *testing.T) {
 		t.Errorf("the other depends_on entry went missing")
 	}
 }
+
+// A docs entry can mark a variable as the address the app is opened at:
+// the variable becomes fjord's public_url kind.
+func TestDocsPublicURL(t *testing.T) {
+	compose := "name: app\nx-daemonless:\n  title: App\n  docs:\n    env:\n      APP_URL:\n        desc: Address you open it at\n        public_url: true\n        optional: true\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    environment:\n      - APP_URL=\n    ports: [\"8080:8080\"]\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	for _, v := range d.xf.Variables {
+		if v.Name == "APP_URL" && (v.Type != "public_url" || !v.Optional) {
+			t.Fatalf("APP_URL = %+v, want an optional public_url", v)
+		}
+	}
+}

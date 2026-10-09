@@ -15,11 +15,13 @@ import (
 // docEntry is one x-daemonless docs entry (env or volume): a bare string
 // ("Movie library") or a mapping ({desc: ..., optional: true, level: primary}).
 // optional = may be left empty; level = where the wizard shows it
-// (primary = up front, options, advanced), independent of optional.
+// (primary = up front, options, advanced), independent of optional;
+// public_url = the address the app is opened at (fjord suggests and checks it).
 type docEntry struct {
-	Desc     string
-	Optional bool
-	Level    string
+	Desc      string
+	Optional  bool
+	Level     string
+	PublicURL bool
 }
 
 var validLevels = map[string]bool{"primary": true, "options": true, "advanced": true}
@@ -32,9 +34,10 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 		return nil
 	}
 	var m struct {
-		Desc     string `yaml:"desc"`
-		Optional bool   `yaml:"optional"`
-		Level    string `yaml:"level"`
+		Desc      string `yaml:"desc"`
+		Optional  bool   `yaml:"optional"`
+		Level     string `yaml:"level"`
+		PublicURL bool   `yaml:"public_url"`
 	}
 	if err := n.Decode(&m); err != nil {
 		return err
@@ -42,7 +45,7 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 	if m.Level != "" && !validLevels[m.Level] {
 		return fmt.Errorf("level %q: want primary, options or advanced", m.Level)
 	}
-	v.Desc, v.Optional, v.Level = m.Desc, m.Optional, m.Level
+	v.Desc, v.Optional, v.Level, v.PublicURL = m.Desc, m.Optional, m.Level, m.PublicURL
 	return nil
 }
 
@@ -483,6 +486,9 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				typ = "secret"
 			}
 			d := envDocs[key]
+			if d.PublicURL {
+				typ = "public_url"
+			}
 			// A compose fallback (${VAR:-x}) means the service runs without a
 			// value, so the wizard must not demand one -- the same reading the
 			// stack path gives it. vikunja's database variables are all of
