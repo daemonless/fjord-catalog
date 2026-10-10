@@ -24,7 +24,7 @@ import (
 // from) to a temp dir named id -- dbuild names the image after its directory --
 // and writes the compose there. The caller removes the returned parent.
 func containerfileRepo(repo, id string) (dir, parent string, compose []byte, err error) {
-	compose, err = composeFromContainerfile(repo, id)
+	compose, web, err := composeFromContainerfile(repo, id)
 	if err != nil {
 		return "", "", nil, err
 	}
@@ -41,13 +41,42 @@ func containerfileRepo(repo, id string) (dir, parent string, compose []byte, err
 		os.RemoveAll(parent)
 		return "", "", nil, err
 	}
+	if web != 0 {
+		if err := markWebUI(filepath.Join(dir, ".daemonless", "config.yaml"), web); err != nil {
+			os.RemoveAll(parent)
+			return "", "", nil, err
+		}
+	}
 	return dir, parent, compose, nil
 }
 
+// markWebUI records in the copy's config that port serves a web UI, as a
+// daemonless image's own test config does (cit), which is what gives the
+// app its Open button. A config that already names a cit is left alone.
+func markWebUI(path string, port int) error {
+	doc := map[string]any{}
+	if b, err := os.ReadFile(path); err == nil {
+		if err := yaml.Unmarshal(b, &doc); err != nil {
+			return fmt.Errorf("%s: %v", path, err)
+		}
+	}
+	if _, ok := doc["cit"]; ok {
+		return nil
+	}
+	doc["cit"] = map[string]any{"mode": "health", "port": port}
+	b, err := yaml.Marshal(doc)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(path, b, 0o644)
+}
+
 // composeFromContainerfile writes the one-service compose a repo's
-// Containerfile describes. An image that exposes no port is not an app to
-// open (a base, a builder): refused, as a compose without x-daemonless is.
-func composeFromContainerfile(repo, id string) ([]byte, error) {
+// Containerfile describes, and the port its web UI is on (0: none known).
+func composeFromContainerfile(repo, id string) ([]byte, int, error) {
 	var cfg imageConfig
 	if b, err := os.ReadFile(filepath.Join(repo, ".daemonless/config.yaml")); err == nil {
 		_ = yaml.Unmarshal(b, &cfg)
@@ -65,22 +94,24 @@ func composeFromContainerfile(repo, id string) ([]byte, error) {
 	}
 	raw, err := os.ReadFile(filepath.Join(repo, file))
 	if err != nil {
-		return nil, fmt.Errorf("no compose.yaml or %s", file)
+		return nil, 0, fmt.Errorf("no compose.yaml or %s", file)
 	}
 	cf := parseContainerfile(string(raw))
 	title := cf.labels["org.opencontainers.image.title"]
 	if title == "" {
-		return nil, fmt.Errorf("Containerfile: no org.opencontainers.image.title label (not a catalog app)")
-	}
-	if len(cf.expose) == 0 {
-		return nil, fmt.Errorf("Containerfile: no EXPOSE (nothing to open)")
+		return nil, 0, fmt.Errorf("%s: no org.opencontainers.image.title label (not a catalog app)", file)
 	}
 	registry, err := remoteRegistry(repo)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	var ports []string
-	for _, p := range webFirst(cf.expose, cfg.Cit.Port) {
+	ordered := webFirst(cf.expose, cfg.Cit.Port)
+	web := 0
+	if len(ordered) > 0 {
+		web = webPort(ordered[0])
+	}
+	for _, p := range ordered {
 		num := strings.TrimSuffix(p, "/tcp")
 		host := num
 		if i := strings.IndexByte(host, '/'); i >= 0 {
@@ -101,7 +132,11 @@ func composeFromContainerfile(repo, id string) ([]byte, error) {
 		vols = append(vols, "/containers/"+id+"/"+base+":"+v)
 	}
 
-	svc := map[string]any{"image": registry + "/" + id + ":" + tag, "ports": ports}
+	// No EXPOSE still installs and runs, with no port to set or open.
+	svc := map[string]any{"image": registry + "/" + id + ":" + tag}
+	if len(ports) > 0 {
+		svc["ports"] = ports
+	}
 	if len(vols) > 0 {
 		svc["volumes"] = vols
 	}
@@ -112,10 +147,11 @@ func composeFromContainerfile(repo, id string) ([]byte, error) {
 	if u := cf.labels["org.opencontainers.image.url"]; u != "" {
 		xd["upstream_url"] = u
 	}
-	return yaml.Marshal(map[string]any{
+	compose, err := yaml.Marshal(map[string]any{
 		"services":     map[string]any{id: svc},
 		"x-daemonless": xd,
 	})
+	return compose, web, err
 }
 
 // hasContainerfile: a Containerfile, or a variant's Containerfile.<name>.
@@ -127,14 +163,36 @@ func hasContainerfile(dir string) bool {
 // libraryKinds are the folder kinds fjord's folder sets pre-fill.
 var libraryKinds = map[string]bool{"movies": true, "tv": true, "music": true, "audiobooks": true, "ebooks": true, "downloads": true, "photos": true}
 
-// webFirst puts the port people open first, where the deriver looks for it
-// when the config names none (cit.port): the configured one, else the first
-// TCP port that is 80, 443 or above 1023 -- gitea exposes ssh (22) before
-// 3000, AdGuard Home DNS (53) before 80.
+// notWeb are well-known ports that speak something other than HTTP: a
+// database, mail, DNS, a broker. Never taken for the web UI.
+var notWeb = map[int]bool{
+	21: true, 22: true, 25: true, 53: true, 110: true, 143: true, 465: true, 587: true, 993: true, 995: true,
+	1025: true, 2379: true, 2380: true, 3306: true, 4369: true, 5432: true, 5671: true, 5672: true,
+	6379: true, 9000: true, 11211: true, 27017: true,
+}
+
+// webPort is the TCP port number of an EXPOSE entry when it can be a web
+// UI: 80, 443 or above 1023, and not a known non-HTTP port. 0 otherwise.
+func webPort(p string) int {
+	num, proto, _ := strings.Cut(p, "/")
+	n, err := strconv.Atoi(num)
+	if err != nil || (proto != "" && proto != "tcp") || notWeb[n] {
+		return 0
+	}
+	if n == 80 || n == 443 || n > 1023 {
+		return n
+	}
+	return 0
+}
+
+// webFirst puts the port people open first, where the deriver looks for it:
+// the config's cit.port, else the first that can be a web UI (webPort) --
+// gitea exposes ssh before 3000, AdGuard Home DNS before 80, mailpit SMTP
+// before 8025. No such port: the order stands.
 func webFirst(ports []string, citPort int) []string {
 	pick := -1
 	for i, p := range ports {
-		num, proto, _ := strings.Cut(p, "/")
+		num, _, _ := strings.Cut(p, "/")
 		if citPort != 0 {
 			if num == fmt.Sprint(citPort) {
 				pick = i
@@ -142,8 +200,7 @@ func webFirst(ports []string, citPort int) []string {
 			}
 			continue
 		}
-		n, err := strconv.Atoi(num)
-		if err == nil && (proto == "" || proto == "tcp") && (n == 80 || n == 443 || n > 1023) {
+		if webPort(p) != 0 {
 			pick = i
 			break
 		}

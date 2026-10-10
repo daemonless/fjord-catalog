@@ -42,6 +42,8 @@ func TestWebFirst(t *testing.T) {
 		{[]string{"22"}, 0, []string{"22"}},
 		{[]string{"53", "53/udp", "67/udp", "80", "3000"}, 0, []string{"80", "53", "53/udp", "67/udp", "3000"}},
 		{[]string{"5000/udp", "8080"}, 0, []string{"8080", "5000/udp"}},
+		{[]string{"1025", "8025"}, 0, []string{"8025", "1025"}},
+		{[]string{"5432"}, 0, []string{"5432"}},
 	} {
 		if got := webFirst(c.ports, c.cit); !reflect.DeepEqual(got, c.want) {
 			t.Errorf("webFirst(%v, %d) = %v, want %v", c.ports, c.cit, got, c.want)
@@ -59,9 +61,12 @@ func TestComposeFromContainerfile(t *testing.T) {
 			t.Fatalf("git %v: %v %s", args, err, out)
 		}
 	}
-	compose, err := composeFromContainerfile(repo, "gitea")
+	compose, web, err := composeFromContainerfile(repo, "gitea")
 	if err != nil {
 		t.Fatal(err)
+	}
+	if web != 3000 {
+		t.Errorf("web = %d, want 3000", web)
 	}
 	d, err := deriveManifest(compose, nil, repo, "gitea", nil)
 	if err != nil {
@@ -81,12 +86,22 @@ func TestComposeFromContainerfile(t *testing.T) {
 	}
 }
 
-// No EXPOSE: a base or builder image, nothing to open.
-func TestComposeFromContainerfileRefusesNoPort(t *testing.T) {
-	repo := t.TempDir()
-	os.WriteFile(filepath.Join(repo, "Containerfile"), []byte("FROM x\nLABEL org.opencontainers.image.title=\"Core\"\n"), 0o644)
-	if _, err := composeFromContainerfile(repo, "core"); err == nil || !strings.Contains(err.Error(), "EXPOSE") {
-		t.Errorf("err = %v", err)
+// No EXPOSE still derives: the app runs, there is just no port to open.
+func TestComposeFromContainerfileWithoutPort(t *testing.T) {
+	repo := filepath.Join(t.TempDir(), "ntfy")
+	os.MkdirAll(repo, 0o755)
+	os.WriteFile(filepath.Join(repo, "Containerfile"), []byte("LABEL org.opencontainers.image.title=\"ntfy\"\n"), 0o644)
+	exec.Command("git", "-C", repo, "init", "-q").Run()
+	exec.Command("git", "-C", repo, "remote", "add", "origin", "https://github.com/AppJail-makejails/ntfy.git").Run()
+	compose, web, err := composeFromContainerfile(repo, "ntfy")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if web != 0 || strings.Contains(string(compose), "ports") {
+		t.Errorf("compose has ports:\n%s", compose)
+	}
+	if _, err := deriveManifest(compose, nil, repo, "ntfy", nil); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -112,13 +127,41 @@ func TestComposeFromVariantContainerfile(t *testing.T) {
 	if !hasContainerfile(repo) {
 		t.Fatal("hasContainerfile = false")
 	}
-	compose, err := composeFromContainerfile(repo, "nextcloud")
+	compose, _, err := composeFromContainerfile(repo, "nextcloud")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, want := range []string{"ghcr.io/appjail-makejails/nextcloud:15.1-apache", "80:80"} {
 		if !strings.Contains(string(compose), want) {
 			t.Errorf("compose lacks %q:\n%s", want, compose)
+		}
+	}
+}
+
+// A web port gets the copy's config marked, which is what gives the app an
+// Open button; a database port does not.
+func TestContainerfileRepoMarksWebUI(t *testing.T) {
+	for _, c := range []struct {
+		expose string
+		web    bool
+	}{{"5000", true}, {"5432", false}} {
+		repo := filepath.Join(t.TempDir(), "app")
+		os.MkdirAll(repo, 0o755)
+		os.WriteFile(filepath.Join(repo, "Containerfile"), []byte("LABEL org.opencontainers.image.title=\"App\"\nEXPOSE "+c.expose+"\n"), 0o644)
+		exec.Command("git", "-C", repo, "init", "-q").Run()
+		exec.Command("git", "-C", repo, "remote", "add", "origin", "https://github.com/x/app.git").Run()
+		dir, parent, compose, err := containerfileRepo(repo, "app")
+		if err != nil {
+			t.Fatal(err)
+		}
+		cfg, _ := os.ReadFile(filepath.Join(dir, ".daemonless/config.yaml"))
+		d, err := deriveManifest(compose, cfg, dir, "app", nil)
+		os.RemoveAll(parent)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := d.xf.Info.WebPort == "${WEB_PORT}"; got != c.web {
+			t.Errorf("EXPOSE %s: web_port %q, want web %v", c.expose, d.xf.Info.WebPort, c.web)
 		}
 	}
 }

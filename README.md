@@ -88,7 +88,8 @@ is written from the Containerfile:
 - `org.opencontainers.image.title` / `.description` / `.url` labels → name,
   description, upstream link. No title, not an app.
 - `EXPOSE` → ports. The web port is `cit.port` from the config, else the
-  first TCP port that is 80, 443 or above 1023. No `EXPOSE`, nothing to open: skipped.
+  first TCP port that is 80, 443 or above 1023. No `EXPOSE`: the app still
+  installs, with no port to open. List bases and tools under `exclude:`.
 - `VOLUME` → the app's data folders. A path the app writes to but the
   Containerfile doesn't declare is lost when the app is updated.
 - The image is `ghcr.io/<owner of the origin remote>/<repo>` at the
