@@ -98,3 +98,27 @@ func TestParseContainerfileExpandsVariables(t *testing.T) {
 		t.Errorf("expose %v volumes %v", cf.expose, cf.volumes)
 	}
 }
+
+// A repo that builds only Containerfile.<variant> is read through its
+// default variant's file.
+func TestComposeFromVariantContainerfile(t *testing.T) {
+	repo := filepath.Join(t.TempDir(), "nextcloud")
+	os.MkdirAll(filepath.Join(repo, ".daemonless"), 0o755)
+	os.WriteFile(filepath.Join(repo, "Containerfile.apache"), []byte("LABEL org.opencontainers.image.title=\"Nextcloud\"\nEXPOSE 80\n"), 0o644)
+	os.WriteFile(filepath.Join(repo, "Containerfile.fpm"), []byte("LABEL org.opencontainers.image.title=\"Nextcloud\"\nEXPOSE 9000\n"), 0o644)
+	os.WriteFile(filepath.Join(repo, ".daemonless/config.yaml"), []byte("build:\n  variants:\n    - tag: 15.1-apache\n      containerfile: Containerfile.apache\n      default: true\n    - tag: 15.1-fpm\n      containerfile: Containerfile.fpm\n"), 0o644)
+	exec.Command("git", "-C", repo, "init", "-q").Run()
+	exec.Command("git", "-C", repo, "remote", "add", "origin", "https://github.com/AppJail-makejails/nextcloud.git").Run()
+	if !hasContainerfile(repo) {
+		t.Fatal("hasContainerfile = false")
+	}
+	compose, err := composeFromContainerfile(repo, "nextcloud")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"ghcr.io/appjail-makejails/nextcloud:15.1-apache", "80:80"} {
+		if !strings.Contains(string(compose), want) {
+			t.Errorf("compose lacks %q:\n%s", want, compose)
+		}
+	}
+}

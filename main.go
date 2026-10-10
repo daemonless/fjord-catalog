@@ -205,7 +205,7 @@ func scanRepos(root string, fromContainerfile bool) []string {
 			continue
 		}
 		if fileExists(filepath.Join(root, e.Name(), "compose.yaml")) ||
-			(fromContainerfile && fileExists(filepath.Join(root, e.Name(), "Containerfile"))) {
+			(fromContainerfile && hasContainerfile(filepath.Join(root, e.Name()))) {
 			out = append(out, e.Name())
 		}
 	}

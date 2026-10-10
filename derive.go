@@ -113,10 +113,11 @@ type imageConfig struct {
 	Build struct {
 		Architectures []string `yaml:"architectures"`
 		Variants      []struct {
-			Tag     string   `yaml:"tag"`
-			Default bool     `yaml:"default"`
-			TagDesc string   `yaml:"tag_desc"`
-			Aliases []string `yaml:"aliases"`
+			Tag           string   `yaml:"tag"`
+			Containerfile string   `yaml:"containerfile"`
+			Default       bool     `yaml:"default"`
+			TagDesc       string   `yaml:"tag_desc"`
+			Aliases       []string `yaml:"aliases"`
 		} `yaml:"variants"`
 	} `yaml:"build"`
 	Fjord struct {

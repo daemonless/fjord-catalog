@@ -48,9 +48,24 @@ func containerfileRepo(repo, id string) (dir, parent string, compose []byte, err
 // Containerfile describes. An image that exposes no port is not an app to
 // open (a base, a builder): refused, as a compose without x-daemonless is.
 func composeFromContainerfile(repo, id string) ([]byte, error) {
-	raw, err := os.ReadFile(filepath.Join(repo, "Containerfile"))
+	var cfg imageConfig
+	if b, err := os.ReadFile(filepath.Join(repo, ".daemonless/config.yaml")); err == nil {
+		_ = yaml.Unmarshal(b, &cfg)
+	}
+	// The default variant's own Containerfile: nextcloud builds only
+	// Containerfile.apache and Containerfile.fpm.
+	tag, file := "latest", "Containerfile"
+	for _, v := range cfg.Build.Variants {
+		if v.Default {
+			tag = v.Tag
+			if v.Containerfile != "" {
+				file = v.Containerfile
+			}
+		}
+	}
+	raw, err := os.ReadFile(filepath.Join(repo, file))
 	if err != nil {
-		return nil, fmt.Errorf("no compose.yaml or Containerfile")
+		return nil, fmt.Errorf("no compose.yaml or %s", file)
 	}
 	cf := parseContainerfile(string(raw))
 	title := cf.labels["org.opencontainers.image.title"]
@@ -64,17 +79,6 @@ func composeFromContainerfile(repo, id string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	var cfg imageConfig
-	if b, err := os.ReadFile(filepath.Join(repo, ".daemonless/config.yaml")); err == nil {
-		_ = yaml.Unmarshal(b, &cfg)
-	}
-	tag := "latest"
-	for _, v := range cfg.Build.Variants {
-		if v.Default {
-			tag = v.Tag
-		}
-	}
-
 	var ports []string
 	for _, p := range webFirst(cf.expose, cfg.Cit.Port) {
 		num := strings.TrimSuffix(p, "/tcp")
@@ -112,6 +116,12 @@ func composeFromContainerfile(repo, id string) ([]byte, error) {
 		"services":     map[string]any{id: svc},
 		"x-daemonless": xd,
 	})
+}
+
+// hasContainerfile: a Containerfile, or a variant's Containerfile.<name>.
+func hasContainerfile(dir string) bool {
+	m, _ := filepath.Glob(filepath.Join(dir, "Containerfile*"))
+	return len(m) > 0
 }
 
 // libraryKinds are the folder kinds fjord's folder sets pre-fill.
