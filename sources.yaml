@@ -8,6 +8,8 @@
 #     provider: local             - scan <repos-dir>[/path] for app dirs
 #               daemonless-github - list org + shallow-clone matching repos
 #     include/exclude: regexps over app ids (repo names)
+#     from_containerfile: also derive repos with no compose.yaml from their
+#               Containerfile (README: Repos without a compose.yaml)
 #     catalog: per-source branding override
 catalog:
   name: "Daemonless Apps"

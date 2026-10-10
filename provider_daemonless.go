@@ -18,6 +18,10 @@ type daemonlessProvider struct {
 	include      *regexp.Regexp // nil = no filter
 	exclude      *regexp.Regexp // nil = no filter
 	versions     map[string]*appVersions
+	// fromContainerfile also derives repos with no compose.yaml, from their
+	// Containerfile (containerfile.go). Off by default: a daemonless repo
+	// without one is not an app.
+	fromContainerfile bool
 }
 
 // Discover lists the app ids (explicit set or a scan of reposDir), applies the
@@ -26,7 +30,7 @@ type daemonlessProvider struct {
 func (p *daemonlessProvider) Discover() ([]AppRef, error) {
 	ids := p.apps
 	if ids == nil {
-		ids = scanRepos(p.reposDir)
+		ids = scanRepos(p.reposDir, p.fromContainerfile)
 	}
 	var refs []AppRef
 	var clean []string
@@ -58,7 +62,15 @@ func (p *daemonlessProvider) Derive(ref AppRef) (*DerivedApp, error) {
 	repo := filepath.Join(p.reposDir, ref.ID)
 	composeBytes, err := os.ReadFile(filepath.Join(repo, "compose.yaml"))
 	if err != nil {
-		return nil, fmt.Errorf("no compose.yaml")
+		if !p.fromContainerfile {
+			return nil, fmt.Errorf("no compose.yaml")
+		}
+		dir, parent, compose, err := containerfileRepo(repo, ref.ID)
+		if err != nil {
+			return nil, err
+		}
+		defer os.RemoveAll(parent)
+		repo, composeBytes = dir, compose
 	}
 	configBytes, _ := os.ReadFile(filepath.Join(repo, ".daemonless/config.yaml"))
 

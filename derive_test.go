@@ -109,3 +109,26 @@ func TestDocsPublicURL(t *testing.T) {
 		}
 	}
 }
+
+// Two folders named alike keep two variables, so two folders on the host.
+func TestDeriveVolumesNamedAlike(t *testing.T) {
+	compose := []byte(`x-daemonless:
+  title: SearXNG
+services:
+  searxng:
+    image: ghcr.io/x/searxng:latest
+    ports: ["8080:8080"]
+    volumes:
+      - /containers/searxng/etc:/usr/local/etc/searxng
+      - /containers/searxng/cache:/var/cache/searxng
+`)
+	d, err := deriveManifest(compose, nil, t.TempDir(), "searxng", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`"${SEARXNG_DATA}:/usr/local/etc/searxng"`, `"${CACHE_SEARXNG_DATA}:/var/cache/searxng"`} {
+		if !strings.Contains(d.manifestYAML, want) {
+			t.Errorf("manifest lacks %s:\n%s", want, d.manifestYAML)
+		}
+	}
+}

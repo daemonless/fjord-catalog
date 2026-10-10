@@ -36,6 +36,9 @@ type Source struct {
 	Include  string      `yaml:"include"`  // regexp; app id must match (empty = all)
 	Exclude  string      `yaml:"exclude"`  // regexp; app id must NOT match (empty = none)
 	Catalog  CatalogMeta `yaml:"catalog"`  // per-source branding; empty fields fall back to the top-level catalog:
+	// FromContainerfile: a repo with no compose.yaml is derived from its
+	// Containerfile (labels, EXPOSE, VOLUME) instead of skipped.
+	FromContainerfile bool `yaml:"from_containerfile"`
 }
 
 // meta is the branding this source publishes: its own, backfilled from the
@@ -121,13 +124,13 @@ func providerFor(src Source, reposDir, versionsPath, appsCSV string) (Provider, 
 		if src.Path != "" && src.Path != "." {
 			scanDir = filepath.Join(reposDir, src.Path)
 		}
-		return &daemonlessProvider{reposDir: scanDir, apps: apps, versionsPath: versionsPath, include: inc, exclude: exc}, nil
+		return &daemonlessProvider{reposDir: scanDir, apps: apps, versionsPath: versionsPath, include: inc, exclude: exc, fromContainerfile: src.FromContainerfile}, nil
 	case "daemonless-github":
 		if src.Org == "" {
 			return nil, fmt.Errorf("provider daemonless-github needs org:")
 		}
 		// Clones land in <repos-dir>/<org>/ so two org sources can't collide.
-		inner := &daemonlessProvider{reposDir: filepath.Join(reposDir, src.Org), versionsPath: versionsPath}
+		inner := &daemonlessProvider{reposDir: filepath.Join(reposDir, src.Org), versionsPath: versionsPath, fromContainerfile: src.FromContainerfile}
 		return &githubProvider{org: src.Org, include: inc, exclude: exc, apps: apps, inner: inner}, nil
 	default:
 		return nil, fmt.Errorf("unknown provider %q", src.Provider)

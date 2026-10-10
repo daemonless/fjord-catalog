@@ -433,6 +433,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	// system path (/etc/resolv.conf, /mnt/media, ...) stays a user-supplied
 	// path. /config keeps its canonical CONFIG_DATA name for continuity.
 	if vols := mapGet(svcNode, "volumes"); vols != nil && vols.Kind == yaml.SequenceNode {
+		used := map[string]bool{}
 		for _, item := range vols.Content {
 			host, cont, opts := splitVolume(item.Value)
 			if cont == "" {
@@ -463,6 +464,17 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				v.Type = "path"
 				v.Default = ""
 			}
+			// Two folders named alike (searxng's /var/cache/searxng and
+			// /usr/local/etc/searxng) would share one variable, and so one
+			// folder: the second takes its parent's name too.
+			if used[v.Name] {
+				parent := envName(filepath.Base(filepath.Dir(cont)))
+				v.Name = parent + "_" + v.Name
+				if v.Default != "" {
+					v.Default = strings.ToLower(parent) + "-" + v.Default
+				}
+			}
+			used[v.Name] = true
 			if d, ok := volDocs[cont]; ok {
 				v.Label = d.Desc
 				v.Optional = d.Optional

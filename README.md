@@ -78,6 +78,24 @@ Two derivation modes, chosen per app:
 
 Repos opt out with `.daemonless/config.yaml` → `fjord: { exclude: true }`.
 
+### Repos without a compose.yaml
+
+A source with `from_containerfile: true` also takes repos that have only a
+`Containerfile` (and a `.daemonless/config.yaml` for variants), such as the
+[AppJail-makejails](https://github.com/AppJail-makejails) org. The compose
+is written from the Containerfile:
+
+- `org.opencontainers.image.title` / `.description` / `.url` labels → name,
+  description, upstream link. No title, not an app.
+- `EXPOSE` → ports. The web port is `cit.port` from the config, else the
+  first TCP port that is 80, 443 or above 1023. No `EXPOSE`, nothing to open: skipped.
+- `VOLUME` → the app's data folders. A path the app writes to but the
+  Containerfile doesn't declare is lost when the app is updated.
+- The image is `ghcr.io/<owner of the origin remote>/<repo>` at the
+  config's default variant tag.
+
+No icon, category or versions: those need a compose and an `sbom.json`.
+
 ## Output
 
 ```

@@ -190,9 +190,10 @@ func copyFile(src, dst string) error {
 	return os.WriteFile(dst, b, 0o644)
 }
 
-// scanRepos returns every repo dir under root that has a compose.yaml. An
-// unreadable root yields nothing, which buildSource turns into an error.
-func scanRepos(root string) []string {
+// scanRepos lists the app dirs under root: those with a compose.yaml, and with
+// fromContainerfile those with only a Containerfile too. An unreadable root
+// yields nothing, which buildSource turns into an error.
+func scanRepos(root string, fromContainerfile bool) []string {
 	var out []string
 	entries, err := os.ReadDir(root)
 	if err != nil {
@@ -203,7 +204,8 @@ func scanRepos(root string) []string {
 		if !e.IsDir() {
 			continue
 		}
-		if _, err := os.Stat(filepath.Join(root, e.Name(), "compose.yaml")); err == nil {
+		if fileExists(filepath.Join(root, e.Name(), "compose.yaml")) ||
+			(fromContainerfile && fileExists(filepath.Join(root, e.Name(), "Containerfile"))) {
 			out = append(out, e.Name())
 		}
 	}
