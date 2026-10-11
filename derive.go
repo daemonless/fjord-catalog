@@ -365,7 +365,9 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 		return deriveStackManifest(composeBytes, meta.XDaemonless, cfg, repoDir, id)
 	}
 	if len(meta.Services) > 1 {
-		return nil, fmt.Errorf("multi-service (%d) without x-daemonless type: stack", len(meta.Services))
+		// The example.env is the signal (above); naming type: stack here sent
+		// erpnext's fix the wrong way.
+		return nil, fmt.Errorf("multi-service (%d) without an example.env: put the stack's variables in ${VARS} and ship their defaults there", len(meta.Services))
 	}
 
 	// Node pass for the ${VAR} rewrite.
