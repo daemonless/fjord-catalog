@@ -17,11 +17,14 @@ import (
 // optional = may be left empty; level = where the wizard shows it
 // (primary = up front, options, advanced), independent of optional;
 // public_url = the address the app is opened at (fjord suggests and checks it).
+// generate: false = a secret only its owner has (a tunnel token): fjord makes
+// required secrets up unless told so.
 type docEntry struct {
 	Desc      string
 	Optional  bool
 	Level     string
 	PublicURL bool
+	Given     bool
 }
 
 var validLevels = map[string]bool{"primary": true, "options": true, "advanced": true}
@@ -38,6 +41,7 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 		Optional  bool   `yaml:"optional"`
 		Level     string `yaml:"level"`
 		PublicURL bool   `yaml:"public_url"`
+		Generate  *bool  `yaml:"generate"`
 	}
 	if err := n.Decode(&m); err != nil {
 		return err
@@ -46,6 +50,7 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 		return fmt.Errorf("level %q: want primary, options or advanced", m.Level)
 	}
 	v.Desc, v.Optional, v.Level, v.PublicURL = m.Desc, m.Optional, m.Level, m.PublicURL
+	v.Given = m.Generate != nil && !*m.Generate
 	return nil
 }
 
@@ -141,7 +146,17 @@ type variable struct {
 	Optional        bool       `yaml:"optional,omitempty"`
 	Level           string     `yaml:"level,omitempty"` // wizard placement: primary | options | advanced
 	HostPermissions *hostPerms `yaml:"host_permissions,omitempty"`
-	Image           string     `yaml:"image,omitempty"` // image_tag vars: the repo this tag selects for
+	Image           string     `yaml:"image,omitempty"`    // image_tag vars: the repo this tag selects for
+	Generate        *bool      `yaml:"generate,omitempty"` // false: a secret fjord must not make up
+}
+
+// givenFlag is a secret's `generate: false`, nil for anything else.
+func givenFlag(typ string, d docEntry) *bool {
+	if typ != "secret" || !d.Given {
+		return nil
+	}
+	f := false
+	return &f
 }
 
 type variant struct {
@@ -218,6 +233,12 @@ func (av *appVersions) forVariant(tag string) string {
 }
 
 var secretRe = regexp.MustCompile(`(?i)(password|secret|token|_key$|apikey)`)
+
+// isSecret names a secret by its variable's name. A _FILE variable is the
+// path to one (lldap's LLDAP_JWT_SECRET_FILE), typed as a string.
+func isSecret(name string) bool {
+	return secretRe.MatchString(name) && !strings.HasSuffix(strings.ToUpper(name), "_FILE")
+}
 
 // derived is what one app yields: the rendered manifest YAML plus the fields
 // the catalog.json entry needs. logoSrc, if set, is a repo logo file the caller
@@ -495,7 +516,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	if env := mapGet(svcNode, "environment"); env != nil {
 		addEnvVar := func(key, val string) {
 			typ := "string"
-			if secretRe.MatchString(key) {
+			if isSecret(key) {
 				typ = "secret"
 			}
 			d := envDocs[key]
@@ -507,7 +528,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 			// stack path gives it. vikunja's database variables are all of
 			// this kind, and read as required they blocked every install.
 			optional := d.Optional || strings.Contains(val, ":-")
-			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: composeDefault(val), Optional: optional, Level: d.Level})
+			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: composeDefault(val), Optional: optional, Level: d.Level, Generate: givenFlag(typ, d)})
 		}
 		switch env.Kind {
 		case yaml.SequenceNode:

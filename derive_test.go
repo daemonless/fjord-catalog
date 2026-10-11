@@ -110,6 +110,32 @@ func TestDocsPublicURL(t *testing.T) {
 	}
 }
 
+// fjord makes a required secret up; `generate: false` marks one only its
+// owner has (cloudflared's tunnel token). A _FILE variable is the path to a
+// secret, not the secret.
+func TestDocsGenerateFalse(t *testing.T) {
+	compose := "name: app\nx-daemonless:\n  title: App\n  docs:\n    env:\n      TUNNEL_TOKEN:\n        desc: Your tunnel token\n        generate: false\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    environment:\n      - TUNNEL_TOKEN=\n      - AGENT_SECRET=change-me\n      - JWT_SECRET_FILE=/run/secret\n    ports: [\"8080:8080\"]\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	got := map[string]variable{}
+	for _, v := range d.xf.Variables {
+		got[v.Name] = v
+	}
+	if v := got["TUNNEL_TOKEN"]; v.Type != "secret" || v.Generate == nil || *v.Generate {
+		t.Errorf("TUNNEL_TOKEN = %+v, want a secret with generate: false", v)
+	}
+	if v := got["AGENT_SECRET"]; v.Type != "secret" || v.Generate != nil {
+		t.Errorf("AGENT_SECRET = %+v, want a secret fjord may make up", v)
+	}
+	if v := got["JWT_SECRET_FILE"]; v.Type != "string" {
+		t.Errorf("JWT_SECRET_FILE = %+v, want a string (a path)", v)
+	}
+}
+
 // Two folders named alike keep two variables, so two folders on the host.
 func TestDeriveVolumesNamedAlike(t *testing.T) {
 	compose := []byte(`x-daemonless:

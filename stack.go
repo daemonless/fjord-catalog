@@ -101,7 +101,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		switch {
 		case tagVarRepo[name] != "":
 			typ, imgRepo = "image_tag", tagVarRepo[name]
-		case secretRe.MatchString(name):
+		case isSecret(name):
 			typ = "secret"
 		case strings.Contains(composeText, "${"+name+"}:/"):
 			typ = "path" // host side of a bind mount
@@ -109,7 +109,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		if envDocs[name].PublicURL {
 			typ = "public_url"
 		}
-		vars = append(vars, variable{Name: name, Label: envDocs[name].Desc, Type: typ, Default: def, Optional: optional, Level: envDocs[name].Level, Image: imgRepo})
+		vars = append(vars, variable{Name: name, Label: envDocs[name].Desc, Type: typ, Default: def, Optional: optional, Level: envDocs[name].Level, Image: imgRepo, Generate: givenFlag(typ, envDocs[name])})
 	}
 
 	// First service image repo, for the store card / future use.
