@@ -7,10 +7,11 @@ import (
 	"testing"
 )
 
-// A tool that runs and exits, or an image only built FROM, is not an app
-// the store offers: the builder skips it by its x-daemonless class.
+// A tool that runs and exits, an image only built FROM, or a part of a
+// stack is not an app the store offers: the builder skips it by its
+// x-daemonless class.
 func TestToolsAndBaseImagesAreNotApps(t *testing.T) {
-	for _, class := range []string{"cli", "base"} {
+	for _, class := range []string{"cli", "base", "part"} {
 		compose := "name: tool\nx-daemonless:\n  title: Tool\n  class: " + class + "\nservices:\n  tool:\n    image: ghcr.io/daemonless/tool:latest\n"
 		dir := t.TempDir()
 		_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
