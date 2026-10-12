@@ -348,9 +348,10 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	}
 	// A tool that runs and exits (jellyfin-ffmpeg) or an image only built
 	// FROM (base, node) is not something to install from a store: no port,
-	// nothing to keep running, nothing to open.
-	if c := meta.XDaemonless.Class; c == "cli" || c == "base" {
-		return nil, fmt.Errorf("class %s: a tool or a base image, not an app", c)
+	// nothing to keep running, nothing to open. Nor is a part of a stack
+	// (immich-server): alone it crash-loops looking for the rest.
+	if c := meta.XDaemonless.Class; c == "cli" || c == "base" || c == "part" {
+		return nil, fmt.Errorf("class %s: a tool, a base image or a part of a stack, not an app", c)
 	}
 	// Multi-service composes are derived by collecting their ${VARS}, never
 	// rewriting -- which needs the author to have variabilized them and
