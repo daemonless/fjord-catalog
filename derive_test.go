@@ -94,6 +94,27 @@ func TestProfiledServicesStayOutOfTheStackManifest(t *testing.T) {
 	}
 }
 
+// A ${VAR} in a comment is prose, not a variable.
+func TestCommentedVariableIsNotAsked(t *testing.T) {
+	compose := "name: app\nx-daemonless:\n  title: App\n  type: stack\nservices:\n  app:\n    # Tag in a ${VAR} so the wizard offers versions.\n    image: ghcr.io/daemonless/app:${APP_TAG:-latest}\n    environment:\n      - TZ=${TZ}  # or ${OTHER}\n  db:\n    image: ghcr.io/daemonless/postgres:17\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	got := map[string]bool{}
+	for _, v := range d.xf.Variables {
+		got[v.Name] = true
+	}
+	if got["VAR"] || got["OTHER"] {
+		t.Errorf("a variable from a comment is asked for: %v", got)
+	}
+	if !got["APP_TAG"] || !got["TZ"] {
+		t.Errorf("the compose's own variables went missing: %v", got)
+	}
+}
+
 // A docs entry can mark a variable as the address the app is opened at:
 // the variable becomes fjord's public_url kind.
 func TestDocsPublicURL(t *testing.T) {
