@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -44,14 +43,12 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	// pick it yet, so it stays out of the manifest, variables included.
 	dropProfiledServices(root)
 
-	var buf bytes.Buffer
-	enc := yaml.NewEncoder(&buf)
-	enc.SetIndent(2)
-	if err := enc.Encode(root); err != nil {
+	// Variables come from the compose, not its comments: sparkyfitness's
+	// "Tag in a ${VAR} so ..." became a required variable named VAR.
+	scanText, err := marshalNode(withoutComments(root))
+	if err != nil {
 		return nil, err
 	}
-	enc.Close()
-	composeText := buf.String()
 
 	exampleEnv := parseExampleEnv(filepath.Join(repoDir, "example.env"))
 
@@ -78,7 +75,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	// Collect ${VAR} refs in order of first appearance.
 	seen := map[string]bool{}
 	var vars []variable
-	for _, m := range varRefRe.FindAllStringSubmatch(composeText, -1) {
+	for _, m := range varRefRe.FindAllStringSubmatch(scanText, -1) {
 		name, inlineDef := m[1], m[2]
 		if seen[name] {
 			continue
@@ -103,7 +100,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 			typ, imgRepo = "image_tag", tagVarRepo[name]
 		case isSecret(name):
 			typ = "secret"
-		case strings.Contains(composeText, "${"+name+"}:/"):
+		case strings.Contains(scanText, "${"+name+"}:/"):
 			typ = "path" // host side of a bind mount
 		}
 		if envDocs[name].PublicURL {
@@ -225,4 +222,15 @@ func dropProfiledServices(root *yaml.Node) {
 		}
 		dep.Content = left
 	}
+}
+
+// withoutComments returns a copy of n with every comment dropped.
+func withoutComments(n *yaml.Node) *yaml.Node {
+	c := *n
+	c.HeadComment, c.LineComment, c.FootComment = "", "", ""
+	c.Content = make([]*yaml.Node, len(n.Content))
+	for i, k := range n.Content {
+		c.Content[i] = withoutComments(k)
+	}
+	return &c
 }
