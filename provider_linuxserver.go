@@ -258,6 +258,33 @@ var lsioLibraryKinds = map[string]string{
 // "WebUI" and "webinterface" have no word break inside: \bweb\b misses them.
 var webPortRe = regexp.MustCompile(`(?i)(webui|web ?interface|\b(web|ui|gui|http|dashboard|interface)\b)`)
 
+// webPortIndex picks the web UI among ports, the first required ones
+// counting: a web-sounding TCP port, plain HTTP before HTTPS (kasm's are all
+// "(https)"), else a lone required port that does not say it is something
+// else. -1 when none is.
+func webPortIndex(ports []lsPort, required int) int {
+	// The web UI is a TCP port: wireguard's one port is UDP 51820.
+	tcp := func(pt lsPort) bool {
+		_, proto, _ := strings.Cut(pt.Internal, "/")
+		return proto == "" || proto == "tcp"
+	}
+	for _, wantTLS := range []bool{false, true} {
+		for i, pt := range ports {
+			if i < required && tcp(pt) && webPortRe.MatchString(pt.Desc) && isHTTPS(pt.Desc) == wantTLS {
+				return i
+			}
+		}
+	}
+	if required == 1 && tcp(ports[0]) && loneWebPort(ports[0].Desc) {
+		return 0
+	}
+	return -1
+}
+
+// hostWebPorts: host-network apps whose readme-vars list no port at all; the
+// web port is only in their README's prose.
+var hostWebPorts = map[string]string{"plex": "32400"}
+
 // A lone port is the web UI unless it says otherwise: mariadb's 3306, ssh's
 // 2222, ngircd's 6667 and Wyoming's 10200 are not, nor is a bare API.
 var notWebRe = regexp.MustCompile(`(?i)(ssh|irc|wyoming|mysql|mariadb|postgres|redis|mqtt|smtp|imap|\bdns\b|\bftp\b|\bapi\b)`)
@@ -367,30 +394,22 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 			svc.Volumes = append(svc.Volumes, "${"+name+"}:"+cpath+opts)
 		}
 	}
-	webVar := ""
+	webVar, webLiteral := "", ""
 	https := false
+	ports := append(append([]lsPort{}, rv.Ports...), rv.OptPorts...)
 	if rv.IncludeNet && rv.Net == "host" {
 		svc.NetworkMode = "host"
+		// Nothing is published, but the app still answers on its own port:
+		// the Open link needs it (homeassistant's 8123, an optional port
+		// "only if you are not using host mode").
+		if web := webPortIndex(ports, len(ports)); web >= 0 {
+			webLiteral, _, _ = strings.Cut(ports[web].Internal, "/")
+			https = isHTTPS(ports[web].Desc)
+		} else if p, ok := hostWebPorts[id]; ok {
+			webLiteral = p
+		}
 	} else {
-		ports := append(append([]lsPort{}, rv.Ports...), rv.OptPorts...)
-		// The web UI is a TCP port: wireguard's one port is UDP 51820.
-		tcp := func(pt lsPort) bool {
-			_, proto, _ := strings.Cut(pt.Internal, "/")
-			return proto == "" || proto == "tcp"
-		}
-		// Plain HTTP first; kasm's ports are all "(https)", so then the
-		// first of those.
-		web := -1
-		for _, wantTLS := range []bool{false, true} {
-			for i, pt := range ports {
-				if web < 0 && i < len(rv.Ports) && tcp(pt) && webPortRe.MatchString(pt.Desc) && isHTTPS(pt.Desc) == wantTLS {
-					web = i
-				}
-			}
-		}
-		if web < 0 && len(rv.Ports) == 1 && tcp(rv.Ports[0]) && loneWebPort(rv.Ports[0].Desc) {
-			web = 0
-		}
+		web := webPortIndex(ports, len(rv.Ports))
 		for i, pt := range ports {
 			internal, proto, _ := strings.Cut(pt.Internal, "/")
 			if internal == "" {
@@ -450,6 +469,8 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 	}
 	if webVar != "" {
 		xf.Info.WebPort, xf.Info.WebHTTPS = "${"+webVar+"}", https
+	} else if webLiteral != "" {
+		xf.Info.WebPort, xf.Info.WebHTTPS = webLiteral, https
 	}
 	for i, t := range img.Tags {
 		xf.Variants = append(xf.Variants, variant{ID: t.Tag, Label: firstNonEmpty(firstSentence(stripMarkdown(t.Desc)), t.Tag), Default: i == 0 && t.Tag == "latest" || t.Tag == "latest"})
