@@ -1,0 +1,154 @@
+---
+
+# project information
+project_name: homeassistant
+project_url: "https://www.home-assistant.io/"
+project_logo: "https://github.com/home-assistant/home-assistant.io/raw/next/source/images/favicon-192x192-full.png"
+project_blurb: "[Home Assistant Core]({{ project_url }}) - Open source home automation that puts local control and privacy first. Powered by a worldwide community of tinkerers and DIY enthusiasts. Perfect to run on a Raspberry Pi or a local server"
+project_lsio_github_repo_url: "https://github.com/linuxserver/docker-{{ project_name }}"
+project_categories: "Home Automation"
+# supported architectures
+available_architectures:
+  - {arch: "{{ arch_x86_64 }}", tag: "amd64-latest"}
+  - {arch: "{{ arch_arm64 }}", tag: "arm64v8-latest"}
+# container parameters
+param_container_name: "{{ project_name }}"
+param_usage_include_vols: true
+param_volumes:
+  - {vol_path: "/config", vol_host_path: "/path/to/{{ project_name }}/data", desc: "Home Assistant config storage path."}
+param_usage_include_ports: false
+param_usage_include_net: true
+param_net: "host"
+param_net_desc: "Shares host networking with container. Required for some devices to be discovered by Home Assistant."
+# optional container parameters
+opt_param_usage_include_ports: true
+opt_param_ports:
+  - {external_port: "8123", internal_port: "8123", port_desc: "Application WebUI, only use this if you are not using host mode."}
+opt_param_device_map: true
+opt_param_devices:
+  - {device_path: "/path/to/device", device_host_path: "/path/to/device", desc: "For passing through USB, serial or gpio devices."}
+# application setup block
+app_setup_block_enabled: true
+app_setup_block: |
+  This image is based on Home Assistant Core.
+
+  The Webui can be found at `http://your-ip:8123`. Follow the wizard to set up Home Assistant.
+
+  ### Host vs. Bridge
+
+  Home Assistant can [discover][hb0] and automatically configure
+  [zeroconf][hb1]/[mDNS][hb2] and [UPnP][hb3] devices on your network. In
+  order for this to work you must create the container with `--net=host`.
+
+  [hb0]: https://www.home-assistant.io/integrations/discovery/#mdns-and-upnp
+  [hb1]: https://en.wikipedia.org/wiki/Zero-configuration_networking
+  [hb2]: https://en.wikipedia.org/wiki/Multicast_DNS
+  [hb3]: https://en.wikipedia.org/wiki/Universal_Plug_and_Play
+
+  ### Accessing Bluetooth Device
+
+  In order to provide HA with access to the host's Bluetooth device, one needs to install BlueZ on the host, add the capabilities `NET_ADMIN` and `NET_RAW` to the container, and map dbus as a volume as shown in the below examples.
+
+  #### Docker Cli:
+  ```bash
+  --cap-add=NET_ADMIN --cap-add=NET_RAW -v /run/dbus:/run/dbus:ro
+  ```
+
+  #### Docker Compose:
+  ```yaml
+      cap_add:
+        - NET_ADMIN
+        - NET_RAW
+      volumes:
+        - /run/dbus:/run/dbus:ro
+  ```
+
+  If the dbus path on host differs, such as `/var/run/dbus`, then you can map it as `/var/run/dbus:/run/dbus:ro`.
+
+  ### Using the Ping integration
+
+  For the [Ping][ping0] integration to work, the capability `NET_RAW` must be added to the container. See above for instructions.
+
+  [ping0]: https://www.home-assistant.io/integrations/ping
+unraid_template_sync: false
+# init diagram
+init_diagram: |
+  "homeassistant:latest": {
+    docker-mods
+    base {
+      fix-attr +\nlegacy cont-init
+    }
+    docker-mods -> base
+    legacy-services
+    custom services
+    init-services -> legacy-services
+    init-services -> custom services
+    custom services -> legacy-services
+    legacy-services -> ci-service-check
+    init-migrations -> init-adduser
+    init-os-end -> init-config
+    init-config -> init-config-end
+    init-config-homeassistant -> init-config-end
+    init-crontab-config -> init-config-end
+    init-config -> init-config-homeassistant
+    init-config -> init-crontab-config
+    init-mods-end -> init-custom-files
+    init-adduser -> init-device-perms
+    base -> init-envfile
+    base -> init-migrations
+    init-config-end -> init-mods
+    init-mods-package-install -> init-mods-end
+    init-mods -> init-mods-package-install
+    init-adduser -> init-os-end
+    init-device-perms -> init-os-end
+    init-envfile -> init-os-end
+    init-custom-files -> init-services
+    init-services -> svc-cron
+    svc-cron -> legacy-services
+    init-services -> svc-homeassistant
+    svc-homeassistant -> legacy-services
+  }
+  Base Images: {
+    "baseimage-alpine:3.24"
+  }
+  "homeassistant:latest" <- Base Images
+# changelog
+changelogs:
+  - {date: "02.07.26:", desc: "Rebase to alpine 3.24."}
+  - {date: "05.03.26:", desc: "Remove pycups as there are no python 3.14 wheels for it."}
+  - {date: "02.10.25:", desc: "Rebase to alpine 3.22, rely on baseimage service for usb device permission fixing."}
+  - {date: "19.09.25:", desc: "Add the necessary capabilities in the container to allow the unprivileged user access to bluetooth stack."}
+  - {date: "03.01.25:", desc: "Rebase to alpine 3.21."}
+  - {date: "04.12.24:", desc: "Make setcap target dynamic."}
+  - {date: "07.11.24:", desc: "Add go2rtc binary."}
+  - {date: "12.10.24:", desc: "Allow uv to modify system python packages."}
+  - {date: "07.10.24:", desc: "Switch to `uv` instead of `pip`."}
+  - {date: "03.07.24:", desc: "Rebase to alpine 3.20."}
+  - {date: "05.03.24:", desc: "Add mime.types to help with detection of certain media files."}
+  - {date: "13.02.24:", desc: "Rebase to alpine 3.19, upgrade to python 3.12. Restructure python packages so all packages are internal (no more venv in /config). Use upstream project's wheels. Due to an upstream issue, on first start of the newly updated container, some custom integrations may be disabled in HA due to missing dependencies. A subsequent container restart should fix that and the integrations should be re-enabled."}
+  - {date: "18.12.23:", desc: "Add Bluetooth instructions to readme."}
+  - {date: "05.07.23:", desc: "Deprecate armhf. As announced [here](https://www.linuxserver.io/blog/a-farewell-to-arm-hf)"}
+  - {date: "21.06.23:", desc: "Pin pycups version."}
+  - {date: "14.06.23:", desc: "Create secondary venv in `/config` for pip installs."}
+  - {date: "07.06.23:", desc: "Rebase to alpine 3.18, switch to cp311 wheels."}
+  - {date: "03.05.23:", desc: "Deprecate arm32v7. Latest HA version with an arm32v7 build is `2023.4.6`."}
+  - {date: "16.11.22:", desc: "Fix the dep conflict for google calendar."}
+  - {date: "23.09.22:", desc: "Migrate to s6v3."}
+  - {date: "29.07.22:", desc: "Improve usb device permission fix."}
+  - {date: "07.07.22:", desc: "Rebase to alpine 3.16, switch to cp310 wheels."}
+  - {date: "07.05.22:", desc: "Build matplotlib with the same Numpy version as HA req."}
+  - {date: "31.03.22:", desc: "Install pycups."}
+  - {date: "07.03.22:", desc: "Install PySwitchbot."}
+  - {date: "02.03.22:", desc: "Update pip and use legacy resolver, clean up temp python files, reduce image size."}
+  - {date: "04.02.22:", desc: "Always compile grpcio on arm32v7 due to pypi pushing a glibc only wheel."}
+  - {date: "12.12.21:", desc: "Use the new `build.yaml` to determine HA base version."}
+  - {date: "25.09.21:", desc: "Use the new lsio homeassistant wheel repo, instead of the HA wheels."}
+  - {date: "13.09.21:", desc: "Build psycopg locally as the HA provided wheel does not seem to work properly."}
+  - {date: "13.09.21:", desc: "Fix setcap in service. Build CISO8601 locally as the HA provided wheel does not seem to work properly."}
+  - {date: "12.09.21:", desc: "Rebase to alpine 3.14. Build on native armhf."}
+  - {date: "09.08.21:", desc: "Fixed broken build caused by missing dependency."}
+  - {date: "01.07.21:", desc: "Remove HACS dependencies as it caused a crash in Home-assistant."}
+  - {date: "25.02.21:", desc: "Add python dependencies from homeassistant base image."}
+  - {date: "07.02.21:", desc: "Fix building from the wrong requirement file. Add ssh client & external DB libs."}
+  - {date: "06.02.21:", desc: "Add iputils so ping works as non root user."}
+  - {date: "30.01.21:", desc: "Initial Release."}

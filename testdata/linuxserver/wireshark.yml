@@ -1,0 +1,130 @@
+---
+
+# project information
+project_name: wireshark
+project_url: "https://www.wireshark.org/"
+project_logo: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/wireshark-icon.png"
+project_blurb: "[Wireshark]({{ project_url }}) is the world’s foremost and widely-used network protocol analyzer. It lets you see what’s happening on your network at a microscopic level and is the de facto (and often de jure) standard across many commercial and non-profit enterprises, government agencies, and educational institutions. Wireshark development thrives thanks to the volunteer contributions of networking experts around the globe and is the continuation of a project started by Gerald Combs in 1998. "
+project_lsio_github_repo_url: "https://github.com/linuxserver/docker-{{ project_name }}"
+project_categories: "Network"
+# supported architectures
+available_architectures:
+  - {arch: "{{ arch_x86_64 }}", tag: "latest"}
+  - {arch: "{{ arch_arm64 }}", tag: "arm64v8-latest"}
+# container parameters
+common_param_env_vars_enabled: true
+param_container_name: "{{ project_name }}"
+param_usage_include_net: true
+param_net: "host"
+param_net_desc: "Use Host Networking"
+param_usage_include_vols: true
+param_volumes:
+  - {vol_path: "/config", vol_host_path: "/path/to/{{ project_name }}/config", desc: "Users home directory in the container, stores program settings and potentially dump files."}
+cap_add_param: true
+cap_add_param_vars:
+  - {cap_add_var: "NET_ADMIN", desc: "Required to allow packet capture."}
+# optional parameters
+opt_param_usage_include_ports: true
+opt_param_ports:
+  - {external_port: "3000", internal_port: "3000", port_desc: "WireShark desktop gui HTTPS, must be proxied."}
+  - {external_port: "3001", internal_port: "3001", port_desc: "WireShark desktop gui HTTPS, only use this if you are not using host mode and sniffing Docker network traffic."}
+custom_params:
+  - {name: "shm-size", name_compose: "shm_size", value: "1gb", desc: "Recommended for all desktop images."}
+# Selkies blurb settings
+selkies_blurb: true
+# application setup block
+app_setup_block_enabled: true
+app_setup_block: |
+  In order to dump from an interface you will need to pass `NET_ADMIN` at a minimum, optionally you can use host networking to capture from your host level device or specify a Docker network you want to capture from.
+
+  The application can be accessed at:
+
+  * https://yourhost:3001/
+# init diagram
+init_diagram: |
+  "wireshark:latest": {
+    docker-mods
+    base {
+      fix-attr +\nlegacy cont-init
+    }
+    docker-mods -> base
+    legacy-services
+    custom services
+    init-services -> legacy-services
+    init-services -> custom services
+    custom services -> legacy-services
+    legacy-services -> ci-service-check
+    init-migrations -> init-adduser
+    init-os-end -> init-config
+    init-selkies-end -> init-config
+    init-config -> init-config-end
+    init-crontab-config -> init-config-end
+    init-openboxcopy -> init-config-end
+    init-config -> init-crontab-config
+    init-mods-end -> init-custom-files
+    init-adduser -> init-device-perms
+    base -> init-envfile
+    base -> init-migrations
+    init-config-end -> init-mods
+    init-mods-package-install -> init-mods-end
+    init-mods -> init-mods-package-install
+    init-selkies -> init-nginx
+    init-config -> init-openboxcopy
+    init-adduser -> init-os-end
+    init-device-perms -> init-os-end
+    init-envfile -> init-os-end
+    init-os-end -> init-selkies
+    init-nginx -> init-selkies-config
+    init-video -> init-selkies-end
+    init-custom-files -> init-services
+    init-selkies-config -> init-video
+    init-services -> svc-cron
+    svc-cron -> legacy-services
+    init-services -> svc-dbus
+    svc-xorg -> svc-dbus
+    svc-dbus -> legacy-services
+    init-services -> svc-de
+    legacy-cont-init -> svc-de
+    svc-nginx -> svc-de
+    svc-selkies -> svc-de
+    svc-xorg -> svc-de
+    svc-de -> legacy-services
+    init-services -> svc-docker
+    svc-docker -> legacy-services
+    init-services -> svc-nginx
+    svc-nginx -> legacy-services
+    init-services -> svc-pulseaudio
+    svc-pulseaudio -> legacy-services
+    init-services -> svc-selkies
+    svc-nginx -> svc-selkies
+    svc-pulseaudio -> svc-selkies
+    svc-xorg -> svc-selkies
+    svc-selkies -> legacy-services
+    init-services -> svc-watchdog
+    svc-watchdog -> legacy-services
+    init-services -> svc-xorg
+    svc-xorg -> legacy-services
+    init-services -> svc-xsettingsd
+    svc-nginx -> svc-xsettingsd
+    svc-xorg -> svc-xsettingsd
+    svc-xsettingsd -> legacy-services
+  }
+  Base Images: {
+    "baseimage-selkies:alpine324" <- "baseimage-alpine:3.24"
+  }
+  "wireshark:latest" <- Base Images
+# changelog
+changelogs:
+  - {date: "10.06.26:", desc: "Rebase to Alpine 3.24."}
+  - {date: "04.04.26:", desc: "Make Wayland default disable with PIXELFLUX_WAYLAND=false."}
+  - {date: "28.12.25:", desc: "Add Wayland init logic, rebase to Alpine 3.23."}
+  - {date: "12.07.25:", desc: "Rebase to Selkies and Alpine 3.22, HTTPS IS NOW REQUIRED."}
+  - {date: "06.12.24:", desc: "Rebase to Alpine 3.21."}
+  - {date: "23.05.24:", desc: "Rebase to Alpine 3.20."}
+  - {date: "10.02.24:", desc: "Update Readme with new env vars and ingest proper PWA icon."}
+  - {date: "02.01.24:", desc: "Rebase to Alpine 3.19."}
+  - {date: "13.05.23:", desc: "Rebase to Alpine 3.18."}
+  - {date: "18.03.23:", desc: "Rebase to KasmVNC base image."}
+  - {date: "23.10.22:", desc: "Rebase to Alpine 3.16, migrate to s6v3."}
+  - {date: "14.02.22:", desc: "Rebase to Alpine."}
+  - {date: "31.03.20:", desc: "Initial release."}

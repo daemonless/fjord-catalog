@@ -91,6 +91,32 @@ func TestLinuxserverPlex(t *testing.T) {
 	if s.NetworkMode != "host" || len(s.Ports) != 0 {
 		t.Errorf("plex: network %q ports %v", s.NetworkMode, s.Ports)
 	}
+	// Its readme-vars list no port: the Open link still needs 32400.
+	if w := m.XFjord.Info.WebPort; w != "32400" || m.XFjord.Info.WebHTTPS {
+		t.Errorf("plex: web port %q https %v, want 32400 http", w, m.XFjord.Info.WebHTTPS)
+	}
+}
+
+// Host networking publishes nothing, but the web port is the app's own:
+// homeassistant's is an optional port "only if you are not using host mode",
+// wireshark's the first of two HTTPS ones.
+func TestLinuxserverHostWebPort(t *testing.T) {
+	for app, want := range map[string]struct {
+		port  string
+		https bool
+	}{"homeassistant": {"8123", false}, "wireshark": {"3000", true}} {
+		_, m := deriveFixture(t, app)
+		s := m.Services[app]
+		if s.NetworkMode != "host" || len(s.Ports) != 0 {
+			t.Errorf("%s: network %q ports %v", app, s.NetworkMode, s.Ports)
+		}
+		if i := m.XFjord.Info; i.WebPort != want.port || i.WebHTTPS != want.https {
+			t.Errorf("%s: web port %q https %v, want %q %v", app, i.WebPort, i.WebHTTPS, want.port, want.https)
+		}
+		if v := varNamed(m.XFjord.Variables, "WEB_PORT"); v != nil {
+			t.Errorf("%s: a WEB_PORT variable with nothing published: %+v", app, v)
+		}
+	}
 }
 
 // A capability, a sysctl, devices, shm_size, required env with secrets.
