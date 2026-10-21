@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -39,6 +40,14 @@ type Source struct {
 	// FromContainerfile: a repo with no compose.yaml is derived from its
 	// Containerfile (labels, EXPOSE, VOLUME) instead of skipped.
 	FromContainerfile bool `yaml:"from_containerfile"`
+	// OS the source's images run on ("linux", "freebsd"), written into its
+	// catalog.json so fjord offers them only where they run.
+	OS []string `yaml:"os"`
+	// API: linuxserver-api: the image list URL (default: linuxserver's).
+	API string `yaml:"api"`
+	// Tested: a JSON file {"app": "pass" | why not}, relative to sources.yaml;
+	// when set, only the apps that passed an install test are published.
+	Tested string `yaml:"tested"`
 }
 
 // meta is the branding this source publishes: its own, backfilled from the
@@ -88,7 +97,7 @@ func loadConfig(path string) (Config, error) {
 		return Config{}, fmt.Errorf("%s: no sources defined", path)
 	}
 	seen := map[string]bool{}
-	for _, s := range c.Sources {
+	for i, s := range c.Sources {
 		if s.Name == "" || strings.ContainsAny(s.Name, "/\\ ") {
 			return Config{}, fmt.Errorf("%s: every source needs a name usable as a directory (got %q)", path, s.Name)
 		}
@@ -96,6 +105,10 @@ func loadConfig(path string) (Config, error) {
 			return Config{}, fmt.Errorf("%s: duplicate source name %q", path, s.Name)
 		}
 		seen[s.Name] = true
+		// tested: is relative to the sources file, wherever the build runs.
+		if s.Tested != "" && !filepath.IsAbs(s.Tested) {
+			c.Sources[i].Tested = filepath.Join(filepath.Dir(path), s.Tested)
+		}
 	}
 	return c, nil
 }
@@ -132,6 +145,20 @@ func providerFor(src Source, reposDir, versionsPath, appsCSV string) (Provider, 
 		// Clones land in <repos-dir>/<org>/ so two org sources can't collide.
 		inner := &daemonlessProvider{reposDir: filepath.Join(reposDir, src.Org), versionsPath: versionsPath, fromContainerfile: src.FromContainerfile}
 		return &githubProvider{org: src.Org, include: inc, exclude: exc, apps: apps, inner: inner}, nil
+	case "linuxserver-api":
+		p := &linuxserverProvider{apiURL: firstNonEmpty(src.API, "https://api.linuxserver.io/api/v1/images"),
+			rawURL: "https://raw.githubusercontent.com/linuxserver", cacheDir: filepath.Join(reposDir, "linuxserver"),
+			include: inc, exclude: exc, apps: apps}
+		if src.Tested != "" {
+			b, err := os.ReadFile(src.Tested)
+			if err != nil {
+				return nil, fmt.Errorf("tested: %w", err)
+			}
+			if err := json.Unmarshal(b, &p.tested); err != nil {
+				return nil, fmt.Errorf("tested %s: %w", src.Tested, err)
+			}
+		}
+		return p, nil
 	default:
 		return nil, fmt.Errorf("unknown provider %q", src.Provider)
 	}

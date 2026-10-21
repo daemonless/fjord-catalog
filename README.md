@@ -149,8 +149,22 @@ as one unbranded source), `--repos-dir` (where clones live / are made),
 `--out`, `--apps`, `--versions file.json` (override sbom-derived versions).
 `GITHUB_TOKEN` lifts the anonymous API rate limit and lets private repos in.
 
-Providers: `daemonless-github` (list org + shallow clone) and `local` (a
-directory of app repos already on disk, e.g. a workspace checkout).
+Providers: `daemonless-github` (list org + shallow clone), `local` (a
+directory of app repos already on disk, e.g. a workspace checkout), and
+`linuxserver-api` (linuxserver.io's image list from their API, each app's
+ports, volumes, env and devices from its `readme-vars.yml`).
+
+Per source, `os: [linux]` (or `[freebsd]`) says what its images run on and is
+written into its `catalog.json`: fjord leaves another OS's apps out of the
+store. `tested: tested-<source>.json` (beside `sources.yaml`, `{"app": "pass" |
+why not}`) publishes only the apps that passed an install test:
+
+```yaml
+  - name: linuxserver
+    provider: linuxserver-api
+    os: [linux]
+    tested: tested-linuxserver.json
+```
 
 ## This repo
 
