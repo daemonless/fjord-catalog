@@ -1,0 +1,238 @@
+{
+ "status": "OK",
+ "data": {
+  "repositories": {
+   "linuxserver": [
+    {
+     "name": "altus",
+     "initial_date": "2023-12-07",
+     "github_url": "https://github.com/linuxserver/docker-altus",
+     "project_url": "https://github.com/amanharwara/altus",
+     "project_logo": "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/altus-logo.png",
+     "description": "[Altus] is an Electron-based WhatsApp client with themes and multiple account support.",
+     "version": "5.8.1-ls157",
+     "version_timestamp": "2026-10-03 08:49:04+00:00",
+     "category": "Chat",
+     "stable": true,
+     "deprecated": false,
+     "stars": 8,
+     "monthly_pulls": 1785151,
+     "tags": [
+      {
+       "tag": "latest",
+       "desc": "Stable releases"
+      }
+     ],
+     "architectures": [
+      {
+       "arch": "x86_64",
+       "tag": "latest"
+      },
+      {
+       "arch": "arm64",
+       "tag": "arm64v8-latest"
+      }
+     ]
+    },
+    {
+     "name": "bookstack",
+     "initial_date": "2018-07-02",
+     "github_url": "https://github.com/linuxserver/docker-bookstack",
+     "project_url": "https://codeberg.org/bookstack/bookstack",
+     "project_logo": "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/bookstack-logo.png",
+     "description": "bookstack is a free and open source Wiki designed for creating beautiful documentation. Featuring a simple, but powerful WYSIWYG editor it allows for teams to create detailed and useful documentation with ease.  Powered by SQL and including a Markdown editor for those who prefer it, BookStack is geared towards making documentation more of a pleasure than a chore.  For more information on BookStack visit their website and check it out: https://www.bookstackapp.com",
+     "version": "v26.09.1-ls288",
+     "version_timestamp": "2026-10-13 00:33:20+00:00",
+     "category": "Content Management",
+     "stable": true,
+     "deprecated": false,
+     "stars": 1011,
+     "monthly_pulls": 1714479,
+     "tags": [
+      {
+       "tag": "latest",
+       "desc": "Stable releases"
+      }
+     ],
+     "architectures": [
+      {
+       "arch": "x86_64",
+       "tag": "amd64-latest"
+      },
+      {
+       "arch": "arm64",
+       "tag": "arm64v8-latest"
+      }
+     ]
+    },
+    {
+     "name": "emby",
+     "initial_date": "2019-05-30",
+     "github_url": "https://github.com/linuxserver/docker-emby",
+     "project_url": "https://emby.media/",
+     "project_logo": "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/emby-logo.png",
+     "description": "emby organizes video, music, live TV, and photos from personal media libraries and streams them to smart TVs, streaming boxes and mobile devices. This container is packaged as a standalone emby Media Server.",
+     "version": "4.10.1.0-ls302",
+     "version_timestamp": "2026-10-16 00:07:46+00:00",
+     "category": "Media Servers,Music,Audiobooks",
+     "stable": true,
+     "deprecated": false,
+     "stars": 150,
+     "monthly_pulls": 2213120,
+     "tags": [
+      {
+       "tag": "latest",
+       "desc": "Stable emby releases"
+      },
+      {
+       "tag": "beta",
+       "desc": "Beta emby releases"
+      }
+     ],
+     "architectures": [
+      {
+       "arch": "x86_64",
+       "tag": "amd64-latest"
+      },
+      {
+       "arch": "arm64",
+       "tag": "arm64v8-latest"
+      }
+     ]
+    },
+    {
+     "name": "plex",
+     "initial_date": "2015-07-03",
+     "github_url": "https://github.com/linuxserver/docker-plex",
+     "project_url": "https://plex.tv",
+     "project_logo": "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/plex-logo.png",
+     "description": "plex organizes video, music and photos from personal media libraries and streams them to smart TVs, streaming boxes and mobile devices. This container is packaged as a standalone Plex Media Server. Straightforward design and bulk actions mean getting things done faster.",
+     "version": "1.43.4.10903-e5521bd8c-ls327",
+     "version_timestamp": "2026-10-05 18:29:55+00:00",
+     "category": "Media Servers,Music,Audiobooks",
+     "stable": true,
+     "deprecated": false,
+     "stars": 1443,
+     "monthly_pulls": 7676554,
+     "tags": [
+      {
+       "tag": "latest",
+       "desc": "Stable releases"
+      }
+     ],
+     "architectures": [
+      {
+       "arch": "x86_64",
+       "tag": "amd64-latest"
+      },
+      {
+       "arch": "arm64",
+       "tag": "arm64v8-latest"
+      }
+     ]
+    },
+    {
+     "name": "radarr",
+     "initial_date": "2017-01-10",
+     "github_url": "https://github.com/linuxserver/docker-radarr",
+     "project_url": "https://github.com/Radarr/Radarr",
+     "project_logo": "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/radarr.png",
+     "description": "radarr - A fork of Sonarr to work with movies \u00e0 la Couchpotato.",
+     "version": "6.4.4.10685-ls321",
+     "version_timestamp": "2026-10-15 19:10:33+00:00",
+     "category": "Media Management",
+     "stable": true,
+     "deprecated": false,
+     "stars": 969,
+     "monthly_pulls": 19863833,
+     "tags": [
+      {
+       "tag": "latest",
+       "desc": "Stable Radarr releases"
+      },
+      {
+       "tag": "develop",
+       "desc": "Radarr releases from their develop branch"
+      },
+      {
+       "tag": "nightly",
+       "desc": "Radarr releases from their nightly branch"
+      }
+     ],
+     "architectures": [
+      {
+       "arch": "x86_64",
+       "tag": "amd64-latest"
+      },
+      {
+       "arch": "arm64",
+       "tag": "arm64v8-latest"
+      }
+     ]
+    },
+    {
+     "name": "wireguard",
+     "initial_date": "2020-03-31",
+     "github_url": "https://github.com/linuxserver/docker-wireguard",
+     "project_url": "https://www.wireguard.com/",
+     "project_logo": "https://www.wireguard.com/img/wireguard.svg",
+     "description": "[WireGuard\u00ae] is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography. It aims to be faster, simpler, leaner, and more useful than IPsec, while avoiding the massive headache. It intends to be considerably more performant than OpenVPN. WireGuard is designed as a general purpose VPN for running on embedded interfaces and super computers alike, fit for many different circumstances. Initially released for the Linux kernel, it is now cross-platform (Windows, macOS, BSD, iOS, Android) and widely deployable. It is currently under heavy development, but already it might be regarded as the most secure, easiest to use, and simplest VPN solution in the industry.",
+     "version": "1.0.20260223-r0-ls126",
+     "version_timestamp": "2026-10-15 15:52:45+00:00",
+     "category": "Network,VPN",
+     "stable": true,
+     "deprecated": false,
+     "stars": 3644,
+     "monthly_pulls": 1045231,
+     "tags": [
+      {
+       "tag": "latest",
+       "desc": "Stable releases"
+      }
+     ],
+     "architectures": [
+      {
+       "arch": "x86_64",
+       "tag": "amd64-latest"
+      },
+      {
+       "arch": "arm64",
+       "tag": "arm64v8-latest"
+      }
+     ]
+    },
+    {
+     "name": "audiosilo",
+     "initial_date": "2026-10-09",
+     "github_url": "https://github.com/linuxserver/docker-audiosilo",
+     "project_url": "https://audiosilo.app",
+     "project_logo": "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/audiosilo-logo.png",
+     "description": "[AudioSilo] is a self-hosted audiobook server. Point it at your audiobook folders and listen from the built-in web player or the AudioSilo apps for iOS and Android, with listening progress synced across devices.",
+     "version": "v2.3.1-ls5",
+     "version_timestamp": "2026-10-14 20:43:34+00:00",
+     "category": "Audiobooks,Media Servers",
+     "stable": true,
+     "deprecated": false,
+     "stars": 0,
+     "monthly_pulls": 14,
+     "tags": [
+      {
+       "tag": "latest",
+       "desc": "Stable releases"
+      }
+     ],
+     "architectures": [
+      {
+       "arch": "x86_64",
+       "tag": "amd64-latest"
+      },
+      {
+       "arch": "arm64",
+       "tag": "arm64v8-latest"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

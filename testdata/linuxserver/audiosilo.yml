@@ -1,0 +1,80 @@
+---
+# project information
+project_name: audiosilo
+project_url: "https://audiosilo.app"
+project_logo: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/audiosilo-logo.png"
+project_blurb: |
+  [AudioSilo]({{ project_url }}) is a self-hosted audiobook server. Point it at your audiobook folders and listen from the built-in web player or the AudioSilo apps for iOS and Android, with listening progress synced across devices.
+project_lsio_github_repo_url: "https://github.com/linuxserver/docker-{{ project_name }}"
+project_categories: "Audiobooks,Media Servers"
+# supported architectures
+available_architectures:
+  - {arch: "{{ arch_x86_64 }}", tag: "amd64-latest"}
+  - {arch: "{{ arch_arm64 }}", tag: "arm64v8-latest"}
+# container parameters
+common_param_env_vars_enabled: true
+param_container_name: "{{ project_name }}"
+param_usage_include_env: false
+param_usage_include_vols: true
+param_volumes:
+  - {vol_path: "/config", vol_host_path: "/path/to/{{ project_name }}/config", desc: "Persistent config files, database, backups and TLS certificates."}
+  - {vol_path: "/audiobooks:ro", vol_host_path: "/path/to/audiobooks", desc: "Audiobooks location, read-only (the server never writes to your books). Add it as a library in the admin console.", name: "Audiobooks"}
+param_usage_include_ports: true
+param_ports:
+  - {external_port: "8080", internal_port: "8080", port_desc: "Web player, admin console and the API the apps connect to."}
+readonly_supported: true
+nonroot_supported: true
+# application setup block
+app_setup_block_enabled: true
+app_setup_block: |
+  On first start AudioSilo creates an admin account and prints its password, plus an auth code for pairing devices, to the container log **once**, so check the log straight away (`docker logs {{ project_name }}`).
+
+  The server listens on HTTPS with a self-signed certificate by default. Open `https://<your-ip>:8080/admin`, accept the certificate warning, sign in as `admin`, and add `/audiobooks` as a library. The web player is at `/web`. To connect a phone, enter the auth code on the page at `/`; it then shows the QR code the AudioSilo app scans.
+
+  Settings live in the admin console under **Server > Settings**, saved to `/config/config.yaml`. To run behind a reverse proxy such as SWAG, either proxy to the HTTPS port as is, or set **HTTPS mode** to **Off** (then restart the container) and let the proxy terminate TLS. Either way, set **Public address** to the proxied URL so invite links and pairing QR codes point there, and add the proxy's address to **Trusted proxies** so rate limiting sees your visitors' real addresses.
+
+  Any `AUDIOSILO_*` environment variable overrides its setting and shows as locked in the admin console. See the [configuration reference](https://docs.audiosilo.app/developers/server/configuration#environment-variables) for the full list.
+# init diagram
+init_diagram: |
+  "audiosilo:latest": {
+    docker-mods
+    base {
+      fix-attr +\nlegacy cont-init
+    }
+    docker-mods -> base
+    legacy-services
+    custom services
+    init-services -> legacy-services
+    init-services -> custom services
+    custom services -> legacy-services
+    legacy-services -> ci-service-check
+    init-migrations -> init-adduser
+    init-config -> init-audiosilo-config
+    init-os-end -> init-config
+    init-audiosilo-config -> init-config-end
+    init-config -> init-config-end
+    init-crontab-config -> init-config-end
+    init-config -> init-crontab-config
+    init-mods-end -> init-custom-files
+    init-adduser -> init-device-perms
+    base -> init-envfile
+    base -> init-migrations
+    init-config-end -> init-mods
+    init-mods-package-install -> init-mods-end
+    init-mods -> init-mods-package-install
+    init-adduser -> init-os-end
+    init-device-perms -> init-os-end
+    init-envfile -> init-os-end
+    init-custom-files -> init-services
+    init-services -> svc-audiosilo
+    svc-audiosilo -> legacy-services
+    init-services -> svc-cron
+    svc-cron -> legacy-services
+  }
+  Base Images: {
+    "baseimage-alpine:3.24"
+  }
+  "audiosilo:latest" <- Base Images
+# changelog
+changelogs:
+  - {date: "09.10.26:", desc: "Initial Release."}

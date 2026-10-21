@@ -42,6 +42,9 @@ type catEntry struct {
 	// host can't run.
 	Architectures []string     `json:"architectures"`
 	Variants      []catVariant `json:"variants"`
+	// OS the image runs on, in OCI spelling ("linux", "freebsd"): fjord
+	// leaves an entry for another OS out of its store. Empty = the catalog's.
+	OS []string `json:"os,omitempty"`
 }
 
 type catalogFile struct {
@@ -49,6 +52,7 @@ type catalogFile struct {
 	FjordVersion string     `json:"fjord_version"`
 	Maintainer   string     `json:"maintainer"`
 	Icon         string     `json:"icon,omitempty"` // catalog branding, relative to this catalog's base URL like app icons
+	OS           []string   `json:"os,omitempty"`   // what every entry's image runs on, unless the entry says
 	Generated    string     `json:"generated"`
 	Apps         []catEntry `json:"apps"`
 }
@@ -130,6 +134,7 @@ func buildSource(src Source, top CatalogMeta, outRoot, reposDir, versionsPath, a
 		FjordVersion: "0.1",
 		Maintainer:   meta.Maintainer,
 		Icon:         meta.Icon,
+		OS:           src.OS,
 		Generated:    time.Now().UTC().Format(time.RFC3339),
 	}
 	prov, err := providerFor(src, reposDir, versionsPath, appsCSV)

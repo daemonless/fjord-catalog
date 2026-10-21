@@ -1,0 +1,181 @@
+package main
+
+import (
+	"encoding/json"
+	"os"
+	"strings"
+	"testing"
+
+	"gopkg.in/yaml.v3"
+)
+
+// Six real apps, as linuxserver published them (testdata/linuxserver): the
+// shapes the provider has to turn into manifests fjord installs.
+func lsioFixture(t *testing.T, app string) (lsioImage, readmeVars) {
+	t.Helper()
+	var doc struct {
+		Data struct {
+			Repositories map[string][]lsioImage `json:"repositories"`
+		} `json:"data"`
+	}
+	b, _ := os.ReadFile("testdata/linuxserver/images.json")
+	if err := json.Unmarshal(b, &doc); err != nil {
+		t.Fatal(err)
+	}
+	var img lsioImage
+	for _, i := range doc.Data.Repositories["linuxserver"] {
+		if i.Name == app {
+			img = i
+		}
+	}
+	var rv readmeVars
+	raw, _ := os.ReadFile("testdata/linuxserver/" + app + ".yml")
+	if err := yaml.Unmarshal(raw, &rv); err != nil {
+		t.Fatal(err)
+	}
+	return img, rv
+}
+
+func deriveFixture(t *testing.T, app string) (*DerivedApp, lsManifest) {
+	t.Helper()
+	img, rv := lsioFixture(t, app)
+	da, err := deriveLSIO(img, rv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m lsManifest
+	if err := yaml.Unmarshal([]byte(da.ManifestYAML), &m); err != nil {
+		t.Fatalf("%s manifest does not parse: %v\n%s", app, err, da.ManifestYAML)
+	}
+	return da, m
+}
+
+func varNamed(vs []variable, n string) *variable {
+	for i := range vs {
+		if vs[i].Name == n {
+			return &vs[i]
+		}
+	}
+	return nil
+}
+
+func TestLinuxserverRadarr(t *testing.T) {
+	da, m := deriveFixture(t, "radarr")
+	s := m.Services["radarr"]
+	if s.Image != "lscr.io/linuxserver/radarr:latest" || m.XFjord.Info.WebPort != "${WEB_PORT}" {
+		t.Errorf("image %q web %q", s.Image, m.XFjord.Info.WebPort)
+	}
+	if strings.Join(s.Ports, ",") != "${WEB_PORT}:7878" || varNamed(m.XFjord.Variables, "WEB_PORT").Default != "7878" {
+		t.Errorf("ports %v", s.Ports)
+	}
+	// /config is app data; the libraries are the folder kinds, optional.
+	want := "${CONFIG_DATA}:/config,${MOVIES_PATH}:/movies,${DOWNLOADS_PATH}:/downloads"
+	if strings.Join(s.Volumes, ",") != want {
+		t.Errorf("volumes %v", s.Volumes)
+	}
+	if v := varNamed(m.XFjord.Variables, "MOVIES_PATH"); v == nil || !v.Optional || v.Type != "path" {
+		t.Errorf("MOVIES_PATH %+v", v)
+	}
+	if v := varNamed(m.XFjord.Variables, "CONFIG_DATA"); v == nil || v.Type != "zfs_dataset" {
+		t.Errorf("CONFIG_DATA %+v", v)
+	}
+	if strings.Join(da.Entry.OS, ",") != "linux" || len(da.Entry.Architectures) == 0 || da.Entry.Variants[0].ID != "latest" || !da.Entry.Variants[0].Default {
+		t.Errorf("entry %+v", da.Entry)
+	}
+}
+
+// Host networking, no ports: Plex.
+func TestLinuxserverPlex(t *testing.T) {
+	_, m := deriveFixture(t, "plex")
+	s := m.Services["plex"]
+	if s.NetworkMode != "host" || len(s.Ports) != 0 {
+		t.Errorf("plex: network %q ports %v", s.NetworkMode, s.Ports)
+	}
+}
+
+// A capability, a sysctl, devices, shm_size, required env with secrets.
+func TestLinuxserverExtras(t *testing.T) {
+	_, wg := deriveFixture(t, "wireguard")
+	if wg.XFjord.Info.WebPort != "" {
+		t.Errorf("wireguard's UDP port taken for a web UI: %q", wg.XFjord.Info.WebPort)
+	}
+	if s := wg.Services["wireguard"]; strings.Join(s.CapAdd, ",") != "NET_ADMIN" || len(s.Sysctls) == 0 {
+		t.Errorf("wireguard: cap_add %v sysctls %v", s.CapAdd, s.Sysctls)
+	}
+	_, emby := deriveFixture(t, "emby")
+	if s := emby.Services["emby"]; len(s.Devices) != 0 {
+		t.Errorf("emby's GPU is optional, not a device it requires: %v", s.Devices)
+	}
+	_, altus := deriveFixture(t, "altus")
+	if s := altus.Services["altus"]; s.ShmSize == "" {
+		t.Error("altus: no shm_size")
+	}
+	_, bs := deriveFixture(t, "bookstack")
+	if v := varNamed(bs.XFjord.Variables, "DB_PASSWORD"); v == nil || v.Type != "secret" {
+		t.Errorf("bookstack DB_PASSWORD %+v", v)
+	}
+	if v := varNamed(bs.XFjord.Variables, "DB_HOST"); v == nil || v.Type != "string" || v.Optional {
+		t.Errorf("bookstack DB_HOST %+v", v)
+	}
+}
+
+// A volume path with options ("/audiobooks:ro") keeps them on the mount, and
+// a markdown link in the description is its text.
+func TestLinuxserverMountOptions(t *testing.T) {
+	da, m := deriveFixture(t, "audiosilo")
+	if got := strings.Join(m.Services["audiosilo"].Volumes, ","); !strings.Contains(got, "${AUDIOBOOKS_PATH}:/audiobooks:ro") && !strings.Contains(got, "${AUDIOBOOKS_DATA}:/audiobooks:ro") {
+		t.Errorf("volumes %s", got)
+	}
+	if strings.ContainsAny(da.Entry.Description, "[]") {
+		t.Errorf("description %q", da.Entry.Description)
+	}
+}
+
+// Port descriptions as linuxserver wrote them (the install test's misses).
+func TestWebPortDescriptions(t *testing.T) {
+	for desc, want := range map[string]bool{
+		"WebUI": true, "Application WebUI": true, "The port for the LazyLibrarian webinterface": true,
+		"The port for the Medusa webui": true, "Port for Limnoria's web interface.": true,
+		"Web gui port": true, "MariaDB listens on this port.": false, "ssh port": false,
+	} {
+		if got := webPortRe.MatchString(desc); got != want {
+			t.Errorf("webPortRe(%q) = %v, want %v", desc, got, want)
+		}
+	}
+	for desc, want := range map[string]bool{
+		"MariaDB listens on this port.": false, "ngircd port": false, "ssh port": false,
+		"Wyoming connection port.": false, "API port": false,
+		"Port ZNC listens on.": true, "HTTPS port": true, "HTTPS Sessions and API communication port.": true,
+		"will map the container's port 8000 to port 8000 on the host": true,
+	} {
+		if got := loneWebPort(desc); got != want {
+			t.Errorf("loneWebPort(%q) = %v, want %v", desc, got, want)
+		}
+	}
+}
+
+func TestPlaceholderDefaults(t *testing.T) {
+	for v, want := range map[string]bool{
+		"<hostname or ip>": true, "<secret password>": true, "kimai.example.com": true,
+		"mysql://your_db_user:your_db_pass@your_db_host:3306/your_db_name": true,
+		"postgresql://user:password@planka-db:5432/planka":                 true,
+		"postgresql://${HISHTORY_DB_USER}:x@db/h":                          true,
+		"3306": false, "hedgedoc": false, "localhost": false, "/config/hishtory.db": false, "UTC": false,
+	} {
+		if got := placeholderRe.MatchString(v); got != want {
+			t.Errorf("placeholderRe(%q) = %v, want %v", v, got, want)
+		}
+	}
+}
+
+func TestHTTPSDescriptions(t *testing.T) {
+	for desc, want := range map[string]bool{
+		"Kasm Workspaces interface. (https)": true, "HTTPS port": true, "https gui": true,
+		"Folding@home web gui (redirects to [https://app.foldingathome.org](https://app.foldingathome.org)).": false,
+		"WebUI": false,
+	} {
+		if got := isHTTPS(desc); got != want {
+			t.Errorf("isHTTPS(%q) = %v, want %v", desc, got, want)
+		}
+	}
+}
