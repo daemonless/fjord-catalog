@@ -197,6 +197,17 @@ type xFjord struct {
 	// the compose above is the default answer, and each option says what to
 	// add, drop, set and ask for.
 	Choices []choice `yaml:"choices,omitempty"`
+	// Login is how to sign in to the app, for the stack page to show.
+	Login *login `yaml:"login,omitempty"`
+}
+
+// login is x-fjord.login. User and Password are each a ${VAR} fjord fills
+// from the stack's .env (a password fjord made up at install) or a literal:
+// the app's own default, which the page says to change.
+type login struct {
+	User     string `yaml:"user,omitempty"`
+	Password string `yaml:"password,omitempty"`
+	Note     string `yaml:"note,omitempty"`
 }
 
 // appVersions holds an app's per-variant versions from a versions file, in

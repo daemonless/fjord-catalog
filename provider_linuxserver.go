@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -443,6 +444,11 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 			svc.Ports = append(svc.Ports, spec)
 		}
 	}
+	lg, ok := lsioLogins[id]
+	if !ok && desktopApp(ports) {
+		lg = selkiesLogin
+	}
+	xlogin := lg.apply(&svc, add)
 	for _, d := range rv.Devices {
 		if d.Path != "" {
 			svc.Devices = append(svc.Devices, firstNonEmpty(d.Host, d.Path)+":"+d.Path)
@@ -473,7 +479,7 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 		add(variable{Name: "TZ", Label: "Timezone for the container", Type: "string", Default: "UTC"})
 	}
 
-	xf := xFjord{Version: "0.1", Variables: vars}
+	xf := xFjord{Version: "0.1", Variables: vars, Login: xlogin}
 	xf.Info = info{
 		ID: id, Name: prettyName(id), Description: lsioBlurb(img.Description), Category: firstCategory(img.Category),
 		Class: "service", Icon: "/catalog/icons/" + id + ".png", UpstreamURL: img.ProjectURL, Version: img.Version,
@@ -554,4 +560,85 @@ func contains(l []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// lsioLogin is how one app signs in. A password variable becomes a required
+// secret, so fjord makes it up at install instead of the app starting with
+// its default (duplicati's "changeme") or no login at all (code-server); a
+// user variable gets userDefault. user/password are the app's own default
+// login, for apps that take no variable: shown, with "change it". env is
+// set as it stands: what switches the login on (openssh-server's
+// PASSWORD_ACCESS=true).
+type lsioLogin struct {
+	userVar, userDefault, passVar string
+	user, password, note          string
+	env                           []string
+}
+
+// selkiesLogin: a desktop app has no login unless PASSWORD is set; its
+// nginx then asks for CUSTOM_USER and PASSWORD ("If unset there is no
+// auth", linuxserver's Selkies configuration reference).
+var selkiesLogin = lsioLogin{userVar: "CUSTOM_USER", userDefault: "admin", passVar: "PASSWORD"}
+
+// lsioLogins, each from the app's readme-vars: its login variables
+// (opt_param_env_vars), or the default its setup text names.
+var lsioLogins = map[string]lsioLogin{
+	"code-server": {passVar: "PASSWORD"},
+	"openssh-server": {userVar: "USER_NAME", userDefault: "admin", passVar: "USER_PASSWORD",
+		env: []string{"PASSWORD_ACCESS=true"}, note: "Sign in with ssh, on the stack's port 2222: ssh -p 2222 user@host."},
+	"duplicati":    {passVar: "DUPLICATI__WEBSERVICE_PASSWORD"},
+	"flexget":      {passVar: "FG_WEBUI_PASSWORD"},
+	"nzbget":       {userVar: "NZBGET_USER", userDefault: "nzbget", passVar: "NZBGET_PASS"},
+	"transmission": {userVar: "USER", userDefault: "admin", passVar: "PASS"},
+	"vscodium-web": {passVar: "CONNECTION_TOKEN", note: "Add ?tkn= and this token to the page's address."},
+
+	"airsonic-advanced": {user: "admin", password: "admin"},
+	"babybuddy":         {user: "admin", password: "admin"},
+	"calibre-web":       {user: "admin", password: "admin123"},
+	"deluge":            {password: "deluge"},
+	"diskover":          {user: "diskover", password: "darkdata"},
+	"grocy":             {user: "admin", password: "admin"},
+	"pyload-ng":         {user: "pyload", password: "pyload"},
+	"raneto":            {user: "admin", password: "password"},
+	"znc":               {user: "admin", password: "admin"},
+
+	"audiosilo": {note: "AudioSilo prints the admin password to its log once, on first start: see Logs."},
+}
+
+// desktopApp: a Selkies desktop, known by its port that only works behind
+// a proxy beside an HTTPS one.
+func desktopApp(ports []lsPort) bool {
+	return slices.ContainsFunc(ports, func(p lsPort) bool { return proxiedRe.MatchString(p.Desc) }) &&
+		slices.ContainsFunc(ports, func(p lsPort) bool { return isHTTPS(p.Desc) })
+}
+
+// apply adds the login's variables to the service and returns its
+// x-fjord.login, nil when there is none.
+func (lg lsioLogin) apply(svc *lsService, add func(variable)) *login {
+	if lg.userVar == "" && lg.passVar == "" && lg.user == "" && lg.password == "" && lg.note == "" {
+		return nil
+	}
+	env := func(name string) {
+		if !slices.ContainsFunc(svc.Environment, func(e string) bool { return strings.HasPrefix(e, name+"=") }) {
+			svc.Environment = append(svc.Environment, name+"=${"+name+"}")
+		}
+	}
+	for _, e := range lg.env {
+		name, _, _ := strings.Cut(e, "=")
+		if !slices.ContainsFunc(svc.Environment, func(x string) bool { return strings.HasPrefix(x, name+"=") }) {
+			svc.Environment = append(svc.Environment, e)
+		}
+	}
+	out := &login{User: lg.user, Password: lg.password, Note: lg.note}
+	if lg.userVar != "" {
+		env(lg.userVar)
+		add(variable{Name: lg.userVar, Label: "User name to sign in with", Type: "string", Default: lg.userDefault})
+		out.User = "${" + lg.userVar + "}"
+	}
+	if lg.passVar != "" {
+		env(lg.passVar)
+		add(variable{Name: lg.passVar, Label: "Password to sign in with", Type: "secret"})
+		out.Password = "${" + lg.passVar + "}"
+	}
+	return out
 }

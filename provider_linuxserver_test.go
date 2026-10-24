@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -231,5 +232,66 @@ func TestWebPortSkipsProxyOnlyAndOffPorts(t *testing.T) {
 	}
 	if i := webPortIndex(boinc, len(boinc)); i != 1 {
 		t.Errorf("boinc: port %d, want 1 (8181)", i)
+	}
+}
+
+// A desktop app gets a login fjord makes up at install: with no PASSWORD
+// its nginx asks for none.
+func TestLinuxserverDesktopLogin(t *testing.T) {
+	_, m := deriveFixture(t, "altus")
+	s := m.Services["altus"]
+	for _, e := range []string{"CUSTOM_USER=${CUSTOM_USER}", "PASSWORD=${PASSWORD}"} {
+		if !slices.Contains(s.Environment, e) {
+			t.Errorf("altus: no %s in %v", e, s.Environment)
+		}
+	}
+	if v := varNamed(m.XFjord.Variables, "PASSWORD"); v == nil || v.Type != "secret" || v.Default != "" || v.Optional {
+		t.Errorf("altus: PASSWORD %+v, want a required secret with no default", v)
+	}
+	if v := varNamed(m.XFjord.Variables, "CUSTOM_USER"); v == nil || v.Default != "admin" {
+		t.Errorf("altus: CUSTOM_USER %+v", v)
+	}
+	if l := m.XFjord.Login; l == nil || l.User != "${CUSTOM_USER}" || l.Password != "${PASSWORD}" {
+		t.Errorf("altus: login %+v", l)
+	}
+	if _, plex := deriveFixture(t, "plex"); plex.XFjord.Login != nil {
+		t.Errorf("plex: login %+v", plex.XFjord.Login)
+	}
+}
+
+// An app's own login variable joins its environment once, a default login
+// is only shown.
+func TestLoginApply(t *testing.T) {
+	var vars []variable
+	add := func(v variable) { vars = append(vars, v) }
+	svc := lsService{Environment: []string{"PUID=${PUID}", "NZBGET_USER=${NZBGET_USER}"}}
+	l := lsioLogins["nzbget"].apply(&svc, add)
+	if l.User != "${NZBGET_USER}" || l.Password != "${NZBGET_PASS}" {
+		t.Errorf("nzbget: login %+v", l)
+	}
+	if strings.Count(strings.Join(svc.Environment, " "), "NZBGET_USER=") != 1 || !slices.Contains(svc.Environment, "NZBGET_PASS=${NZBGET_PASS}") {
+		t.Errorf("nzbget: environment %v", svc.Environment)
+	}
+	if len(vars) != 2 || vars[0].Default != "nzbget" || vars[1].Type != "secret" {
+		t.Errorf("nzbget: variables %+v", vars)
+	}
+	vars, svc = nil, lsService{}
+	if l := lsioLogins["deluge"].apply(&svc, add); l.Password != "deluge" || l.User != "" || len(vars) != 0 || len(svc.Environment) != 0 {
+		t.Errorf("deluge: login %+v vars %v env %v", l, vars, svc.Environment)
+	}
+}
+
+// openssh-server's login is off until PASSWORD_ACCESS=true: set with it.
+func TestLoginOpensshServer(t *testing.T) {
+	var vars []variable
+	svc := lsService{}
+	l := lsioLogins["openssh-server"].apply(&svc, func(v variable) { vars = append(vars, v) })
+	for _, e := range []string{"PASSWORD_ACCESS=true", "USER_NAME=${USER_NAME}", "USER_PASSWORD=${USER_PASSWORD}"} {
+		if !slices.Contains(svc.Environment, e) {
+			t.Errorf("no %s in %v", e, svc.Environment)
+		}
+	}
+	if l.User != "${USER_NAME}" || l.Password != "${USER_PASSWORD}" || len(vars) != 2 {
+		t.Errorf("login %+v vars %+v", l, vars)
 	}
 }
