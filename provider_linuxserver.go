@@ -293,10 +293,6 @@ func webPortIndex(ports []lsPort, required int) int {
 	return -1
 }
 
-// hostWebPorts: host-network apps whose readme-vars list no port at all; the
-// web port is only in their README's prose.
-var hostWebPorts = map[string]string{"plex": "32400"}
-
 // A lone port is the web UI unless it says otherwise: mariadb's 3306, ssh's
 // 2222, ngircd's 6667 and Wyoming's 10200 are not, nor is a bare API.
 var notWebRe = regexp.MustCompile(`(?i)(ssh|irc|wyoming|mysql|mariadb|postgres|redis|mqtt|smtp|imap|\bdns\b|\bftp\b|\bapi\b)`)
@@ -370,7 +366,7 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 			dflt = ""
 		}
 		v := variable{Name: e.Var, Label: firstSentence(stripMarkdown(e.Desc)), Type: typ, Default: dflt}
-		if typ == "secret" && slices.Contains(givenSecrets[id], e.Var) {
+		if typ == "secret" && slices.Contains(lsOverrides[id].GivenSecrets, e.Var) {
 			no := false
 			v.Generate = &no
 		}
@@ -421,7 +417,7 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 		if web := webPortIndex(ports, len(ports)); web >= 0 {
 			webLiteral, _, _ = strings.Cut(ports[web].Internal, "/")
 			https = isHTTPS(ports[web].Desc)
-		} else if p, ok := hostWebPorts[id]; ok {
+		} else if p := lsOverrides[id].WebPort; p != "" {
 			webLiteral = p
 		}
 	} else {
@@ -448,7 +444,7 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 			svc.Ports = append(svc.Ports, spec)
 		}
 	}
-	lg, ok := lsioLogins[id]
+	lg, ok := lsOverrides[id].lsioLogin()
 	if !ok && desktopApp(ports) {
 		lg = selkiesLogin
 	}
@@ -583,13 +579,6 @@ func contains(l []string, s string) bool {
 	return false
 }
 
-// givenSecrets are secrets only their owner has, from an outside service:
-// asked for at install, never made up. duckdns's TOKEN is the account's,
-// from duckdns.org.
-var givenSecrets = map[string][]string{
-	"duckdns": {"TOKEN"},
-}
-
 // lsioLogin is how one app signs in. A password variable becomes a required
 // secret, so fjord makes it up at install instead of the app starting with
 // its default (duplicati's "changeme") or no login at all (code-server); a
@@ -607,31 +596,6 @@ type lsioLogin struct {
 // nginx then asks for CUSTOM_USER and PASSWORD ("If unset there is no
 // auth", linuxserver's Selkies configuration reference).
 var selkiesLogin = lsioLogin{userVar: "CUSTOM_USER", userDefault: "admin", passVar: "PASSWORD"}
-
-// lsioLogins, each from the app's readme-vars: its login variables
-// (opt_param_env_vars), or the default its setup text names.
-var lsioLogins = map[string]lsioLogin{
-	"code-server": {passVar: "PASSWORD"},
-	"openssh-server": {userVar: "USER_NAME", userDefault: "admin", passVar: "USER_PASSWORD",
-		env: []string{"PASSWORD_ACCESS=true"}, note: "Sign in with ssh, on the stack's port 2222: ssh -p 2222 user@host."},
-	"duplicati":    {passVar: "DUPLICATI__WEBSERVICE_PASSWORD"},
-	"flexget":      {passVar: "FG_WEBUI_PASSWORD"},
-	"nzbget":       {userVar: "NZBGET_USER", userDefault: "nzbget", passVar: "NZBGET_PASS"},
-	"transmission": {userVar: "USER", userDefault: "admin", passVar: "PASS"},
-	"vscodium-web": {passVar: "CONNECTION_TOKEN", note: "Add ?tkn= and this token to the page's address."},
-
-	"airsonic-advanced": {user: "admin", password: "admin"},
-	"babybuddy":         {user: "admin", password: "admin"},
-	"calibre-web":       {user: "admin", password: "admin123"},
-	"deluge":            {password: "deluge"},
-	"diskover":          {user: "diskover", password: "darkdata"},
-	"grocy":             {user: "admin", password: "admin"},
-	"pyload-ng":         {user: "pyload", password: "pyload"},
-	"raneto":            {user: "admin", password: "password"},
-	"znc":               {user: "admin", password: "admin"},
-
-	"audiosilo": {note: "AudioSilo prints the admin password to its log once, on first start: see Logs."},
-}
 
 // desktopApp: a Selkies desktop, known by its port that only works behind
 // a proxy beside an HTTPS one.

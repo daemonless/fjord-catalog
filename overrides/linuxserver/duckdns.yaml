@@ -1,0 +1,4 @@
+source: https://github.com/linuxserver/docker-duckdns/blob/master/readme-vars.yml
+why: 'DuckDNS token (from duckdns.org: the account''s own)'
+given_secrets:
+- TOKEN

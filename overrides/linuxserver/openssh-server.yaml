@@ -1,0 +1,10 @@
+source: https://github.com/linuxserver/docker-openssh-server/blob/master/readme-vars.yml
+why: Set to `true` to allow user/password ssh access. You will want to set `USER_PASSWORD` or `USER_PASSWORD_FILE`
+  as well. (PASSWORD_ACCESS)
+login:
+  user_var: USER_NAME
+  user_default: admin
+  password_var: USER_PASSWORD
+  env:
+  - PASSWORD_ACCESS=true
+  note: 'Sign in with ssh, on the stack''s port 2222: ssh -p 2222 user@host.'

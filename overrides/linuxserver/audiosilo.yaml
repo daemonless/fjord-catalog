@@ -1,0 +1,6 @@
+source: https://github.com/linuxserver/docker-audiosilo/blob/master/readme-vars.yml
+why: On first start AudioSilo creates an admin account and prints its password, plus an auth code for
+  pairing devices, to the container log **once**, so check the log straight away (`docker logs {{ project_name
+  }}`).
+login:
+  note: 'AudioSilo prints the admin password to its log once, on first start: see Logs.'

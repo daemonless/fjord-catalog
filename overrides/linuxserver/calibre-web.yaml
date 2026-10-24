@@ -1,0 +1,5 @@
+source: https://github.com/linuxserver/docker-calibre-web/blob/master/readme-vars.yml
+why: 'Default admin login:'
+login:
+  password: admin123
+  user: admin

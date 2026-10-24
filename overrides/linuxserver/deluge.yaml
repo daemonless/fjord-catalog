@@ -1,0 +1,4 @@
+source: https://github.com/linuxserver/docker-deluge/blob/master/readme-vars.yml
+why: The admin interface is available at `http://SERVER-IP:8112` with a default user/password of admin/deluge.
+login:
+  password: deluge

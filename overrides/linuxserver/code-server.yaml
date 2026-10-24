@@ -1,0 +1,4 @@
+source: https://github.com/linuxserver/docker-code-server/blob/master/readme-vars.yml
+why: Optional web gui password, if `PASSWORD` or `HASHED_PASSWORD` is not provided, there will be no auth.
+login:
+  password_var: PASSWORD

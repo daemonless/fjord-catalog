@@ -265,7 +265,7 @@ func TestLoginApply(t *testing.T) {
 	var vars []variable
 	add := func(v variable) { vars = append(vars, v) }
 	svc := lsService{Environment: []string{"PUID=${PUID}", "NZBGET_USER=${NZBGET_USER}"}}
-	l := lsioLogins["nzbget"].apply(&svc, add)
+	l := mustLogin(t, "nzbget").apply(&svc, add)
 	if l.User != "${NZBGET_USER}" || l.Password != "${NZBGET_PASS}" {
 		t.Errorf("nzbget: login %+v", l)
 	}
@@ -276,7 +276,7 @@ func TestLoginApply(t *testing.T) {
 		t.Errorf("nzbget: variables %+v", vars)
 	}
 	vars, svc = nil, lsService{}
-	if l := lsioLogins["deluge"].apply(&svc, add); l.Password != "deluge" || l.User != "" || len(vars) != 0 || len(svc.Environment) != 0 {
+	if l := mustLogin(t, "deluge").apply(&svc, add); l.Password != "deluge" || l.User != "" || len(vars) != 0 || len(svc.Environment) != 0 {
 		t.Errorf("deluge: login %+v vars %v env %v", l, vars, svc.Environment)
 	}
 }
@@ -285,7 +285,7 @@ func TestLoginApply(t *testing.T) {
 func TestLoginOpensshServer(t *testing.T) {
 	var vars []variable
 	svc := lsService{}
-	l := lsioLogins["openssh-server"].apply(&svc, func(v variable) { vars = append(vars, v) })
+	l := mustLogin(t, "openssh-server").apply(&svc, func(v variable) { vars = append(vars, v) })
 	for _, e := range []string{"PASSWORD_ACCESS=true", "USER_NAME=${USER_NAME}", "USER_PASSWORD=${USER_PASSWORD}"} {
 		if !slices.Contains(svc.Environment, e) {
 			t.Errorf("no %s in %v", e, svc.Environment)
@@ -340,5 +340,26 @@ func TestSecretsHaveNoExampleDefault(t *testing.T) {
 	}
 	if v := varNamed(m.XFjord.Variables, "TOKEN"); v == nil || v.Default != "" || v.Generate == nil || *v.Generate {
 		t.Errorf("duckdns token: %+v", v)
+	}
+}
+
+func mustLogin(t *testing.T, app string) lsioLogin {
+	t.Helper()
+	l, ok := lsOverrides[app].lsioLogin()
+	if !ok {
+		t.Fatalf("%s: no login override", app)
+	}
+	return l
+}
+
+// Every override file parses, with no unknown key, and says where its facts
+// come from.
+func TestOverridesLoad(t *testing.T) {
+	o, err := loadOverrides("overrides/linuxserver")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(o) < 19 || o["plex"].WebPort != "32400" || len(o["duckdns"].GivenSecrets) != 1 {
+		t.Errorf("overrides: %d, plex %+v, duckdns %+v", len(o), o["plex"], o["duckdns"])
 	}
 }

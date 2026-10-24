@@ -1,0 +1,6 @@
+source: https://github.com/linuxserver/docker-grocy/blob/master/readme-vars.yml
+why: by visiting http://your.ip:9283 - once the page loads, you can log in with the default username and
+  password of admin / admin
+login:
+  password: admin
+  user: admin

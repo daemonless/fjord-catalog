@@ -1,0 +1,4 @@
+source: https://github.com/linuxserver/docker-flexget/blob/master/readme-vars.yml
+why: Set the FlexGet webui password. Pay attention to Bash/YAML reserved characters.
+login:
+  password_var: FG_WEBUI_PASSWORD
