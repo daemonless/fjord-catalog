@@ -363,15 +363,19 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 			typ = "secret"
 		}
 		dflt := e.Value
-		if placeholderRe.MatchString(dflt) {
+		if placeholderRe.MatchString(dflt) || typ == "secret" {
+			// A secret's readme-vars value is an example everyone would share
+			// (mariadb's root password "ROOT_ACCESS_PASSWORD"): fjord makes
+			// one up instead, or asks for one that is the user's own.
 			dflt = ""
 		}
-		add(variable{Name: e.Var, Label: firstSentence(stripMarkdown(e.Desc)), Type: typ, Default: dflt})
+		v := variable{Name: e.Var, Label: firstSentence(stripMarkdown(e.Desc)), Type: typ, Default: dflt}
+		if typ == "secret" && slices.Contains(givenSecrets[id], e.Var) {
+			no := false
+			v.Generate = &no
+		}
+		add(v)
 	}
-	// Optional variables are left out. Their values are examples, not
-	// defaults (flexget's web password "info", lazylibrarian's calibre mods,
-	// hishtory's Postgres URL), and set-but-empty is not unset for every app;
-	// the editor can add one.
 	for i, v := range append(append([]lsVol{}, rv.Volumes...), rv.OptVolumes...) {
 		optional := i >= len(rv.Volumes)
 		// "/audiobooks:ro": the options ride on the mount, not in its name.
@@ -449,6 +453,23 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 		lg = selkiesLogin
 	}
 	xlogin := lg.apply(&svc, add)
+	// Optional settings, after the login's own: offered under Advanced,
+	// empty. Their readme-vars values are examples, not defaults (flexget's
+	// web password "info", hishtory's Postgres URL), and an empty one is left
+	// out of the container at install (fjord's DropEnvReferencing): set to
+	// nothing is not unset for every app.
+	for _, e := range rv.OptEnv {
+		if e.Var == "" || strings.HasSuffix(e.Var, "_FILE") || hasVar(vars, e.Var) ||
+			slices.ContainsFunc(svc.Environment, func(x string) bool { return strings.HasPrefix(x, e.Var+"=") }) {
+			continue // _FILE: a path inside the container, for docker secrets
+		}
+		typ := "string"
+		if isSecret(e.Var) {
+			typ = "secret"
+		}
+		svc.Environment = append(svc.Environment, e.Var+"=${"+e.Var+"}")
+		add(variable{Name: e.Var, Label: firstSentence(stripMarkdown(e.Desc)), Type: typ, Optional: true, Level: "advanced"})
+	}
 	for _, d := range rv.Devices {
 		if d.Path != "" {
 			svc.Devices = append(svc.Devices, firstNonEmpty(d.Host, d.Path)+":"+d.Path)
@@ -560,6 +581,13 @@ func contains(l []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// givenSecrets are secrets only their owner has, from an outside service:
+// asked for at install, never made up. duckdns's TOKEN is the account's,
+// from duckdns.org.
+var givenSecrets = map[string][]string{
+	"duckdns": {"TOKEN"},
 }
 
 // lsioLogin is how one app signs in. A password variable becomes a required

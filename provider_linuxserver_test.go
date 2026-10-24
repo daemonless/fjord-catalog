@@ -295,3 +295,50 @@ func TestLoginOpensshServer(t *testing.T) {
 		t.Errorf("login %+v vars %+v", l, vars)
 	}
 }
+
+// Optional settings are offered, empty: their readme-vars values are
+// examples (wireguard's "wireguard.domain.com"), and fjord leaves an empty
+// one out of the container.
+func TestLinuxserverOptionalSettings(t *testing.T) {
+	_, m := deriveFixture(t, "wireguard")
+	s := m.Services["wireguard"]
+	for _, n := range []string{"SERVERURL", "PEERS", "ALLOWEDIPS"} {
+		v := varNamed(m.XFjord.Variables, n)
+		if v == nil || !v.Optional || v.Default != "" || v.Level != "advanced" {
+			t.Errorf("%s: %+v, want optional, empty, advanced", n, v)
+		}
+		if !slices.Contains(s.Environment, n+"=${"+n+"}") {
+			t.Errorf("%s not in the environment: %v", n, s.Environment)
+		}
+	}
+}
+
+// A secret's readme-vars value is never installed: fjord makes one up, or
+// asks for one that is the user's own (duckdns's token).
+func TestSecretsHaveNoExampleDefault(t *testing.T) {
+	rv := readmeVars{}
+	rv.Env = append(rv.Env, lsEnv{Var: "MYSQL_ROOT_PASSWORD", Value: "ROOT_ACCESS_PASSWORD", Desc: "Root password."})
+	da, err := deriveLSIO(lsioImage{Name: "mariadb"}, rv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m lsManifest
+	if err := yaml.Unmarshal([]byte(da.ManifestYAML), &m); err != nil {
+		t.Fatal(err)
+	}
+	if v := varNamed(m.XFjord.Variables, "MYSQL_ROOT_PASSWORD"); v == nil || v.Default != "" || v.Generate != nil {
+		t.Errorf("mariadb root password: %+v", v)
+	}
+	rv = readmeVars{}
+	rv.Env = append(rv.Env, lsEnv{Var: "TOKEN", Value: "token", Desc: "DuckDNS token"})
+	if da, err = deriveLSIO(lsioImage{Name: "duckdns"}, rv); err != nil {
+		t.Fatal(err)
+	}
+	m = lsManifest{}
+	if err := yaml.Unmarshal([]byte(da.ManifestYAML), &m); err != nil {
+		t.Fatal(err)
+	}
+	if v := varNamed(m.XFjord.Variables, "TOKEN"); v == nil || v.Default != "" || v.Generate == nil || *v.Generate {
+		t.Errorf("duckdns token: %+v", v)
+	}
+}
