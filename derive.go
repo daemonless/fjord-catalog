@@ -542,7 +542,14 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 			// stack path gives it. vikunja's database variables are all of
 			// this kind, and read as required they blocked every install.
 			optional := d.Optional || strings.Contains(val, ":-")
-			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: composeDefault(val), Optional: optional, Level: d.Level, Generate: givenFlag(typ, d)})
+			dflt := composeDefault(val)
+			if typ == "secret" {
+				// An example everyone would share ("changeme", n8n's
+				// "your-encryption-key-here"): fjord makes the secret up, or
+				// asks for one only its owner has.
+				dflt = ""
+			}
+			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: dflt, Optional: optional, Level: d.Level, Generate: givenFlag(typ, d)})
 		}
 		switch env.Kind {
 		case yaml.SequenceNode:
