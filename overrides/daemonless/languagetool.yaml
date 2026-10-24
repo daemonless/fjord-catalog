@@ -1,0 +1,3 @@
+source: https://github.com/daemonless/languagetool/blob/main/README.md
+why: "Ports: 8010 TCP, HTTP API. Its root answers 400 (no text to check); editors and browser add-ons call it."
+no_web: true

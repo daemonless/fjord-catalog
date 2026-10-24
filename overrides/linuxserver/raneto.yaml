@@ -1,0 +1,5 @@
+source: https://github.com/linuxserver/docker-raneto/blob/master/readme-vars.yml
+why: The default username and password is *admin/password
+login:
+  password: password
+  user: admin

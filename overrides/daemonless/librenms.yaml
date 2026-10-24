@@ -1,0 +1,6 @@
+source: https://github.com/daemonless/librenms/blob/main/README.md
+why: Admin account created on first start, with the password exactly as given. (ADMIN_USER=admin, ADMIN_PASSWORD)
+login:
+  user_var: ADMIN_USER
+  user_default: admin
+  password_var: ADMIN_PASSWORD

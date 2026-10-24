@@ -1,0 +1,6 @@
+source: https://github.com/linuxserver/docker-nzbget/blob/master/readme-vars.yml
+why: Specify the password for web authentication.
+login:
+  user_var: NZBGET_USER
+  user_default: nzbget
+  password_var: NZBGET_PASS

@@ -1,0 +1,6 @@
+source: https://github.com/linuxserver/docker-babybuddy/blob/master/readme-vars.yml
+why: Access the webui at `<your-ip>:8000` (or whichever host port is mapped in docker arguments). The
+  default user/pass are `admin:admin`.
+login:
+  password: admin
+  user: admin

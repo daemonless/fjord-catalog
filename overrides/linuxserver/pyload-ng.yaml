@@ -1,0 +1,5 @@
+source: https://github.com/linuxserver/docker-pyload-ng/blob/master/readme-vars.yml
+why: 'Access the web interface at `http://your-ip:8000` the default login is:'
+login:
+  password: pyload
+  user: pyload

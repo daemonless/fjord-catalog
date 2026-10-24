@@ -1,0 +1,6 @@
+source: https://github.com/linuxserver/docker-transmission/blob/master/readme-vars.yml
+why: Specify an optional password for the interface
+login:
+  user_var: USER
+  user_default: admin
+  password_var: PASS

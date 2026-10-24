@@ -1,0 +1,3 @@
+source: https://github.com/linuxserver/docker-plex/blob/master/readme-vars.yml
+why: Webui can be found at `<your-ip>:32400/web`
+web_port: '32400'

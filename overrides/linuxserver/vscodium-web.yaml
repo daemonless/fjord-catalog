@@ -1,0 +1,5 @@
+source: https://github.com/linuxserver/docker-vscodium-web/blob/master/readme-vars.yml
+why: Optional security token for accessing the Web UI (ie. `supersecrettoken`).
+login:
+  password_var: CONNECTION_TOKEN
+  note: Add ?tkn= and this token to the page's address.

@@ -1,0 +1,5 @@
+source: https://github.com/linuxserver/docker-airsonic-advanced/blob/master/readme-vars.yml
+why: Default user/pass is admin/admin
+login:
+  password: admin
+  user: admin

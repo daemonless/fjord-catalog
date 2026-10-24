@@ -1,0 +1,6 @@
+source: https://github.com/daemonless/wagtail/blob/main/README.md
+why: WAGTAIL_SUPERUSER_NAME, with WAGTAIL_SUPERUSER_PASSWORD, creates an admin superuser on start.
+login:
+  user_var: WAGTAIL_SUPERUSER_NAME
+  user_default: admin
+  password_var: WAGTAIL_SUPERUSER_PASSWORD

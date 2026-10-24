@@ -1,0 +1,5 @@
+source: https://github.com/linuxserver/docker-duplicati/blob/master/readme-vars.yml
+why: Password for the webui. If left unset will default to `changeme` and can be changed from the webui
+  settings.
+login:
+  password_var: DUPLICATI__WEBSERVICE_PASSWORD

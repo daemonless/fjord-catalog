@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -258,10 +259,21 @@ var lsioLibraryKinds = map[string]string{
 // "WebUI" and "webinterface" have no word break inside: \bweb\b misses them.
 var webPortRe = regexp.MustCompile(`(?i)(webui|web ?interface|\b(web|ui|gui|http|dashboard|interface)\b)`)
 
+// proxiedRe: a port that only works behind a proxy ("desktop gui HTTP, must
+// be proxied", "only to be used by reverse proxies" beside an HTTPS one):
+// opened directly, the app refuses it.
+var proxiedRe = regexp.MustCompile(`(?i)\bproxied\b|reverse[ -]prox(y|ies)`)
+
+// offByDefaultRe: a port nothing answers on until it is switched on in the
+// app (calibre's content server, "needs to be enabled in gui settings
+// first"): not where the Open link goes.
+var offByDefaultRe = regexp.MustCompile(`(?i)needs to be enabled`)
+
 // webPortIndex picks the web UI among ports, the first required ones
 // counting: a web-sounding TCP port, plain HTTP before HTTPS (kasm's are all
-// "(https)"), else a lone required port that does not say it is something
-// else. -1 when none is.
+// "(https)"; "HTTPS WineGUI." is web without saying so), never one that must
+// be proxied or is off until enabled, else a lone required port that does
+// not say it is something else. -1 when none is.
 func webPortIndex(ports []lsPort, required int) int {
 	// The web UI is a TCP port: wireguard's one port is UDP 51820.
 	tcp := func(pt lsPort) bool {
@@ -270,7 +282,7 @@ func webPortIndex(ports []lsPort, required int) int {
 	}
 	for _, wantTLS := range []bool{false, true} {
 		for i, pt := range ports {
-			if i < required && tcp(pt) && webPortRe.MatchString(pt.Desc) && isHTTPS(pt.Desc) == wantTLS {
+			if i < required && tcp(pt) && (wantTLS || webPortRe.MatchString(pt.Desc)) && !proxiedRe.MatchString(pt.Desc) && !offByDefaultRe.MatchString(pt.Desc) && isHTTPS(pt.Desc) == wantTLS {
 				return i
 			}
 		}
@@ -280,10 +292,6 @@ func webPortIndex(ports []lsPort, required int) int {
 	}
 	return -1
 }
-
-// hostWebPorts: host-network apps whose readme-vars list no port at all; the
-// web port is only in their README's prose.
-var hostWebPorts = map[string]string{"plex": "32400"}
 
 // A lone port is the web UI unless it says otherwise: mariadb's 3306, ssh's
 // 2222, ngircd's 6667 and Wyoming's 10200 are not, nor is a bare API.
@@ -351,15 +359,19 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 			typ = "secret"
 		}
 		dflt := e.Value
-		if placeholderRe.MatchString(dflt) {
+		if placeholderRe.MatchString(dflt) || typ == "secret" {
+			// A secret's readme-vars value is an example everyone would share
+			// (mariadb's root password "ROOT_ACCESS_PASSWORD"): fjord makes
+			// one up instead, or asks for one that is the user's own.
 			dflt = ""
 		}
-		add(variable{Name: e.Var, Label: firstSentence(stripMarkdown(e.Desc)), Type: typ, Default: dflt})
+		v := variable{Name: e.Var, Label: firstSentence(stripMarkdown(e.Desc)), Type: typ, Default: dflt}
+		if typ == "secret" && slices.Contains(lsOverrides[id].GivenSecrets, e.Var) {
+			no := false
+			v.Generate = &no
+		}
+		add(v)
 	}
-	// Optional variables are left out. Their values are examples, not
-	// defaults (flexget's web password "info", lazylibrarian's calibre mods,
-	// hishtory's Postgres URL), and set-but-empty is not unset for every app;
-	// the editor can add one.
 	for i, v := range append(append([]lsVol{}, rv.Volumes...), rv.OptVolumes...) {
 		optional := i >= len(rv.Volumes)
 		// "/audiobooks:ro": the options ride on the mount, not in its name.
@@ -405,7 +417,7 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 		if web := webPortIndex(ports, len(ports)); web >= 0 {
 			webLiteral, _, _ = strings.Cut(ports[web].Internal, "/")
 			https = isHTTPS(ports[web].Desc)
-		} else if p, ok := hostWebPorts[id]; ok {
+		} else if p := lsOverrides[id].WebPort; p != "" {
 			webLiteral = p
 		}
 	} else {
@@ -431,6 +443,28 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 			}
 			svc.Ports = append(svc.Ports, spec)
 		}
+	}
+	lg, ok := lsOverrides[id].lsioLogin()
+	if !ok && desktopApp(ports) {
+		lg = selkiesLogin
+	}
+	xlogin := lg.apply(&svc, add)
+	// Optional settings, after the login's own: offered under Advanced,
+	// empty. Their readme-vars values are examples, not defaults (flexget's
+	// web password "info", hishtory's Postgres URL), and an empty one is left
+	// out of the container at install (fjord's DropEnvReferencing): set to
+	// nothing is not unset for every app.
+	for _, e := range rv.OptEnv {
+		if e.Var == "" || strings.HasSuffix(e.Var, "_FILE") || hasVar(vars, e.Var) ||
+			slices.ContainsFunc(svc.Environment, func(x string) bool { return strings.HasPrefix(x, e.Var+"=") }) {
+			continue // _FILE: a path inside the container, for docker secrets
+		}
+		typ := "string"
+		if isSecret(e.Var) {
+			typ = "secret"
+		}
+		svc.Environment = append(svc.Environment, e.Var+"=${"+e.Var+"}")
+		add(variable{Name: e.Var, Label: firstSentence(stripMarkdown(e.Desc)), Type: typ, Optional: true, Level: "advanced"})
 	}
 	for _, d := range rv.Devices {
 		if d.Path != "" {
@@ -462,7 +496,7 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 		add(variable{Name: "TZ", Label: "Timezone for the container", Type: "string", Default: "UTC"})
 	}
 
-	xf := xFjord{Version: "0.1", Variables: vars}
+	xf := xFjord{Version: "0.1", Variables: vars, Login: xlogin}
 	xf.Info = info{
 		ID: id, Name: prettyName(id), Description: lsioBlurb(img.Description), Category: firstCategory(img.Category),
 		Class: "service", Icon: "/catalog/icons/" + id + ".png", UpstreamURL: img.ProjectURL, Version: img.Version,
@@ -543,4 +577,60 @@ func contains(l []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// lsioLogin is how one app signs in. A password variable becomes a required
+// secret, so fjord makes it up at install instead of the app starting with
+// its default (duplicati's "changeme") or no login at all (code-server); a
+// user variable gets userDefault. user/password are the app's own default
+// login, for apps that take no variable: shown, with "change it". env is
+// set as it stands: what switches the login on (openssh-server's
+// PASSWORD_ACCESS=true).
+type lsioLogin struct {
+	userVar, userDefault, passVar string
+	user, password, note          string
+	env                           []string
+}
+
+// selkiesLogin: a desktop app has no login unless PASSWORD is set; its
+// nginx then asks for CUSTOM_USER and PASSWORD ("If unset there is no
+// auth", linuxserver's Selkies configuration reference).
+var selkiesLogin = lsioLogin{userVar: "CUSTOM_USER", userDefault: "admin", passVar: "PASSWORD"}
+
+// desktopApp: a Selkies desktop, known by its port that only works behind
+// a proxy beside an HTTPS one.
+func desktopApp(ports []lsPort) bool {
+	return slices.ContainsFunc(ports, func(p lsPort) bool { return proxiedRe.MatchString(p.Desc) }) &&
+		slices.ContainsFunc(ports, func(p lsPort) bool { return isHTTPS(p.Desc) })
+}
+
+// apply adds the login's variables to the service and returns its
+// x-fjord.login, nil when there is none.
+func (lg lsioLogin) apply(svc *lsService, add func(variable)) *login {
+	if lg.userVar == "" && lg.passVar == "" && lg.user == "" && lg.password == "" && lg.note == "" {
+		return nil
+	}
+	env := func(name string) {
+		if !slices.ContainsFunc(svc.Environment, func(e string) bool { return strings.HasPrefix(e, name+"=") }) {
+			svc.Environment = append(svc.Environment, name+"=${"+name+"}")
+		}
+	}
+	for _, e := range lg.env {
+		name, _, _ := strings.Cut(e, "=")
+		if !slices.ContainsFunc(svc.Environment, func(x string) bool { return strings.HasPrefix(x, name+"=") }) {
+			svc.Environment = append(svc.Environment, e)
+		}
+	}
+	out := &login{User: lg.user, Password: lg.password, Note: lg.note}
+	if lg.userVar != "" {
+		env(lg.userVar)
+		add(variable{Name: lg.userVar, Label: "User name to sign in with", Type: "string", Default: lg.userDefault})
+		out.User = "${" + lg.userVar + "}"
+	}
+	if lg.passVar != "" {
+		env(lg.passVar)
+		add(variable{Name: lg.passVar, Label: "Password to sign in with", Type: "secret"})
+		out.Password = "${" + lg.passVar + "}"
+	}
+	return out
 }

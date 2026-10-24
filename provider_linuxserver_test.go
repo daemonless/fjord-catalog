@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -99,12 +100,12 @@ func TestLinuxserverPlex(t *testing.T) {
 
 // Host networking publishes nothing, but the web port is the app's own:
 // homeassistant's is an optional port "only if you are not using host mode",
-// wireshark's the first of two HTTPS ones.
+// wireshark's the HTTPS one that needs no proxy.
 func TestLinuxserverHostWebPort(t *testing.T) {
 	for app, want := range map[string]struct {
 		port  string
 		https bool
-	}{"homeassistant": {"8123", false}, "wireshark": {"3000", true}} {
+	}{"homeassistant": {"8123", false}, "wireshark": {"3001", true}} {
 		_, m := deriveFixture(t, app)
 		s := m.Services[app]
 		if s.NetworkMode != "host" || len(s.Ports) != 0 {
@@ -133,6 +134,14 @@ func TestLinuxserverExtras(t *testing.T) {
 		t.Errorf("emby's GPU is optional, not a device it requires: %v", s.Devices)
 	}
 	_, altus := deriveFixture(t, "altus")
+	// 3000 is "desktop gui HTTP, must be proxied": opened directly the app
+	// refuses it. The Open link is 3001, HTTPS.
+	if i := altus.XFjord.Info; i.WebPort != "${WEB_PORT}" || !i.WebHTTPS {
+		t.Errorf("altus: web port %q https %v", i.WebPort, i.WebHTTPS)
+	}
+	if !strings.Contains(strings.Join(altus.Services["altus"].Ports, " "), "${WEB_PORT}:3001") {
+		t.Errorf("altus: WEB_PORT is not 3001: %v", altus.Services["altus"].Ports)
+	}
 	if s := altus.Services["altus"]; s.ShmSize == "" {
 		t.Error("altus: no shm_size")
 	}
@@ -203,5 +212,154 @@ func TestHTTPSDescriptions(t *testing.T) {
 		if got := isHTTPS(desc); got != want {
 			t.Errorf("isHTTPS(%q) = %v, want %v", desc, got, want)
 		}
+	}
+}
+
+// Desktop apps beside altus's "must be proxied": boinc's HTTP port is "only
+// to be used by reverse proxies", calibre's third is off until enabled.
+func TestWebPortSkipsProxyOnlyAndOffPorts(t *testing.T) {
+	calibre := []lsPort{
+		{Internal: "8080", Desc: "Calibre desktop gui (only for reverse proxy access)."},
+		{Internal: "8181", Desc: "Calibre desktop gui HTTPS."},
+		{Internal: "8081", Desc: "Calibre webserver gui (needs to be enabled in gui settings first)."},
+	}
+	if i := webPortIndex(calibre, len(calibre)); i != 1 {
+		t.Errorf("calibre: port %d, want 1 (8181)", i)
+	}
+	boinc := []lsPort{
+		{Internal: "8080", Desc: "Boinc desktop gui HTTP (only to be used by reverse proxies and not direct access)."},
+		{Internal: "8181", Desc: "Boinc desktop gui HTTPS."},
+	}
+	if i := webPortIndex(boinc, len(boinc)); i != 1 {
+		t.Errorf("boinc: port %d, want 1 (8181)", i)
+	}
+}
+
+// A desktop app gets a login fjord makes up at install: with no PASSWORD
+// its nginx asks for none.
+func TestLinuxserverDesktopLogin(t *testing.T) {
+	_, m := deriveFixture(t, "altus")
+	s := m.Services["altus"]
+	for _, e := range []string{"CUSTOM_USER=${CUSTOM_USER}", "PASSWORD=${PASSWORD}"} {
+		if !slices.Contains(s.Environment, e) {
+			t.Errorf("altus: no %s in %v", e, s.Environment)
+		}
+	}
+	if v := varNamed(m.XFjord.Variables, "PASSWORD"); v == nil || v.Type != "secret" || v.Default != "" || v.Optional {
+		t.Errorf("altus: PASSWORD %+v, want a required secret with no default", v)
+	}
+	if v := varNamed(m.XFjord.Variables, "CUSTOM_USER"); v == nil || v.Default != "admin" {
+		t.Errorf("altus: CUSTOM_USER %+v", v)
+	}
+	if l := m.XFjord.Login; l == nil || l.User != "${CUSTOM_USER}" || l.Password != "${PASSWORD}" {
+		t.Errorf("altus: login %+v", l)
+	}
+	if _, plex := deriveFixture(t, "plex"); plex.XFjord.Login != nil {
+		t.Errorf("plex: login %+v", plex.XFjord.Login)
+	}
+}
+
+// An app's own login variable joins its environment once, a default login
+// is only shown.
+func TestLoginApply(t *testing.T) {
+	var vars []variable
+	add := func(v variable) { vars = append(vars, v) }
+	svc := lsService{Environment: []string{"PUID=${PUID}", "NZBGET_USER=${NZBGET_USER}"}}
+	l := mustLogin(t, "nzbget").apply(&svc, add)
+	if l.User != "${NZBGET_USER}" || l.Password != "${NZBGET_PASS}" {
+		t.Errorf("nzbget: login %+v", l)
+	}
+	if strings.Count(strings.Join(svc.Environment, " "), "NZBGET_USER=") != 1 || !slices.Contains(svc.Environment, "NZBGET_PASS=${NZBGET_PASS}") {
+		t.Errorf("nzbget: environment %v", svc.Environment)
+	}
+	if len(vars) != 2 || vars[0].Default != "nzbget" || vars[1].Type != "secret" {
+		t.Errorf("nzbget: variables %+v", vars)
+	}
+	vars, svc = nil, lsService{}
+	if l := mustLogin(t, "deluge").apply(&svc, add); l.Password != "deluge" || l.User != "" || len(vars) != 0 || len(svc.Environment) != 0 {
+		t.Errorf("deluge: login %+v vars %v env %v", l, vars, svc.Environment)
+	}
+}
+
+// openssh-server's login is off until PASSWORD_ACCESS=true: set with it.
+func TestLoginOpensshServer(t *testing.T) {
+	var vars []variable
+	svc := lsService{}
+	l := mustLogin(t, "openssh-server").apply(&svc, func(v variable) { vars = append(vars, v) })
+	for _, e := range []string{"PASSWORD_ACCESS=true", "USER_NAME=${USER_NAME}", "USER_PASSWORD=${USER_PASSWORD}"} {
+		if !slices.Contains(svc.Environment, e) {
+			t.Errorf("no %s in %v", e, svc.Environment)
+		}
+	}
+	if l.User != "${USER_NAME}" || l.Password != "${USER_PASSWORD}" || len(vars) != 2 {
+		t.Errorf("login %+v vars %+v", l, vars)
+	}
+}
+
+// Optional settings are offered, empty: their readme-vars values are
+// examples (wireguard's "wireguard.domain.com"), and fjord leaves an empty
+// one out of the container.
+func TestLinuxserverOptionalSettings(t *testing.T) {
+	_, m := deriveFixture(t, "wireguard")
+	s := m.Services["wireguard"]
+	for _, n := range []string{"SERVERURL", "PEERS", "ALLOWEDIPS"} {
+		v := varNamed(m.XFjord.Variables, n)
+		if v == nil || !v.Optional || v.Default != "" || v.Level != "advanced" {
+			t.Errorf("%s: %+v, want optional, empty, advanced", n, v)
+		}
+		if !slices.Contains(s.Environment, n+"=${"+n+"}") {
+			t.Errorf("%s not in the environment: %v", n, s.Environment)
+		}
+	}
+}
+
+// A secret's readme-vars value is never installed: fjord makes one up, or
+// asks for one that is the user's own (duckdns's token).
+func TestSecretsHaveNoExampleDefault(t *testing.T) {
+	rv := readmeVars{}
+	rv.Env = append(rv.Env, lsEnv{Var: "MYSQL_ROOT_PASSWORD", Value: "ROOT_ACCESS_PASSWORD", Desc: "Root password."})
+	da, err := deriveLSIO(lsioImage{Name: "mariadb"}, rv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m lsManifest
+	if err := yaml.Unmarshal([]byte(da.ManifestYAML), &m); err != nil {
+		t.Fatal(err)
+	}
+	if v := varNamed(m.XFjord.Variables, "MYSQL_ROOT_PASSWORD"); v == nil || v.Default != "" || v.Generate != nil {
+		t.Errorf("mariadb root password: %+v", v)
+	}
+	rv = readmeVars{}
+	rv.Env = append(rv.Env, lsEnv{Var: "TOKEN", Value: "token", Desc: "DuckDNS token"})
+	if da, err = deriveLSIO(lsioImage{Name: "duckdns"}, rv); err != nil {
+		t.Fatal(err)
+	}
+	m = lsManifest{}
+	if err := yaml.Unmarshal([]byte(da.ManifestYAML), &m); err != nil {
+		t.Fatal(err)
+	}
+	if v := varNamed(m.XFjord.Variables, "TOKEN"); v == nil || v.Default != "" || v.Generate == nil || *v.Generate {
+		t.Errorf("duckdns token: %+v", v)
+	}
+}
+
+func mustLogin(t *testing.T, app string) lsioLogin {
+	t.Helper()
+	l, ok := lsOverrides[app].lsioLogin()
+	if !ok {
+		t.Fatalf("%s: no login override", app)
+	}
+	return l
+}
+
+// Every override file parses, with no unknown key, and says where its facts
+// come from.
+func TestOverridesLoad(t *testing.T) {
+	o, err := loadOverrides("overrides/linuxserver")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(o) < 19 || o["plex"].WebPort != "32400" || len(o["duckdns"].GivenSecrets) != 1 {
+		t.Errorf("overrides: %d, plex %+v, duckdns %+v", len(o), o["plex"], o["duckdns"])
 	}
 }

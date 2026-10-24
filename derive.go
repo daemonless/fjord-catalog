@@ -197,6 +197,17 @@ type xFjord struct {
 	// the compose above is the default answer, and each option says what to
 	// add, drop, set and ask for.
 	Choices []choice `yaml:"choices,omitempty"`
+	// Login is how to sign in to the app, for the stack page to show.
+	Login *login `yaml:"login,omitempty"`
+}
+
+// login is x-fjord.login. User and Password are each a ${VAR} fjord fills
+// from the stack's .env (a password fjord made up at install) or a literal:
+// the app's own default, which the page says to change.
+type login struct {
+	User     string `yaml:"user,omitempty"`
+	Password string `yaml:"password,omitempty"`
+	Note     string `yaml:"note,omitempty"`
 }
 
 // appVersions holds an app's per-variant versions from a versions file, in
@@ -531,7 +542,14 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 			// stack path gives it. vikunja's database variables are all of
 			// this kind, and read as required they blocked every install.
 			optional := d.Optional || strings.Contains(val, ":-")
-			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: composeDefault(val), Optional: optional, Level: d.Level, Generate: givenFlag(typ, d)})
+			dflt := composeDefault(val)
+			if typ == "secret" {
+				// An example everyone would share ("changeme", n8n's
+				// "your-encryption-key-here"): fjord makes the secret up, or
+				// asks for one only its owner has.
+				dflt = ""
+			}
+			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: dflt, Optional: optional, Level: d.Level, Generate: givenFlag(typ, d)})
 		}
 		switch env.Kind {
 		case yaml.SequenceNode:
@@ -594,6 +612,12 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 		Variants:  variants,
 	}
 	setWebEndpoint(&xf, cfg, repoDir)
+	if dlOverrides[id].NoWeb {
+		xf.Info.WebPort, xf.Info.WebHTTPS = "", false
+	}
+	if err := applyLogin(&xf, dlOverrides[id]); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: %s: %v\n", id, err)
+	}
 	if len(cfg.Build.Architectures) > 0 {
 		xf.Info.OnlyForArchs = cfg.Build.Architectures
 	}
