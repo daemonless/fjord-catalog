@@ -1,0 +1,5 @@
+source: https://github.com/daemonless/erpnext/blob/main/root/etc/cont-init.d/20-erpnext
+why: 'bench new-site --admin-password "${ADMIN_PASSWORD}": the password of Frappe''s Administrator account'
+login:
+  user: Administrator
+  password_var: ADMIN_PASSWORD

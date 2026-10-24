@@ -1,0 +1,7 @@
+source: https://github.com/daemonless/paperless-ngx/blob/main/README.md
+why: Admin user created on first start (PAPERLESS_ADMIN_USER, PAPERLESS_ADMIN_PASSWORD); with no password
+  there is no admin to sign in as.
+login:
+  user_var: PAPERLESS_ADMIN_USER
+  user_default: admin
+  password_var: PAPERLESS_ADMIN_PASSWORD

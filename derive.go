@@ -605,6 +605,9 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 		Variants:  variants,
 	}
 	setWebEndpoint(&xf, cfg, repoDir)
+	if err := applyLogin(&xf, dlOverrides[id]); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: %s: %v\n", id, err)
+	}
 	if len(cfg.Build.Architectures) > 0 {
 		xf.Info.OnlyForArchs = cfg.Build.Architectures
 	}

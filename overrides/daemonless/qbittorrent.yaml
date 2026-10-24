@@ -1,0 +1,6 @@
+source: https://github.com/daemonless/qbittorrent/blob/main/root/etc/cont-init.d/20-qbittorrent-config
+why: 'HA1 of "admin:Web Server:${WEBUI_PASSWORD}": the web UI user is admin. Unset, a temporary password
+  is printed to the log on every restart (README).'
+login:
+  user: admin
+  password_var: WEBUI_PASSWORD

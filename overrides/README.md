@@ -19,3 +19,7 @@ linuxserver (`overrides/linuxserver/`):
 
 Desktop apps (Selkies) get their login from a rule in the provider, not a
 file each.
+
+daemonless (`overrides/daemonless/`): `login` only, naming settings the
+app's compose already has (`user_var`, `password_var`) or a fixed user
+(`user`). The password setting becomes a required secret fjord makes up.

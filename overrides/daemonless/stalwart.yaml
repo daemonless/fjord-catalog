@@ -1,0 +1,5 @@
+source: https://github.com/daemonless/stalwart/blob/main/README.md
+why: 'ADMIN_SECRET: password for the fallback ''admin'' web-admin account'
+login:
+  user: admin
+  password_var: ADMIN_SECRET

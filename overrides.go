@@ -9,11 +9,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// overrides/linuxserver/<app>.yaml: what the provider cannot read from an
-// app's readme-vars, one file per app, each naming where the fact comes from
+// overrides/<source>/<app>.yaml: what a provider cannot read from an app's
+// own metadata (linuxserver's readme-vars, a daemonless compose), one file per app, each naming where the fact comes from
 // (source, and why: the line it rests on). Reviewed like code, read like data.
 //
-//go:embed overrides/linuxserver/*.yaml
+//go:embed overrides/linuxserver/*.yaml overrides/daemonless/*.yaml
 var overrideFiles embed.FS
 
 // lsOverride is one app's corrections.
@@ -39,7 +39,10 @@ type lsOverride struct {
 	GivenSecrets []string `yaml:"given_secrets"`
 }
 
-var lsOverrides = mustLoadOverrides("overrides/linuxserver")
+var (
+	lsOverrides = mustLoadOverrides("overrides/linuxserver")
+	dlOverrides = mustLoadOverrides("overrides/daemonless")
+)
 
 func mustLoadOverrides(dir string) map[string]lsOverride {
 	out, err := loadOverrides(dir)
@@ -82,4 +85,46 @@ func (o lsOverride) lsioLogin() (lsioLogin, bool) {
 	l := o.Login
 	return lsioLogin{userVar: l.UserVar, userDefault: l.UserDefault, passVar: l.PasswordVar,
 		user: l.User, password: l.Password, note: l.Note, env: l.Env}, true
+}
+
+// applyLogin gives a daemonless app the login its override names: the
+// card's user and password, and its password setting made a required
+// secret so fjord makes it up -- paperless's admin is optional in its
+// compose, and left empty there is no admin to sign in as. A setting the
+// compose does not have leaves the app without a login, and says so.
+func applyLogin(xf *xFjord, o lsOverride) error {
+	lg, ok := o.lsioLogin()
+	if !ok {
+		return nil
+	}
+	find := func(name string) *variable {
+		for i := range xf.Variables {
+			if xf.Variables[i].Name == name {
+				return &xf.Variables[i]
+			}
+		}
+		return nil
+	}
+	l := &login{User: lg.user, Password: lg.password, Note: lg.note}
+	if lg.userVar != "" {
+		v := find(lg.userVar)
+		if v == nil {
+			return fmt.Errorf("login: the compose has no %s", lg.userVar)
+		}
+		v.Optional = false
+		if v.Default == "" {
+			v.Default = lg.userDefault
+		}
+		l.User = "${" + lg.userVar + "}"
+	}
+	if lg.passVar != "" {
+		v := find(lg.passVar)
+		if v == nil {
+			return fmt.Errorf("login: the compose has no %s", lg.passVar)
+		}
+		v.Type, v.Optional, v.Default, v.Generate = "secret", false, "", nil
+		l.Password = "${" + lg.passVar + "}"
+	}
+	xf.Login = l
+	return nil
 }
