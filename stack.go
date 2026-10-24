@@ -142,6 +142,9 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	// Same web-endpoint rule as single-image apps: cit config is the truth
 	// (host-net stacks publish nothing, so this hint is their ONLY web link).
 	setWebEndpoint(&xf, cfg, repoDir)
+	if dlOverrides[id].NoWeb {
+		xf.Info.WebPort, xf.Info.WebHTTPS = "", false
+	}
 	if err := applyLogin(&xf, dlOverrides[id]); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: %s: %v\n", id, err)
 	}

@@ -23,6 +23,9 @@ type lsOverride struct {
 	// WebPort: the Open link's port where readme-vars list none (plex, on
 	// host networking).
 	WebPort string `yaml:"web_port"`
+	// NoWeb: answers HTTP, but nothing a person opens (an API another app
+	// calls): no Open link, whatever cit tests.
+	NoWeb bool `yaml:"no_web"`
 	// Login: its own login variables, made up at install (password_var), or
 	// the default it ships with (user, password), or only a note.
 	Login *struct {

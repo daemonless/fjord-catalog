@@ -1,0 +1,3 @@
+source: https://github.com/daemonless/immich-ml/blob/main/README.md
+why: "Machine learning service for Immich: the Immich server calls it; its root answers {\"message\":\"Immich ML\"}."
+no_web: true

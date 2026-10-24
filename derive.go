@@ -612,6 +612,9 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 		Variants:  variants,
 	}
 	setWebEndpoint(&xf, cfg, repoDir)
+	if dlOverrides[id].NoWeb {
+		xf.Info.WebPort, xf.Info.WebHTTPS = "", false
+	}
 	if err := applyLogin(&xf, dlOverrides[id]); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: %s: %v\n", id, err)
 	}
