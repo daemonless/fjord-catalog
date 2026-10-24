@@ -99,12 +99,12 @@ func TestLinuxserverPlex(t *testing.T) {
 
 // Host networking publishes nothing, but the web port is the app's own:
 // homeassistant's is an optional port "only if you are not using host mode",
-// wireshark's the first of two HTTPS ones.
+// wireshark's the HTTPS one that needs no proxy.
 func TestLinuxserverHostWebPort(t *testing.T) {
 	for app, want := range map[string]struct {
 		port  string
 		https bool
-	}{"homeassistant": {"8123", false}, "wireshark": {"3000", true}} {
+	}{"homeassistant": {"8123", false}, "wireshark": {"3001", true}} {
 		_, m := deriveFixture(t, app)
 		s := m.Services[app]
 		if s.NetworkMode != "host" || len(s.Ports) != 0 {
@@ -133,6 +133,14 @@ func TestLinuxserverExtras(t *testing.T) {
 		t.Errorf("emby's GPU is optional, not a device it requires: %v", s.Devices)
 	}
 	_, altus := deriveFixture(t, "altus")
+	// 3000 is "desktop gui HTTP, must be proxied": opened directly the app
+	// refuses it. The Open link is 3001, HTTPS.
+	if i := altus.XFjord.Info; i.WebPort != "${WEB_PORT}" || !i.WebHTTPS {
+		t.Errorf("altus: web port %q https %v", i.WebPort, i.WebHTTPS)
+	}
+	if !strings.Contains(strings.Join(altus.Services["altus"].Ports, " "), "${WEB_PORT}:3001") {
+		t.Errorf("altus: WEB_PORT is not 3001: %v", altus.Services["altus"].Ports)
+	}
 	if s := altus.Services["altus"]; s.ShmSize == "" {
 		t.Error("altus: no shm_size")
 	}
@@ -203,5 +211,25 @@ func TestHTTPSDescriptions(t *testing.T) {
 		if got := isHTTPS(desc); got != want {
 			t.Errorf("isHTTPS(%q) = %v, want %v", desc, got, want)
 		}
+	}
+}
+
+// Desktop apps beside altus's "must be proxied": boinc's HTTP port is "only
+// to be used by reverse proxies", calibre's third is off until enabled.
+func TestWebPortSkipsProxyOnlyAndOffPorts(t *testing.T) {
+	calibre := []lsPort{
+		{Internal: "8080", Desc: "Calibre desktop gui (only for reverse proxy access)."},
+		{Internal: "8181", Desc: "Calibre desktop gui HTTPS."},
+		{Internal: "8081", Desc: "Calibre webserver gui (needs to be enabled in gui settings first)."},
+	}
+	if i := webPortIndex(calibre, len(calibre)); i != 1 {
+		t.Errorf("calibre: port %d, want 1 (8181)", i)
+	}
+	boinc := []lsPort{
+		{Internal: "8080", Desc: "Boinc desktop gui HTTP (only to be used by reverse proxies and not direct access)."},
+		{Internal: "8181", Desc: "Boinc desktop gui HTTPS."},
+	}
+	if i := webPortIndex(boinc, len(boinc)); i != 1 {
+		t.Errorf("boinc: port %d, want 1 (8181)", i)
 	}
 }

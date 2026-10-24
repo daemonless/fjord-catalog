@@ -258,10 +258,21 @@ var lsioLibraryKinds = map[string]string{
 // "WebUI" and "webinterface" have no word break inside: \bweb\b misses them.
 var webPortRe = regexp.MustCompile(`(?i)(webui|web ?interface|\b(web|ui|gui|http|dashboard|interface)\b)`)
 
+// proxiedRe: a port that only works behind a proxy ("desktop gui HTTP, must
+// be proxied", "only to be used by reverse proxies" beside an HTTPS one):
+// opened directly, the app refuses it.
+var proxiedRe = regexp.MustCompile(`(?i)\bproxied\b|reverse[ -]prox(y|ies)`)
+
+// offByDefaultRe: a port nothing answers on until it is switched on in the
+// app (calibre's content server, "needs to be enabled in gui settings
+// first"): not where the Open link goes.
+var offByDefaultRe = regexp.MustCompile(`(?i)needs to be enabled`)
+
 // webPortIndex picks the web UI among ports, the first required ones
 // counting: a web-sounding TCP port, plain HTTP before HTTPS (kasm's are all
-// "(https)"), else a lone required port that does not say it is something
-// else. -1 when none is.
+// "(https)"; "HTTPS WineGUI." is web without saying so), never one that must
+// be proxied or is off until enabled, else a lone required port that does
+// not say it is something else. -1 when none is.
 func webPortIndex(ports []lsPort, required int) int {
 	// The web UI is a TCP port: wireguard's one port is UDP 51820.
 	tcp := func(pt lsPort) bool {
@@ -270,7 +281,7 @@ func webPortIndex(ports []lsPort, required int) int {
 	}
 	for _, wantTLS := range []bool{false, true} {
 		for i, pt := range ports {
-			if i < required && tcp(pt) && webPortRe.MatchString(pt.Desc) && isHTTPS(pt.Desc) == wantTLS {
+			if i < required && tcp(pt) && (wantTLS || webPortRe.MatchString(pt.Desc)) && !proxiedRe.MatchString(pt.Desc) && !offByDefaultRe.MatchString(pt.Desc) && isHTTPS(pt.Desc) == wantTLS {
 				return i
 			}
 		}
