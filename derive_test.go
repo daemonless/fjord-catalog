@@ -180,3 +180,18 @@ services:
 		}
 	}
 }
+
+// x-daemonless.name_env reaches the manifest as info.name_env: fjord fills
+// those variables with the names it gives the app (SABnzbd's whitelist).
+func TestNameEnvCarried(t *testing.T) {
+	compose := "name: app\nx-daemonless:\n  title: App\n  name_env:\n    HOST_ALLOWLIST: \"{names}\"\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    ports: [\"8080:8080\"]\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	if d.xf.Info.NameEnv["HOST_ALLOWLIST"] != "{names}" || !strings.Contains(d.manifestYAML, "name_env:") {
+		t.Fatalf("got %v\n%s", d.xf.Info.NameEnv, d.manifestYAML)
+	}
+}
