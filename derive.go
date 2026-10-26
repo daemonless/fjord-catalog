@@ -71,6 +71,9 @@ type xDaemonless struct {
 	// through to x-fjord verbatim; fjord resolves "default" and "private".
 	Networking map[string]string `yaml:"networking"`
 	Hostnames  map[string]string `yaml:"hostnames"`
+	// NameEnv: variables the image takes the names fjord gives the app in
+	// ({name}, {names}); SABnzbd's HOST_ALLOWLIST. Carried through as is.
+	NameEnv map[string]string `yaml:"name_env"`
 }
 
 // parseDocs reads x-daemonless.docs tolerantly from the node, returning
@@ -180,6 +183,9 @@ type info struct {
 	WebURL       string   `yaml:"web_url,omitempty"`
 	Version      string   `yaml:"version,omitempty"`
 	OnlyForArchs []string `yaml:"only_for_archs,omitempty"`
+	// NameEnv is x-daemonless.name_env: what fjord fills with the app's
+	// names when a names provider gives it some.
+	NameEnv map[string]string `yaml:"name_env,omitempty"`
 }
 
 type xFjord struct {
@@ -607,6 +613,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 			Class:       "service",
 			Icon:        iconURL,
 			Version:     appVer,
+			NameEnv:     xd.NameEnv,
 		},
 		Variables: vars,
 		Variants:  variants,
