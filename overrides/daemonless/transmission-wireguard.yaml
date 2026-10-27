@@ -1,0 +1,3 @@
+source: https://github.com/daemonless/transmission-wireguard/blob/main/compose.yaml
+why: "The web UI is on 9091 (WEB_PORT); cit runs a shell test, since the app needs a VPN to start, so it cannot mark it."
+web_port: ${WEB_PORT}
