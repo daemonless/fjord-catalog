@@ -28,3 +28,23 @@ func TestApplyLogin(t *testing.T) {
 		t.Errorf("no override: err %v login %+v", err, none.Login)
 	}
 }
+
+// An override names a web UI cit could not test, or takes one away; an
+// endpoint cit already found is kept.
+func TestApplyWeb(t *testing.T) {
+	xf := xFjord{}
+	applyWeb(&xf, dlOverrides["transmission-wireguard"])
+	if xf.Info.WebPort != "${WEB_PORT}" {
+		t.Errorf("transmission-wireguard web_port %q", xf.Info.WebPort)
+	}
+	ml := xFjord{Info: info{WebPort: "3003"}}
+	applyWeb(&ml, dlOverrides["immich-ml"])
+	if ml.Info.WebPort != "" {
+		t.Errorf("immich-ml no_web kept %q", ml.Info.WebPort)
+	}
+	found := xFjord{Info: info{WebPort: "8080"}}
+	applyWeb(&found, lsOverride{WebPort: "9999"})
+	if found.Info.WebPort != "8080" {
+		t.Errorf("cit's port replaced: %q", found.Info.WebPort)
+	}
+}

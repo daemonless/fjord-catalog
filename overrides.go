@@ -21,7 +21,8 @@ type lsOverride struct {
 	Source string `yaml:"source"`
 	Why    string `yaml:"why"`
 	// WebPort: the Open link's port where readme-vars list none (plex, on
-	// host networking).
+	// host networking), or where a daemonless image's cit cannot test its web
+	// UI (transmission-wireguard needs a VPN to start).
 	WebPort string `yaml:"web_port"`
 	// NoWeb: answers HTTP, but nothing a person opens (an API another app
 	// calls): no Open link, whatever cit tests.
@@ -78,6 +79,17 @@ func loadOverrides(dir string) (map[string]lsOverride, error) {
 		out[strings.TrimSuffix(e.Name(), ".yaml")] = o
 	}
 	return out, nil
+}
+
+// applyWeb gives a daemonless app the Open link its override names: none
+// (no_web), or the port its cit could not mark as a web UI.
+func applyWeb(xf *xFjord, o lsOverride) {
+	switch {
+	case o.NoWeb:
+		xf.Info.WebPort, xf.Info.WebHTTPS = "", false
+	case o.WebPort != "" && xf.Info.WebPort == "":
+		xf.Info.WebPort = o.WebPort
+	}
 }
 
 // lsioLogin is the override's login, false when it has none.
