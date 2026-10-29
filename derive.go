@@ -74,6 +74,9 @@ type xDaemonless struct {
 	// NameEnv: variables the image takes the names fjord gives the app in
 	// ({name}, {names}); SABnzbd's HOST_ALLOWLIST. Carried through as is.
 	NameEnv map[string]string `yaml:"name_env"`
+	// Provides is what the app serves the others (names, for the reverse
+	// proxy): fjord's x-fjord.provides, carried through as is.
+	Provides map[string]any `yaml:"provides"`
 }
 
 // parseDocs reads x-daemonless.docs tolerantly from the node, returning
@@ -205,6 +208,8 @@ type xFjord struct {
 	Choices []choice `yaml:"choices,omitempty"`
 	// Login is how to sign in to the app, for the stack page to show.
 	Login *login `yaml:"login,omitempty"`
+	// Provides is x-daemonless.provides, unchanged.
+	Provides map[string]any `yaml:"provides,omitempty"`
 }
 
 // login is x-fjord.login. User and Password are each a ${VAR} fjord fills
@@ -601,6 +606,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 		// because only it knows which network the install was told to use.
 		Networking: xd.Networking,
 		Hostnames:  xd.Hostnames,
+		Provides:   xd.Provides,
 		Info: info{
 			// The id is the repo dir: it names the manifest + icon files and is
 			// what consumers dedupe on. A compose `name:` that differs (opencloud-
