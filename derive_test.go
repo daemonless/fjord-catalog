@@ -216,3 +216,18 @@ func TestLinuxImageWidensOS(t *testing.T) {
 		t.Fatalf("os %v, want freebsd,linux", e.OS)
 	}
 }
+
+// x-daemonless.provides reaches the manifest as x-fjord.provides: the reverse
+// proxy is fjord's names provider only when its manifest says so.
+func TestProvidesCarried(t *testing.T) {
+	compose := []byte("x-daemonless:\n  title: Proxy\n  provides:\n    names:\n      port: 8443\n      key: ${RP_PAIRING_KEY}\nservices:\n  proxy:\n    image: ghcr.io/daemonless/proxy:latest\n    environment:\n      - RP_PAIRING_KEY=\n    ports: [\"8443:8443\"]\n")
+	d, err := deriveManifest(compose, nil, t.TempDir(), "proxy", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"provides:", "names:", "port: 8443", "key: ${RP_PAIRING_KEY}"} {
+		if !strings.Contains(d.manifestYAML, want) {
+			t.Errorf("manifest lacks %q:\n%s", want, d.manifestYAML)
+		}
+	}
+}
