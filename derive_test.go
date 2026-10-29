@@ -195,3 +195,24 @@ func TestNameEnvCarried(t *testing.T) {
 		t.Fatalf("got %v\n%s", d.xf.Info.NameEnv, d.manifestYAML)
 	}
 }
+
+// A repo with a Containerfile.linux runs on Linux too: its entry says so, so
+// a Linux fjord lists it from a FreeBSD catalog.
+func TestLinuxImageWidensOS(t *testing.T) {
+	compose := []byte("x-daemonless:\n  title: App\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    ports: [\"8080:8080\"]\n")
+	dir := t.TempDir()
+	d, err := deriveManifest(compose, nil, dir, "app", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if e := catalogEntryFor(d, "app"); e.OS != nil {
+		t.Fatalf("no Containerfile.linux: os %v, want the catalog's", e.OS)
+	}
+	_ = os.WriteFile(filepath.Join(dir, "Containerfile.linux"), []byte("FROM alpine\n"), 0o644)
+	if d, err = deriveManifest(compose, nil, dir, "app", nil); err != nil {
+		t.Fatal(err)
+	}
+	if e := catalogEntryFor(d, "app"); strings.Join(e.OS, ",") != "freebsd,linux" {
+		t.Fatalf("os %v, want freebsd,linux", e.OS)
+	}
+}
