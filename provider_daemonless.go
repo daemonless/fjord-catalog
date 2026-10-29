@@ -114,5 +114,6 @@ func catalogEntryFor(d *derived, id string) catEntry {
 		Version:       xf.Info.Version,
 		Architectures: d.arches,
 		Variants:      vs,
+		OS:            d.os,
 	}
 }

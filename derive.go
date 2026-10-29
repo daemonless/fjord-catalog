@@ -264,6 +264,7 @@ type derived struct {
 	manifestYAML string
 	xf           xFjord
 	arches       []string // OCI arch names the image is built for
+	os           []string // OS the image runs on, when more than its catalog's
 	logoSrc      string
 	imageRepo    string // the service image without its tag, e.g. ghcr.io/x/radarr
 }
@@ -661,7 +662,16 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	if err != nil {
 		return nil, err
 	}
-	return &derived{manifestYAML: out, xf: xf, arches: archesOf(cfg), logoSrc: logoSrc, imageRepo: imageRepo}, nil
+	return &derived{manifestYAML: out, xf: xf, arches: archesOf(cfg), os: osOf(repoDir), logoSrc: logoSrc, imageRepo: imageRepo}, nil
+}
+
+// osOf is ["freebsd", "linux"] for a repo with a Containerfile.linux: dbuild's
+// build-linux job puts a Linux image under the same tag. nil = the catalog's.
+func osOf(repoDir string) []string {
+	if fileExists(filepath.Join(repoDir, "Containerfile.linux")) {
+		return []string{"freebsd", "linux"}
+	}
+	return nil
 }
 
 func deriveVariants(cfg imageConfig, av *appVersions) []variant {
