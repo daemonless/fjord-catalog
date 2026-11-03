@@ -168,7 +168,7 @@ services:
     ports: ["8080:8080"]
     volumes:
       - /containers/searxng/etc:/usr/local/etc/searxng
-      - /containers/searxng/cache:/var/cache/searxng
+      - /path/to/containers/searxng/cache:/var/cache/searxng
 `)
 	d, err := deriveManifest(compose, nil, t.TempDir(), "searxng", nil)
 	if err != nil {
