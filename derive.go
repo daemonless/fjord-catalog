@@ -494,7 +494,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				continue
 			}
 			base := envName(filepath.Base(cont))
-			managed := host == "" || !filepath.IsAbs(host) || strings.HasPrefix(host, "/containers/")
+			managed := host == "" || !filepath.IsAbs(host) || strings.HasPrefix(host, "/containers/") || strings.HasPrefix(host, "/path/to/containers/")
 			v := variable{Default: host}
 			switch {
 			case cont == "/config":
