@@ -99,7 +99,12 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		case tagVarRepo[name] != "":
 			typ, imgRepo = "image_tag", tagVarRepo[name]
 		case isSecret(name):
-			typ = "secret"
+			// An example password in example.env or ${VAR:-password} is a
+			// placeholder everyone would share; clear it and require one so
+			// fjord makes a secret up, unless docs or a ${VAR:-${OTHER}} chain
+			// says it is genuinely optional.
+			typ, def = "secret", ""
+			optional = envDocs[name].Optional || strings.Contains(inlineDef, "${")
 		case strings.Contains(scanText, "${"+name+"}:/"):
 			typ = "path" // host side of a bind mount
 		}

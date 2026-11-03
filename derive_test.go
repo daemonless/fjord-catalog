@@ -231,3 +231,31 @@ func TestProvidesCarried(t *testing.T) {
 		}
 	}
 }
+
+// A stack's example.env or ${VAR:-password} default on a secret is a
+// placeholder everyone would share: clear it and keep the secret required so
+// fjord makes one up, unless docs or a ${VAR:-${OTHER}} chain marks it optional.
+func TestStackSecretsDropExampleDefaults(t *testing.T) {
+	compose := "name: app\nx-daemonless:\n  title: App\n  type: stack\n  docs:\n    env:\n      OPT_SECRET:\n        desc: Generated on first start if unset\n        optional: true\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    environment:\n      - DB_PASSWORD=${DB_PASSWORD}\n      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-weakpass}\n      - ROOT_PASSWORD=${ROOT_PASSWORD:-${DB_PASSWORD}}\n      - OPT_SECRET=${OPT_SECRET:-}\n  db:\n    image: ghcr.io/daemonless/postgres:17\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, "example.env"), []byte("DB_PASSWORD=postgres\nPOSTGRES_PASSWORD=weakpass\n"), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	got := map[string]variable{}
+	for _, v := range d.xf.Variables {
+		got[v.Name] = v
+	}
+	for _, name := range []string{"DB_PASSWORD", "POSTGRES_PASSWORD"} {
+		if v := got[name]; v.Type != "secret" || v.Default != "" || v.Optional {
+			t.Errorf("%s = %+v, want required secret with empty default", name, v)
+		}
+	}
+	for _, name := range []string{"ROOT_PASSWORD", "OPT_SECRET"} {
+		if v := got[name]; v.Type != "secret" || v.Default != "" || !v.Optional {
+			t.Errorf("%s = %+v, want optional secret with empty default", name, v)
+		}
+	}
+}
