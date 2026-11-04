@@ -259,3 +259,71 @@ func TestStackSecretsDropExampleDefaults(t *testing.T) {
 		}
 	}
 }
+
+// A stack entry takes its parts list, image, and version from the sibling
+// class: part repos its services run (not from a database listed first), and
+// marks a variable on the host side of a subpath volume (${DATA_DIR}/db:/...)
+// as a path.
+func TestStackPartsVersionAndSubpathVolume(t *testing.T) {
+	repos := t.TempDir()
+	writeRepo := func(id, compose, sbom string) {
+		dir := filepath.Join(repos, id)
+		_ = os.MkdirAll(dir, 0o755)
+		_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+		if sbom != "" {
+			_ = os.WriteFile(filepath.Join(dir, "sbom.json"), []byte(sbom), 0o644)
+		}
+	}
+	writeRepo("postgres", "name: postgres\nx-daemonless:\n  title: PostgreSQL\nservices:\n  postgres:\n    image: ghcr.io/daemonless/postgres:16\n", "")
+	writeRepo("weavestream-api", "name: weavestream-api\nx-daemonless:\n  title: Weavestream API\n  class: part\nservices:\n  api:\n    image: ghcr.io/daemonless/weavestream-api:latest\n",
+		`{"image":"weavestream-api","tags":{"latest":{"app_version":"1.11.1"}}}`)
+	writeRepo("weavestream-web", "name: weavestream-web\nx-daemonless:\n  title: Weavestream Web\n  class: part\nservices:\n  web:\n    image: ghcr.io/daemonless/weavestream-web:latest\n",
+		`{"image":"weavestream-web","tags":{"latest":{"app_version":"1.11.1"}}}`)
+
+	stackCompose := `name: weavestream
+x-daemonless:
+  title: Weavestream
+  type: stack
+services:
+  postgres:
+    image: ghcr.io/daemonless/postgres:16
+    volumes:
+      - ${DATA_DIR}/postgres:/var/lib/postgresql/data
+  api:
+    image: ghcr.io/daemonless/weavestream-api:latest
+  web:
+    image: ghcr.io/daemonless/weavestream-web:latest
+    ports:
+      - "${WEB_HOST_PORT:-3000}:3000"
+`
+	stackDir := filepath.Join(repos, "weavestream")
+	writeRepo("weavestream", stackCompose, "")
+	_ = os.WriteFile(filepath.Join(stackDir, "example.env"), []byte("DATA_DIR=/var/db/weavestream\n"), 0o644)
+
+	d, err := deriveManifest([]byte(stackCompose), nil, stackDir, "weavestream", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	e := catalogEntryFor(d, "weavestream")
+	if e.Image != "ghcr.io/daemonless/weavestream-api" {
+		t.Errorf("stack image = %q, want first part's image", e.Image)
+	}
+	if e.Version != "1.11.1" {
+		t.Errorf("stack version = %q, want 1.11.1 from first part", e.Version)
+	}
+	if len(e.Parts) != 2 || e.Parts[0].ID != "weavestream-api" || e.Parts[0].Name != "Weavestream API" || e.Parts[1].ID != "weavestream-web" {
+		t.Errorf("stack parts = %+v, want [weavestream-api, weavestream-web]", e.Parts)
+	}
+	if strings.Contains(d.manifestYAML, "1.11.1") {
+		t.Errorf("manifest YAML should stay version-free:\n%s", d.manifestYAML)
+	}
+	var dataDir variable
+	for _, v := range d.xf.Variables {
+		if v.Name == "DATA_DIR" {
+			dataDir = v
+		}
+	}
+	if dataDir.Type != "path" {
+		t.Errorf("DATA_DIR = %+v, want type: path for ${DATA_DIR}/postgres:/...", dataDir)
+	}
+}
