@@ -27,7 +27,7 @@ var imageTagVarRe = regexp.MustCompile(`^([^$\s]+):\$\{([A-Za-z_][A-Za-z0-9_]*)(
 //
 // No variants/train picker: a stack spans multiple image repos, so a single
 // version tag is meaningless (and retagging its db/redis would be destructive).
-func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, repoDir, id string) (*derived, error) {
+func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, repoDir, id string, av *appVersions) (*derived, error) {
 	var doc yaml.Node
 	if err := yaml.Unmarshal(composeBytes, &doc); err != nil {
 		return nil, fmt.Errorf("parse compose node: %w", err)
@@ -52,15 +52,30 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 
 	exampleEnv := parseExampleEnv(filepath.Join(repoDir, "example.env"))
 
-	// Map tag-position variables to their image repo: `image: repo:${VAR...}`
-	// makes VAR an image_tag var, so the wizard can offer that repo's published
-	// tags and follow the train picker.
+	// Map tag-position variables to their image repo (`image: repo:${VAR...}`
+	// makes VAR an image_tag var), collect host-side volume variables
+	// (`${VAR}:/...` and `${VAR}/subpath:/...`), and record the stack's own
+	// parts (`class: part` sibling repos).
 	tagVarRepo := map[string]string{}
+	pathVar := map[string]bool{}
+	var parts []catPart
+	seenPart := map[string]bool{}
+	firstRepo, ownRepo := "", ""
+	reposDir := filepath.Dir(repoDir)
 	if services := mapGet(root, "services"); services != nil {
 		for i := 1; i < len(services.Content); i += 2 {
 			svc := services.Content[i]
 			if svc.Kind != yaml.MappingNode {
 				continue
+			}
+			if vols := mapGet(svc, "volumes"); vols != nil && vols.Kind == yaml.SequenceNode {
+				for _, v := range vols.Content {
+					if host, _, ok := strings.Cut(v.Value, ":/"); ok {
+						for _, m := range varRefRe.FindAllStringSubmatch(host, -1) {
+							pathVar[m[1]] = true
+						}
+					}
+				}
 			}
 			img := mapGet(svc, "image")
 			if img == nil || img.Kind != yaml.ScalarNode {
@@ -68,6 +83,23 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 			}
 			if m := imageTagVarRe.FindStringSubmatch(img.Value); m != nil {
 				tagVarRepo[m[2]] = m[1]
+			}
+			repo := repoOf(varRefRe.ReplaceAllString(img.Value, ""))
+			if repo == "" {
+				continue
+			}
+			if firstRepo == "" {
+				firstRepo = repo
+			}
+			partID := filepath.Base(repo)
+			if partID == id && ownRepo == "" {
+				ownRepo = repo
+			}
+			if partID != id && !seenPart[partID] {
+				if p, ok := readStackPart(reposDir, id, partID, repo); ok {
+					seenPart[partID] = true
+					parts = append(parts, p)
+				}
 			}
 		}
 	}
@@ -105,7 +137,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 			// says it is genuinely optional.
 			typ, def = "secret", ""
 			optional = envDocs[name].Optional || strings.Contains(inlineDef, "${")
-		case strings.Contains(scanText, "${"+name+"}:/"):
+		case pathVar[name] || strings.Contains(scanText, "${"+name+"}:/"):
 			typ = "path" // host side of a bind mount
 		}
 		if envDocs[name].PublicURL {
@@ -114,14 +146,19 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		vars = append(vars, variable{Name: name, Label: envDocs[name].Desc, Type: typ, Default: def, Optional: optional, Level: envDocs[name].Level, Image: imgRepo, Generate: givenFlag(typ, envDocs[name])})
 	}
 
-	// First service image repo, for the store card / future use.
-	imageRepo := ""
-	if services := mapGet(root, "services"); services != nil {
-		if _, svc := firstChild(services); svc != nil {
-			if img := mapGet(svc, "image"); img != nil && img.Kind == yaml.ScalarNode {
-				imageRepo = repoOf(varRefRe.ReplaceAllString(img.Value, ""))
-			}
+	// A stack's image and version come from its first part (weavestream-api,
+	// immich-server) or its own service when the repo builds the app image
+	// alongside sidecars (erpnext, sparkyfitness), never a database listed
+	// ahead of the app.
+	imageRepo := firstRepo
+	appVer := stackVersion(reposDir, id, av)
+	if len(parts) > 0 {
+		imageRepo = parts[0].Image
+		if appVer == "" {
+			appVer = stackVersion(reposDir, parts[0].ID, nil)
 		}
+	} else if ownRepo != "" {
+		imageRepo = ownRepo
 	}
 
 	iconURL, logoSrc := resolveIcon(repoDir, id, xd.Icon)
@@ -141,6 +178,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 			WebURL:      xd.WebURL,
 			Class:       "stack",
 			Icon:        iconURL,
+			Version:     appVer,
 		},
 		Variables: vars,
 	}
@@ -165,7 +203,9 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		xf.Choices = cs
 	}
 
-	xfNode, err := toNode(xf)
+	mxf := xf
+	mxf.Info.Version = ""
+	xfNode, err := toNode(mxf)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +214,47 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 	if err != nil {
 		return nil, err
 	}
-	return &derived{manifestYAML: out, xf: xf, arches: archesOf(cfg), logoSrc: logoSrc, imageRepo: imageRepo}, nil
+	return &derived{manifestYAML: out, xf: xf, arches: archesOf(cfg), parts: parts, logoSrc: logoSrc, imageRepo: imageRepo}, nil
+}
+
+// readStackPart inspects the sibling repo for a service's image and returns a
+// catPart when that repo is a stack part (x-daemonless class: part, or
+// part_of naming this stack).
+func readStackPart(reposDir, stackID, partID, imageRepo string) (catPart, bool) {
+	b, err := os.ReadFile(filepath.Join(reposDir, partID, "compose.yaml"))
+	if err != nil {
+		return catPart{}, false
+	}
+	var meta struct {
+		XDaemonless xDaemonless `yaml:"x-daemonless"`
+	}
+	if yaml.Unmarshal(b, &meta) != nil {
+		return catPart{}, false
+	}
+	xd := meta.XDaemonless
+	if xd.PartOf != "" && xd.PartOf != stackID {
+		return catPart{}, false
+	}
+	if xd.Class != "part" && xd.PartOf != stackID {
+		return catPart{}, false
+	}
+	return catPart{
+		ID:    partID,
+		Name:  firstNonEmpty(xd.Title, partID),
+		Image: imageRepo,
+	}, true
+}
+
+// stackVersion resolves the default version for a stack's image repo from av
+// or from the repo's own sbom.json.
+func stackVersion(reposDir, id string, av *appVersions) string {
+	if av == nil {
+		av = loadSbomVersions(reposDir, []string{id})[id]
+	}
+	if av == nil {
+		return ""
+	}
+	return firstNonEmpty(av.forVariant("latest"), av.forVariant("pkg"), av.forVariant("pkg-latest"))
 }
 
 // parseExampleEnv reads uncommented KEY=VALUE lines from an example.env.

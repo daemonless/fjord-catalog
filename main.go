@@ -24,6 +24,12 @@ type catVariant struct {
 	Aliases []string `json:"aliases,omitempty"`
 }
 
+type catPart struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}
+
 type catEntry struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -42,6 +48,7 @@ type catEntry struct {
 	// host can't run.
 	Architectures []string     `json:"architectures"`
 	Variants      []catVariant `json:"variants"`
+	Parts         []catPart    `json:"parts,omitempty"`
 	// OS the image runs on, in OCI spelling ("linux", "freebsd"): fjord
 	// leaves an entry for another OS out of its store. Empty = the catalog's.
 	OS []string `json:"os,omitempty"`

@@ -65,6 +65,7 @@ type xDaemonless struct {
 	UpstreamURL string `yaml:"upstream_url"`
 	WebURL      string `yaml:"web_url"`
 	Class       string `yaml:"class"`
+	PartOf      string `yaml:"part_of"`
 	Type        string `yaml:"type"` // "stack" = authored multi-service compose
 	// Networking is the app's own answer to which of its services is the one
 	// people open: service name -> network spec, "*" for the rest. Carried
@@ -268,8 +269,9 @@ func isSecret(name string) bool {
 type derived struct {
 	manifestYAML string
 	xf           xFjord
-	arches       []string // OCI arch names the image is built for
-	os           []string // OS the image runs on, when more than its catalog's
+	arches       []string  // OCI arch names the image is built for
+	os           []string  // OS the image runs on, when more than its catalog's
+	parts        []catPart // stack parts (repos with class: part)
 	logoSrc      string
 	imageRepo    string // the service image without its tag, e.g. ghcr.io/x/radarr
 }
@@ -386,7 +388,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	// (vikunja ships one for its database choice): the image path keeps its
 	// version picker, which the stack path has no variants for.
 	if meta.XDaemonless.Type == "stack" || (len(meta.Services) > 1 && fileExists(filepath.Join(repoDir, "example.env"))) {
-		return deriveStackManifest(composeBytes, meta.XDaemonless, cfg, repoDir, id)
+		return deriveStackManifest(composeBytes, meta.XDaemonless, cfg, repoDir, id, av)
 	}
 	if len(meta.Services) > 1 {
 		// The example.env is the signal (above); naming type: stack here sent
