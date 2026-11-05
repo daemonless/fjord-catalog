@@ -343,6 +343,9 @@ func deriveLSIO(img lsioImage, rv readmeVars) (*DerivedApp, error) {
 	var vars []variable
 	add := func(v variable) {
 		if !hasVar(vars, v.Name) {
+			if v.Type == "string" && isBoolDefault(v.Default) {
+				v.Type = "bool"
+			}
 			vars = append(vars, v)
 		}
 	}

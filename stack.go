@@ -140,10 +140,9 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		case pathVar[name] || strings.Contains(scanText, "${"+name+"}:/"):
 			typ = "path" // host side of a bind mount
 		}
-		if envDocs[name].PublicURL {
-			typ = "public_url"
-		}
-		vars = append(vars, variable{Name: name, Label: envDocs[name].Desc, Type: typ, Default: def, Optional: optional, Level: envDocs[name].Level, Image: imgRepo, Generate: givenFlag(typ, envDocs[name])})
+		v := variable{Name: name, Label: envDocs[name].Desc, Type: typ, Default: def, Optional: optional, Level: envDocs[name].Level, Image: imgRepo, Generate: givenFlag(typ, envDocs[name])}
+		applyDocType(&v, envDocs[name])
+		vars = append(vars, v)
 	}
 
 	// A stack's image and version come from its first part (weavestream-api,
