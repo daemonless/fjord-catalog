@@ -25,9 +25,51 @@ type docEntry struct {
 	Level     string
 	PublicURL bool
 	Given     bool
+	Type      string
+	On        string
+	Off       string
+	Min       *int
+	Max       *int
+	Options   []varOption
 }
 
-var validLevels = map[string]bool{"primary": true, "options": true, "advanced": true}
+type varOption struct {
+	Value string `yaml:"value"`
+	Label string `yaml:"label,omitempty"`
+}
+
+func (o *varOption) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind == yaml.ScalarNode {
+		o.Value = n.Value
+		return nil
+	}
+	var m struct {
+		Value string `yaml:"value"`
+		Label string `yaml:"label"`
+	}
+	if err := n.Decode(&m); err != nil {
+		return err
+	}
+	o.Value = m.Value
+	o.Label = m.Label
+	return nil
+}
+
+func (o varOption) MarshalYAML() (any, error) {
+	if o.Label == "" || o.Label == o.Value {
+		return o.Value, nil
+	}
+	return struct {
+		Value string `yaml:"value"`
+		Label string `yaml:"label"`
+	}{Value: o.Value, Label: o.Label}, nil
+}
+
+var (
+	validLevels   = map[string]bool{"primary": true, "options": true, "advanced": true}
+	validTypes    = map[string]bool{"string": true, "port": true, "path": true, "zfs_dataset": true, "secret": true, "image_tag": true, "public_url": true, "bool": true, "int": true, "choice": true, "size": true}
+	sizeDefaultRe = regexp.MustCompile(`^[1-9][0-9]*[kmgtKMGT][bB]?$`)
+)
 
 type volDoc = docEntry
 
@@ -37,11 +79,17 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 		return nil
 	}
 	var m struct {
-		Desc      string `yaml:"desc"`
-		Optional  bool   `yaml:"optional"`
-		Level     string `yaml:"level"`
-		PublicURL bool   `yaml:"public_url"`
-		Generate  *bool  `yaml:"generate"`
+		Desc      string      `yaml:"desc"`
+		Optional  bool        `yaml:"optional"`
+		Level     string      `yaml:"level"`
+		PublicURL bool        `yaml:"public_url"`
+		Generate  *bool       `yaml:"generate"`
+		Type      string      `yaml:"type"`
+		On        string      `yaml:"on"`
+		Off       string      `yaml:"off"`
+		Min       *int        `yaml:"min"`
+		Max       *int        `yaml:"max"`
+		Options   []varOption `yaml:"options"`
 	}
 	if err := n.Decode(&m); err != nil {
 		return err
@@ -49,8 +97,12 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 	if m.Level != "" && !validLevels[m.Level] {
 		return fmt.Errorf("level %q: want primary, options or advanced", m.Level)
 	}
+	if m.Type != "" && !validTypes[m.Type] {
+		return fmt.Errorf("type %q: invalid variable type", m.Type)
+	}
 	v.Desc, v.Optional, v.Level, v.PublicURL = m.Desc, m.Optional, m.Level, m.PublicURL
 	v.Given = m.Generate != nil && !*m.Generate
+	v.Type, v.On, v.Off, v.Min, v.Max, v.Options = m.Type, m.On, m.Off, m.Min, m.Max, m.Options
 	return nil
 }
 
@@ -146,15 +198,44 @@ type hostPerms struct {
 }
 
 type variable struct {
-	Name            string     `yaml:"name"`
-	Label           string     `yaml:"label,omitempty"`
-	Type            string     `yaml:"type"`
-	Default         string     `yaml:"default"`
-	Optional        bool       `yaml:"optional,omitempty"`
-	Level           string     `yaml:"level,omitempty"` // wizard placement: primary | options | advanced
-	HostPermissions *hostPerms `yaml:"host_permissions,omitempty"`
-	Image           string     `yaml:"image,omitempty"`    // image_tag vars: the repo this tag selects for
-	Generate        *bool      `yaml:"generate,omitempty"` // false: a secret fjord must not make up
+	Name            string      `yaml:"name"`
+	Label           string      `yaml:"label,omitempty"`
+	Type            string      `yaml:"type"`
+	Default         string      `yaml:"default"`
+	Optional        bool        `yaml:"optional,omitempty"`
+	Level           string      `yaml:"level,omitempty"` // wizard placement: primary | options | advanced
+	HostPermissions *hostPerms  `yaml:"host_permissions,omitempty"`
+	Image           string      `yaml:"image,omitempty"`    // image_tag vars: the repo this tag selects for
+	Generate        *bool       `yaml:"generate,omitempty"` // false: a secret fjord must not make up
+	On              string      `yaml:"on,omitempty"`
+	Off             string      `yaml:"off,omitempty"`
+	Min             *int        `yaml:"min,omitempty"`
+	Max             *int        `yaml:"max,omitempty"`
+	Options         []varOption `yaml:"options,omitempty"`
+}
+
+func isBoolDefault(s string) bool {
+	return strings.EqualFold(s, "true") || strings.EqualFold(s, "false")
+}
+
+func applyDocType(v *variable, d docEntry) {
+	if d.PublicURL {
+		v.Type = "public_url"
+	} else if d.Type != "" {
+		v.Type = d.Type
+	} else if v.Type == "string" {
+		switch {
+		case isBoolDefault(v.Default):
+			v.Type = "bool"
+		case sizeDefaultRe.MatchString(v.Default) && strings.Contains(strings.ToUpper(v.Name), "SIZE"):
+			v.Type = "size"
+		}
+	}
+	v.On = d.On
+	v.Off = d.Off
+	v.Min = d.Min
+	v.Max = d.Max
+	v.Options = d.Options
 }
 
 // givenFlag is a secret's `generate: false`, nil for anything else.
@@ -548,9 +629,6 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				typ = "secret"
 			}
 			d := envDocs[key]
-			if d.PublicURL {
-				typ = "public_url"
-			}
 			// A compose fallback (${VAR:-x}) means the service runs without a
 			// value, so the wizard must not demand one -- the same reading the
 			// stack path gives it. vikunja's database variables are all of
@@ -563,7 +641,9 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				// asks for one only its owner has.
 				dflt = ""
 			}
-			vars = append(vars, variable{Name: key, Label: d.Desc, Type: typ, Default: dflt, Optional: optional, Level: d.Level, Generate: givenFlag(typ, d)})
+			v := variable{Name: key, Label: d.Desc, Type: typ, Default: dflt, Optional: optional, Level: d.Level, Generate: givenFlag(typ, d)}
+			applyDocType(&v, d)
+			vars = append(vars, v)
 		}
 		switch env.Kind {
 		case yaml.SequenceNode:

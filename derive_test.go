@@ -327,3 +327,66 @@ services:
 		t.Errorf("DATA_DIR = %+v, want type: path for ${DATA_DIR}/postgres:/...", dataDir)
 	}
 }
+
+func TestTypedVariablesDerived(t *testing.T) {
+	compose := `name: pkg-cache
+x-daemonless:
+  title: pkg-cache
+  docs:
+    env:
+      SKIP_CHOWN: "Skip ownership fixes"
+      LEGACY_BOOL:
+        desc: "Legacy flag"
+        type: bool
+        on: "yes"
+        off: "no"
+      WORKERS:
+        desc: "Worker count"
+        type: int
+        min: 1
+        max: 16
+      LOG_LEVEL:
+        desc: "Log level"
+        type: choice
+        options:
+          - debug
+          - value: info
+            label: Info
+      PKG_CACHE_SIZE: "Maximum disk cache size"
+services:
+  pkg-cache:
+    image: ghcr.io/daemonless/pkg-cache:latest
+    environment:
+      - SKIP_CHOWN=false
+      - LEGACY_BOOL=yes
+      - WORKERS=4
+      - LOG_LEVEL=info
+      - PKG_CACHE_SIZE=50g
+    ports: ["8080:8080"]
+`
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "pkg-cache", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	got := map[string]variable{}
+	for _, v := range d.xf.Variables {
+		got[v.Name] = v
+	}
+	if v := got["SKIP_CHOWN"]; v.Type != "bool" || v.Default != "false" {
+		t.Errorf("SKIP_CHOWN = %+v, want bool default false", v)
+	}
+	if v := got["LEGACY_BOOL"]; v.Type != "bool" || v.On != "yes" || v.Off != "no" {
+		t.Errorf("LEGACY_BOOL = %+v, want bool on=yes off=no", v)
+	}
+	if v := got["WORKERS"]; v.Type != "int" || v.Min == nil || *v.Min != 1 || v.Max == nil || *v.Max != 16 {
+		t.Errorf("WORKERS = %+v, want int [1..16]", v)
+	}
+	if v := got["LOG_LEVEL"]; v.Type != "choice" || len(v.Options) != 2 || v.Options[0].Value != "debug" || v.Options[1].Label != "Info" {
+		t.Errorf("LOG_LEVEL = %+v, want choice with 2 options", v)
+	}
+	if v := got["PKG_CACHE_SIZE"]; v.Type != "size" || v.Default != "50g" {
+		t.Errorf("PKG_CACHE_SIZE = %+v, want size default 50g", v)
+	}
+}
