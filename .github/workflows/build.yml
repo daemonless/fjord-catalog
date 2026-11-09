@@ -22,6 +22,10 @@ on:
         description: path to sources.yaml in the caller repo
         type: string
         default: sources.yaml
+      source:
+        description: single source name from sources.yaml to rebuild (empty = all; other sources are kept from the current Pages artifact)
+        type: string
+        default: ""
       out:
         description: output dir inside the published site (schema version path)
         type: string
@@ -45,6 +49,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -86,8 +91,20 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           mkdir -p site
+          if [ -n "${{ inputs.source }}" ]; then
+            aid=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=github-pages&per_page=1" \
+              --jq '.artifacts[] | select(.expired == false) | .id' 2>/dev/null | head -n1 || true)
+            if [ -n "$aid" ]; then
+              echo "Seeding site/ from github-pages artifact $aid"
+              gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/$aid/zip" > /tmp/pages.zip
+              unzip -q /tmp/pages.zip -d /tmp/pages
+              tar -xf /tmp/pages/artifact.tar -C site
+              rm -rf /tmp/pages.zip /tmp/pages
+            fi
+          fi
           (cd .fjord-catalog && go run . \
             --sources "${GITHUB_WORKSPACE}/${{ inputs.sources }}" \
+            --source "${{ inputs.source }}" \
             --repos-dir "${GITHUB_WORKSPACE}/repos" \
             --dbuild "${GITHUB_WORKSPACE}/.dbuild" \
             --out "${GITHUB_WORKSPACE}/site/${{ inputs.out }}" \

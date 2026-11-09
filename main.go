@@ -78,6 +78,7 @@ func main() {
 	appsCSV := flag.String("apps", "all", "comma-separated app ids to derive, or \"all\" to scan every repo")
 	versionsPath := flag.String("versions", "", "optional versions JSON; when omitted, versions come from each repo's sbom.json")
 	sourcesPath := flag.String("sources", "sources.yaml", "catalog config (branding + sources); absent -> built-in daemonless default")
+	sourceFilter := flag.String("source", "", "derive only this named source from sources.yaml; keep existing <out>/<other>/ dirs if present")
 	dbuildPath := flag.String("dbuild", "", "path to the dbuild checkout (PYTHONPATH) for rendering AppJail bundles; default: <repos-dir>/dbuild if present")
 	flag.Parse()
 
@@ -96,13 +97,44 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := runSources(cfg, *outDir, *reposDir, *versionsPath, *appsCSV, *sourceFilter); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+// runSources derives all configured sources (or onlySource when set, keeping
+// any other source whose <out>/<name>/catalog.json is already on disk) and
+// writes <out>/sources.json.
+func runSources(cfg Config, outDir, reposDir, versionsPath, appsCSV, onlySource string) error {
+	if onlySource != "" {
+		found := false
+		for _, src := range cfg.Sources {
+			if src.Name == onlySource {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("source %q not found in config", onlySource)
+		}
+	}
+
 	// One catalog per source, each under <out>/<source>/ with its own
 	// catalog.json, manifests/ and icons/, so every source is independently
 	// publishable and refreshable; <out>/sources.json lists them.
 	var index []sourceIndex
 	total, failed := 0, 0
 	for _, src := range cfg.Sources {
-		n, err := buildSource(src, cfg.Catalog, *outDir, *reposDir, *versionsPath, *appsCSV)
+		if onlySource != "" && src.Name != onlySource {
+			if n := keptApps(filepath.Join(outDir, src.Name, "catalog.json")); n > 0 {
+				fmt.Printf("%-12s kept     %d apps\n", src.Name, n)
+				index = append(index, sourceIndex{Name: src.Name, Catalog: src.Name + "/catalog.json", Apps: n})
+				total += n
+				continue
+			}
+		}
+		n, err := buildSource(src, cfg.Catalog, outDir, reposDir, versionsPath, appsCSV)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "source %q: %v\n", src.Name, err)
 			failed++
@@ -114,15 +146,28 @@ func main() {
 	if failed > 0 || total == 0 {
 		// Never publish an empty or partial catalog as if it were real: a
 		// rate-limited clone or a typo'd --repos-dir must fail the run.
-		fmt.Fprintf(os.Stderr, "\n%d apps across %d sources (%d sources failed) -- refusing to write an empty/partial index\n", total, len(index), failed)
-		os.Exit(1)
+		return fmt.Errorf("%d apps across %d sources (%d sources failed) -- refusing to write an empty/partial index", total, len(index), failed)
 	}
 	data, _ := json.MarshalIndent(index, "", "  ")
-	if err := os.WriteFile(filepath.Join(*outDir, "sources.json"), append(data, '\n'), 0o644); err != nil {
-		fmt.Fprintln(os.Stderr, "write sources.json:", err)
-		os.Exit(1)
+	if err := os.WriteFile(filepath.Join(outDir, "sources.json"), append(data, '\n'), 0o644); err != nil {
+		return fmt.Errorf("write sources.json: %w", err)
 	}
-	fmt.Printf("\n%d apps across %d source(s) -> %s\n", total, len(index), *outDir)
+	fmt.Printf("\n%d apps across %d source(s) -> %s\n", total, len(index), outDir)
+	return nil
+}
+
+// keptApps returns the app count in an already-built catalog.json, or 0 if
+// the file is absent or unreadable.
+func keptApps(catalogPath string) int {
+	b, err := os.ReadFile(catalogPath)
+	if err != nil {
+		return 0
+	}
+	var cat catalogFile
+	if json.Unmarshal(b, &cat) != nil {
+		return 0
+	}
+	return len(cat.Apps)
 }
 
 // buildSource derives one source into <out>/<name>/ and returns its app count.
@@ -131,6 +176,7 @@ func buildSource(src Source, top CatalogMeta, outRoot, reposDir, versionsPath, a
 	manifestDir := filepath.Join(outDir, "manifests")
 	iconDir := filepath.Join(outDir, "icons")
 	for _, d := range []string{manifestDir, iconDir} {
+		os.RemoveAll(d)
 		if err := os.MkdirAll(d, 0o755); err != nil {
 			return 0, fmt.Errorf("mkdir: %w", err)
 		}
