@@ -390,3 +390,108 @@ services:
 		t.Errorf("PKG_CACHE_SIZE = %+v, want size default 50g", v)
 	}
 }
+
+// Secret-looking names with boolean defaults become toggles rather than secrets
+// unless docs say otherwise, and explicit docs types win before defaults are
+// cleared or generate: false is computed (both image and stack paths).
+func TestSecretTypePrecedenceAndBoolDefaults(t *testing.T) {
+	imgCompose := `name: sshd
+x-daemonless:
+  title: SSH
+  docs:
+    env:
+      ACCESS_KEY:
+        desc: "Login name"
+        type: string
+      TS_AUTHKEY:
+        desc: "Auth key from provider"
+        type: secret
+        generate: false
+      FORCED_SECRET_FLAG:
+        desc: "Explicitly marked secret"
+        type: secret
+services:
+  sshd:
+    image: ghcr.io/daemonless/sshd:latest
+    environment:
+      - PASSWORD_ACCESS=false
+      - ACCESS_KEY=${ACCESS_KEY:-admin}
+      - TS_AUTHKEY=tskey-auth-xxxx
+      - FORCED_SECRET_FLAG=false
+    ports: ["2222:2222"]
+`
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(imgCompose), 0o644)
+	d, err := deriveManifest([]byte(imgCompose), nil, dir, "sshd", nil)
+	if err != nil {
+		t.Fatalf("derive image: %v", err)
+	}
+	got := map[string]variable{}
+	for _, v := range d.xf.Variables {
+		got[v.Name] = v
+	}
+	if v := got["PASSWORD_ACCESS"]; v.Type != "bool" || v.Default != "false" {
+		t.Errorf("PASSWORD_ACCESS = %+v, want bool default false", v)
+	}
+	if v := got["ACCESS_KEY"]; v.Type != "string" || v.Default != "admin" {
+		t.Errorf("ACCESS_KEY = %+v, want string keeping default admin", v)
+	}
+	if v := got["TS_AUTHKEY"]; v.Type != "secret" || v.Default != "" || v.Generate == nil || *v.Generate {
+		t.Errorf("TS_AUTHKEY = %+v, want secret with empty default and generate: false", v)
+	}
+	if v := got["FORCED_SECRET_FLAG"]; v.Type != "secret" || v.Default != "" {
+		t.Errorf("FORCED_SECRET_FLAG = %+v, want explicit secret with empty default", v)
+	}
+
+	stackCompose := `name: portal
+x-daemonless:
+  title: Portal
+  type: stack
+  docs:
+    env:
+      ACCESS_KEY:
+        desc: "Login name"
+        type: string
+      CORE_MACHINEKEY:
+        desc: "Signing key"
+        type: secret
+      GIVEN_AUTHKEY:
+        desc: "Provider key"
+        type: secret
+        generate: false
+        optional: true
+services:
+  app:
+    image: ghcr.io/daemonless/portal:latest
+    environment:
+      - PASSWORD_ACCESS=${PASSWORD_ACCESS:-false}
+      - ACCESS_KEY=${ACCESS_KEY:-admin}
+      - CORE_MACHINEKEY=${CORE_MACHINEKEY:-weakkey}
+      - GIVEN_AUTHKEY=${GIVEN_AUTHKEY:-placeholder}
+  db:
+    image: ghcr.io/daemonless/postgres:17
+`
+	sdir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(sdir, "compose.yaml"), []byte(stackCompose), 0o644)
+	_ = os.WriteFile(filepath.Join(sdir, "example.env"), []byte(""), 0o644)
+	sd, err := deriveManifest([]byte(stackCompose), nil, sdir, "portal", nil)
+	if err != nil {
+		t.Fatalf("derive stack: %v", err)
+	}
+	sgot := map[string]variable{}
+	for _, v := range sd.xf.Variables {
+		sgot[v.Name] = v
+	}
+	if v := sgot["PASSWORD_ACCESS"]; v.Type != "bool" || v.Default != "false" {
+		t.Errorf("stack PASSWORD_ACCESS = %+v, want bool default false", v)
+	}
+	if v := sgot["ACCESS_KEY"]; v.Type != "string" || v.Default != "admin" || !v.Optional {
+		t.Errorf("stack ACCESS_KEY = %+v, want optional string keeping default admin", v)
+	}
+	if v := sgot["CORE_MACHINEKEY"]; v.Type != "secret" || v.Default != "" || v.Optional {
+		t.Errorf("stack CORE_MACHINEKEY = %+v, want required secret with empty default", v)
+	}
+	if v := sgot["GIVEN_AUTHKEY"]; v.Type != "secret" || v.Default != "" || !v.Optional || v.Generate == nil || *v.Generate {
+		t.Errorf("stack GIVEN_AUTHKEY = %+v, want optional secret with generate: false", v)
+	}
+}

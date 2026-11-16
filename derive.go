@@ -624,10 +624,6 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 	// ("- KEY=val") and the mapping form ("KEY: val"); variabilize either.
 	if env := mapGet(svcNode, "environment"); env != nil {
 		addEnvVar := func(key, val string) {
-			typ := "string"
-			if isSecret(key) {
-				typ = "secret"
-			}
 			d := envDocs[key]
 			// A compose fallback (${VAR:-x}) means the service runs without a
 			// value, so the wizard must not demand one -- the same reading the
@@ -635,14 +631,19 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 			// this kind, and read as required they blocked every install.
 			optional := d.Optional || strings.Contains(val, ":-")
 			dflt := composeDefault(val)
-			if typ == "secret" {
+			typ := "string"
+			if isSecret(key) && !isBoolDefault(dflt) {
+				typ = "secret"
+			}
+			v := variable{Name: key, Label: d.Desc, Type: typ, Default: dflt, Optional: optional, Level: d.Level}
+			applyDocType(&v, d)
+			if v.Type == "secret" {
 				// An example everyone would share ("changeme", n8n's
 				// "your-encryption-key-here"): fjord makes the secret up, or
 				// asks for one only its owner has.
-				dflt = ""
+				v.Default = ""
 			}
-			v := variable{Name: key, Label: d.Desc, Type: typ, Default: dflt, Optional: optional, Level: d.Level, Generate: givenFlag(typ, d)}
-			applyDocType(&v, d)
+			v.Generate = givenFlag(v.Type, d)
 			vars = append(vars, v)
 		}
 		switch env.Kind {

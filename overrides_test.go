@@ -32,10 +32,12 @@ func TestApplyLogin(t *testing.T) {
 // An override names a web UI cit could not test, or takes one away; an
 // endpoint cit already found is kept.
 func TestApplyWeb(t *testing.T) {
-	xf := xFjord{}
-	applyWeb(&xf, dlOverrides["transmission-wireguard"])
-	if xf.Info.WebPort != "${WEB_PORT}" {
-		t.Errorf("transmission-wireguard web_port %q", xf.Info.WebPort)
+	for _, app := range []string{"transmission-wireguard", "adguardhome-sync"} {
+		xf := xFjord{}
+		applyWeb(&xf, dlOverrides[app])
+		if xf.Info.WebPort != "${WEB_PORT}" {
+			t.Errorf("%s web_port %q", app, xf.Info.WebPort)
+		}
 	}
 	ml := xFjord{Info: info{WebPort: "3003"}}
 	applyWeb(&ml, dlOverrides["immich-ml"])

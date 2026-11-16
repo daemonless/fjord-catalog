@@ -1,0 +1,3 @@
+source: https://github.com/daemonless/adguardhome-sync/blob/main/compose.yaml
+why: "The web UI is on 8080 (WEB_PORT); cit runs a command test because the daemon needs an origin AdGuardHome URL to start."
+web_port: ${WEB_PORT}
