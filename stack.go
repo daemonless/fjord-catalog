@@ -113,9 +113,10 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 			continue
 		}
 		seen[name] = true
+		d := envDocs[name]
 		// An inline ${VAR:-fallback} means the compose works without a value --
 		// the variable is optional by construction.
-		optional := strings.Contains(m[0], ":-") || envDocs[name].Optional
+		optional := strings.Contains(m[0], ":-") || d.Optional
 		def := inlineDef
 		if strings.Contains(def, "${") {
 			// Nested fallback like ${A:-${B:-x}} -- leave the default empty so
@@ -130,18 +131,22 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 		switch {
 		case tagVarRepo[name] != "":
 			typ, imgRepo = "image_tag", tagVarRepo[name]
-		case isSecret(name):
+		case isSecret(name) && !isBoolDefault(def):
+			typ = "secret"
+		case pathVar[name] || strings.Contains(scanText, "${"+name+"}:/"):
+			typ = "path" // host side of a bind mount
+		}
+		v := variable{Name: name, Label: d.Desc, Type: typ, Default: def, Optional: optional, Level: d.Level, Image: imgRepo}
+		applyDocType(&v, d)
+		if v.Type == "secret" {
 			// An example password in example.env or ${VAR:-password} is a
 			// placeholder everyone would share; clear it and require one so
 			// fjord makes a secret up, unless docs or a ${VAR:-${OTHER}} chain
 			// says it is genuinely optional.
-			typ, def = "secret", ""
-			optional = envDocs[name].Optional || strings.Contains(inlineDef, "${")
-		case pathVar[name] || strings.Contains(scanText, "${"+name+"}:/"):
-			typ = "path" // host side of a bind mount
+			v.Default = ""
+			v.Optional = d.Optional || strings.Contains(inlineDef, "${")
 		}
-		v := variable{Name: name, Label: envDocs[name].Desc, Type: typ, Default: def, Optional: optional, Level: envDocs[name].Level, Image: imgRepo, Generate: givenFlag(typ, envDocs[name])}
-		applyDocType(&v, envDocs[name])
+		v.Generate = givenFlag(v.Type, d)
 		vars = append(vars, v)
 	}
 
