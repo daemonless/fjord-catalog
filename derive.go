@@ -16,21 +16,25 @@ import (
 // ("Movie library") or a mapping ({desc: ..., optional: true, level: primary}).
 // optional = may be left empty; level = where the wizard shows it
 // (primary = up front, options, advanced), independent of optional;
-// public_url = the address the app is opened at (fjord suggests and checks it).
+// public_url = the address the app is opened at (fjord suggests and checks it);
+// public_url: domain = only an https:// address with a domain name will do.
+// behind_proxy = the value the variable takes when a reverse proxy serves the app.
 // generate: false = a secret only its owner has (a tunnel token): fjord makes
 // required secrets up unless told so.
 type docEntry struct {
-	Desc      string
-	Optional  bool
-	Level     string
-	PublicURL bool
-	Given     bool
-	Type      string
-	On        string
-	Off       string
-	Min       *int
-	Max       *int
-	Options   []varOption
+	Desc        string
+	Optional    bool
+	Level       string
+	PublicURL   bool
+	Needs       string // public_url: domain -> "domain"
+	BehindProxy string
+	Given       bool
+	Type        string
+	On          string
+	Off         string
+	Min         *int
+	Max         *int
+	Options     []varOption
 }
 
 type varOption struct {
@@ -79,17 +83,18 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 		return nil
 	}
 	var m struct {
-		Desc      string      `yaml:"desc"`
-		Optional  bool        `yaml:"optional"`
-		Level     string      `yaml:"level"`
-		PublicURL bool        `yaml:"public_url"`
-		Generate  *bool       `yaml:"generate"`
-		Type      string      `yaml:"type"`
-		On        string      `yaml:"on"`
-		Off       string      `yaml:"off"`
-		Min       *int        `yaml:"min"`
-		Max       *int        `yaml:"max"`
-		Options   []varOption `yaml:"options"`
+		Desc        string       `yaml:"desc"`
+		Optional    bool         `yaml:"optional"`
+		Level       string       `yaml:"level"`
+		PublicURL   publicURLDoc `yaml:"public_url"`
+		BehindProxy string       `yaml:"behind_proxy"`
+		Generate    *bool        `yaml:"generate"`
+		Type        string       `yaml:"type"`
+		On          string       `yaml:"on"`
+		Off         string       `yaml:"off"`
+		Min         *int         `yaml:"min"`
+		Max         *int         `yaml:"max"`
+		Options     []varOption  `yaml:"options"`
 	}
 	if err := n.Decode(&m); err != nil {
 		return err
@@ -100,9 +105,28 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 	if m.Type != "" && !validTypes[m.Type] {
 		return fmt.Errorf("type %q: invalid variable type", m.Type)
 	}
-	v.Desc, v.Optional, v.Level, v.PublicURL = m.Desc, m.Optional, m.Level, m.PublicURL
+	v.Desc, v.Optional, v.Level = m.Desc, m.Optional, m.Level
+	v.PublicURL, v.Needs, v.BehindProxy = m.PublicURL.on, m.PublicURL.needs, m.BehindProxy
 	v.Given = m.Generate != nil && !*m.Generate
 	v.Type, v.On, v.Off, v.Min, v.Max, v.Options = m.Type, m.On, m.Off, m.Min, m.Max, m.Options
+	return nil
+}
+
+// publicURLDoc is docs' public_url: true (any address) or domain (https and
+// a domain name only).
+type publicURLDoc struct {
+	on    bool
+	needs string
+}
+
+func (p *publicURLDoc) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind == yaml.ScalarNode && n.Value == "domain" {
+		p.on, p.needs = true, "domain"
+		return nil
+	}
+	if err := n.Decode(&p.on); err != nil {
+		return fmt.Errorf("public_url %q: want true, false or domain", n.Value)
+	}
 	return nil
 }
 
@@ -212,6 +236,8 @@ type variable struct {
 	Min             *int        `yaml:"min,omitempty"`
 	Max             *int        `yaml:"max,omitempty"`
 	Options         []varOption `yaml:"options,omitempty"`
+	Needs           string      `yaml:"needs,omitempty"`        // public_url: "domain" = https and a domain only
+	BehindProxy     string      `yaml:"behind_proxy,omitempty"` // the value behind a reverse proxy
 }
 
 func isBoolDefault(s string) bool {
@@ -219,8 +245,10 @@ func isBoolDefault(s string) bool {
 }
 
 func applyDocType(v *variable, d docEntry) {
+	v.BehindProxy = d.BehindProxy
 	if d.PublicURL {
 		v.Type = "public_url"
+		v.Needs = d.Needs
 	} else if d.Type != "" {
 		v.Type = d.Type
 	} else if v.Type == "string" {

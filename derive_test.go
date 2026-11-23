@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 // A tool that runs and exits, an image only built FROM, or a part of a
@@ -129,6 +131,52 @@ func TestDocsPublicURL(t *testing.T) {
 		if v.Name == "APP_URL" && (v.Type != "public_url" || !v.Optional) {
 			t.Fatalf("APP_URL = %+v, want an optional public_url", v)
 		}
+	}
+}
+
+// public_url: domain is an address that must be https with a domain name
+// (passkeys): still the public_url type, so readers that predate it keep
+// working, plus needs: domain. behind_proxy is copied as given, and the
+// default stays the value that is safe without a proxy.
+func TestDocsPublicURLDomainAndBehindProxy(t *testing.T) {
+	compose := "name: app\nx-daemonless:\n  title: App\n  docs:\n    env:\n      APP_URL:\n        desc: Public HTTPS URL\n        public_url: domain\n        level: primary\n      TRUST_PROXY:\n        desc: Trust a reverse proxy\n        behind_proxy: \"true\"\n      OTHER_URL:\n        desc: Any address\n        public_url: true\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    environment:\n      - APP_URL=\n      - TRUST_PROXY=false\n      - OTHER_URL=\n    ports: [\"8080:8080\"]\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(compose), 0o644)
+	d, err := deriveManifest([]byte(compose), nil, dir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive: %v", err)
+	}
+	got := map[string]variable{}
+	for _, v := range d.xf.Variables {
+		got[v.Name] = v
+	}
+	if v := got["APP_URL"]; v.Type != "public_url" || v.Needs != "domain" || v.Level != "primary" {
+		t.Errorf("APP_URL = %+v, want a primary public_url that needs a domain", v)
+	}
+	if v := got["OTHER_URL"]; v.Type != "public_url" || v.Needs != "" {
+		t.Errorf("OTHER_URL = %+v, want a public_url with no needs", v)
+	}
+	if v := got["TRUST_PROXY"]; v.BehindProxy != "true" || v.Default != "false" {
+		t.Errorf("TRUST_PROXY = %+v, want default false and behind_proxy true", v)
+	}
+	out, err := yaml.Marshal(d.xf.Variables)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(out), "needs: domain") || !strings.Contains(string(out), "behind_proxy: \"true\"") {
+		t.Errorf("manifest lacks the new fields:\n%s", out)
+	}
+}
+
+// public_url takes true, false or domain; anything else is a mistake in the
+// image's docs, said rather than read as false.
+func TestDocsPublicURLBadValue(t *testing.T) {
+	var d docEntry
+	if err := yaml.Unmarshal([]byte("desc: x\npublic_url: https\n"), &d); err == nil {
+		t.Fatalf("public_url: https was accepted: %+v", d)
+	}
+	if err := yaml.Unmarshal([]byte("desc: x\npublic_url: false\n"), &d); err != nil || d.PublicURL {
+		t.Fatalf("public_url: false gave %+v, %v", d, err)
 	}
 }
 
