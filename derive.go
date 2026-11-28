@@ -29,6 +29,7 @@ type docEntry struct {
 	Needs       string // public_url: domain -> "domain"
 	BehindProxy string
 	Given       bool
+	Format      string
 	Type        string
 	On          string
 	Off         string
@@ -72,6 +73,7 @@ func (o varOption) MarshalYAML() (any, error) {
 var (
 	validLevels   = map[string]bool{"primary": true, "options": true, "advanced": true}
 	validTypes    = map[string]bool{"string": true, "port": true, "path": true, "zfs_dataset": true, "secret": true, "image_tag": true, "public_url": true, "bool": true, "int": true, "choice": true, "size": true}
+	validFormats  = map[string]bool{"hex": true, "base64": true}
 	sizeDefaultRe = regexp.MustCompile(`^[1-9][0-9]*[kmgtKMGT][bB]?$`)
 )
 
@@ -89,6 +91,7 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 		PublicURL   publicURLDoc `yaml:"public_url"`
 		BehindProxy string       `yaml:"behind_proxy"`
 		Generate    *bool        `yaml:"generate"`
+		Format      string       `yaml:"format"`
 		Type        string       `yaml:"type"`
 		On          string       `yaml:"on"`
 		Off         string       `yaml:"off"`
@@ -105,9 +108,13 @@ func (v *docEntry) UnmarshalYAML(n *yaml.Node) error {
 	if m.Type != "" && !validTypes[m.Type] {
 		return fmt.Errorf("type %q: invalid variable type", m.Type)
 	}
+	if m.Format != "" && !validFormats[m.Format] {
+		return fmt.Errorf("format %q: want hex or base64", m.Format)
+	}
 	v.Desc, v.Optional, v.Level = m.Desc, m.Optional, m.Level
 	v.PublicURL, v.Needs, v.BehindProxy = m.PublicURL.on, m.PublicURL.needs, m.BehindProxy
 	v.Given = m.Generate != nil && !*m.Generate
+	v.Format = m.Format
 	v.Type, v.On, v.Off, v.Min, v.Max, v.Options = m.Type, m.On, m.Off, m.Min, m.Max, m.Options
 	return nil
 }
@@ -231,6 +238,7 @@ type variable struct {
 	HostPermissions *hostPerms  `yaml:"host_permissions,omitempty"`
 	Image           string      `yaml:"image,omitempty"`    // image_tag vars: the repo this tag selects for
 	Generate        *bool       `yaml:"generate,omitempty"` // false: a secret fjord must not make up
+	Format          string      `yaml:"format,omitempty"`   // secret encoding: "hex" (default) or "base64"
 	On              string      `yaml:"on,omitempty"`
 	Off             string      `yaml:"off,omitempty"`
 	Min             *int        `yaml:"min,omitempty"`
@@ -273,6 +281,14 @@ func givenFlag(typ string, d docEntry) *bool {
 	}
 	f := false
 	return &f
+}
+
+// secretFormat is a secret's explicit encoding ("hex" or "base64"), "" otherwise.
+func secretFormat(typ string, d docEntry) string {
+	if typ != "secret" {
+		return ""
+	}
+	return d.Format
 }
 
 type variant struct {
@@ -672,6 +688,7 @@ func deriveManifest(composeBytes, configBytes []byte, repoDir, id string, av *ap
 				v.Default = ""
 			}
 			v.Generate = givenFlag(v.Type, d)
+			v.Format = secretFormat(v.Type, d)
 			vars = append(vars, v)
 		}
 		switch env.Kind {

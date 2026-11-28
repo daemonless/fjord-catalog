@@ -147,6 +147,7 @@ func deriveStackManifest(composeBytes []byte, xd xDaemonless, cfg imageConfig, r
 			v.Optional = d.Optional || strings.Contains(inlineDef, "${")
 		}
 		v.Generate = givenFlag(v.Type, d)
+		v.Format = secretFormat(v.Type, d)
 		vars = append(vars, v)
 	}
 
