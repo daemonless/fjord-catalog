@@ -206,6 +206,53 @@ func TestDocsGenerateFalse(t *testing.T) {
 	}
 }
 
+// `format: base64` under x-daemonless.docs.env carries through to x-fjord on
+// both single-image apps and multi-service stacks; unset secrets omit format.
+func TestDocsSecretFormat(t *testing.T) {
+	single := "name: app\nx-daemonless:\n  title: App\n  docs:\n    env:\n      ENCRYPTION_KEY:\n        desc: 32-byte key\n        format: base64\nservices:\n  app:\n    image: ghcr.io/daemonless/app:latest\n    environment:\n      - ENCRYPTION_KEY=\n      - OTHER_SECRET=\n    ports: [\"8080:8080\"]\n"
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "compose.yaml"), []byte(single), 0o644)
+	d, err := deriveManifest([]byte(single), nil, dir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive single: %v", err)
+	}
+	got := map[string]variable{}
+	for _, v := range d.xf.Variables {
+		got[v.Name] = v
+	}
+	if v := got["ENCRYPTION_KEY"]; v.Type != "secret" || v.Format != "base64" {
+		t.Errorf("single ENCRYPTION_KEY = %+v, want secret with format: base64", v)
+	}
+	if v := got["OTHER_SECRET"]; v.Type != "secret" || v.Format != "" {
+		t.Errorf("single OTHER_SECRET = %+v, want secret with empty format", v)
+	}
+	if !strings.Contains(d.manifestYAML, "format: base64") {
+		t.Errorf("single manifestYAML missing format: base64:\n%s", d.manifestYAML)
+	}
+
+	stackCompose := "name: app\nx-daemonless:\n  title: App\n  type: stack\n  docs:\n    env:\n      PASSWORD_ENCRYPTION_KEY:\n        desc: Base64 32-byte key\n        format: base64\nservices:\n  api:\n    image: ghcr.io/daemonless/app:latest\n    environment:\n      - PASSWORD_ENCRYPTION_KEY=${PASSWORD_ENCRYPTION_KEY}\n      - DB_PASSWORD=${DB_PASSWORD}\n  db:\n    image: ghcr.io/daemonless/postgres:17\n"
+	sdir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(sdir, "compose.yaml"), []byte(stackCompose), 0o644)
+	_ = os.WriteFile(filepath.Join(sdir, "example.env"), []byte("PASSWORD_ENCRYPTION_KEY=changeme\nDB_PASSWORD=postgres\n"), 0o644)
+	sd, err := deriveManifest([]byte(stackCompose), nil, sdir, "app", nil)
+	if err != nil {
+		t.Fatalf("derive stack: %v", err)
+	}
+	sgot := map[string]variable{}
+	for _, v := range sd.xf.Variables {
+		sgot[v.Name] = v
+	}
+	if v := sgot["PASSWORD_ENCRYPTION_KEY"]; v.Type != "secret" || v.Format != "base64" || v.Default != "" {
+		t.Errorf("stack PASSWORD_ENCRYPTION_KEY = %+v, want required secret with format: base64", v)
+	}
+	if v := sgot["DB_PASSWORD"]; v.Type != "secret" || v.Format != "" {
+		t.Errorf("stack DB_PASSWORD = %+v, want secret with empty format", v)
+	}
+	if !strings.Contains(sd.manifestYAML, "format: base64") {
+		t.Errorf("stack manifestYAML missing format: base64:\n%s", sd.manifestYAML)
+	}
+}
+
 // Two folders named alike keep two variables, so two folders on the host.
 func TestDeriveVolumesNamedAlike(t *testing.T) {
 	compose := []byte(`x-daemonless:
